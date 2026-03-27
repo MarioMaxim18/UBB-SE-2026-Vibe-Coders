@@ -1,5 +1,18 @@
-﻿################################################################################
-# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
-################################################################################
+﻿.vs/
 
-/.vs
+# macOS
+.DS_Store
+
+# JetBrains IDEs (IntelliJ, Rider)
+.idea/
+
+# .NET build artifacts
+bin/
+obj/
+
+# Visual Studio / user-specific files
+*.user
+*.suo
+
+# VS Code settings
+.vscode/
