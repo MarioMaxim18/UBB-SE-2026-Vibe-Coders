@@ -9,4 +9,5 @@ public sealed class LoggedExercise
     public string ExerciseName { get; set; } = string.Empty;
     public int WorkoutLogId { get; set; }
     public List<LoggedSet> Sets { get; set; } = new();
+    public int ExerciseCaloriesBurned { get; set; }
 }
