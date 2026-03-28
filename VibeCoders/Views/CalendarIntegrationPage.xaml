@@ -1,0 +1,44 @@
+<Page
+    x:Class="VibeCoders.Views.CalendarIntegrationPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:VibeCoders.Views"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid Padding="24">
+        <StackPanel Spacing="16" MaxWidth="600" HorizontalAlignment="Left">
+            <TextBlock Text="Calendar Integration" Style="{ThemeResource TitleTextBlockStyle}"/>
+            
+            <TextBlock Text="Set up your workout calendar by selecting your workout, duration, and the days you want to train." TextWrapping="Wrap" />
+
+            <!-- Workout Selector Dropdown Placeholder -->
+            <ComboBox Header="Select Workout" PlaceholderText="Choose a workout program" HorizontalAlignment="Stretch">
+                <ComboBoxItem Content="Full Body Strength"/>
+                <ComboBoxItem Content="Cardio Blast"/>
+                <ComboBoxItem Content="Yoga &amp; Flexibility"/>
+                <ComboBoxItem Content="Core Crusher"/>
+            </ComboBox>
+
+            <!-- Duration Input Placeholder -->
+            <TextBox Header="Duration (Weeks)" Text="4" HorizontalAlignment="Stretch"/>
+
+            <!-- Days of the Week Selection Placeholder -->
+            <TextBlock Text="Training Days" />
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <ToggleButton Content="Mon" />
+                <ToggleButton Content="Tue" />
+                <ToggleButton Content="Wed" />
+                <ToggleButton Content="Thu" />
+                <ToggleButton Content="Fri" />
+                <ToggleButton Content="Sat" />
+                <ToggleButton Content="Sun" />
+            </StackPanel>
+
+            <!-- Generate Calendar Action Button -->
+            <Button Content="Generate Calendar" Style="{ThemeResource AccentButtonStyle}" HorizontalAlignment="Stretch" Margin="0,16,0,0"/>
+        </StackPanel>
+    </Grid>
+</Page>
