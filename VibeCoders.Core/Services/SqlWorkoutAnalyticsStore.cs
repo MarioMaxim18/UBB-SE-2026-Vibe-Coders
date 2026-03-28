@@ -1,5 +1,6 @@
 using System.Globalization;
 using Microsoft.Data.Sqlite;
+using VibeCoders.Models;
 using VibeCoders.Models.Analytics;
 
 namespace VibeCoders.Services;
@@ -82,6 +83,57 @@ public sealed class SqlWorkoutAnalyticsStore : IWorkoutAnalyticsStore
         {
             _initLock.Release();
         }
+    }
+
+    /// <inheritdoc />
+    public async Task<int> SaveWorkoutAsync(
+        long userId, WorkoutLog log, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(log);
+        await EnsureCreatedAsync(cancellationToken).ConfigureAwait(false);
+        await using var conn = OpenConnection();
+        await using var tx = conn.BeginTransaction();
+
+        await using var insertLog = conn.CreateCommand();
+        insertLog.Transaction = tx;
+        insertLog.CommandText = @"
+            INSERT INTO workout_log (user_id, workout_name, log_date, duration_seconds, source_template_id)
+            VALUES ($uid, $name, $date, $dur, $tmpl);
+            SELECT last_insert_rowid();";
+        insertLog.Parameters.AddWithValue("$uid", userId);
+        insertLog.Parameters.AddWithValue("$name", log.WorkoutName);
+        insertLog.Parameters.AddWithValue("$date",
+            DateOnly.FromDateTime(log.Date).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        insertLog.Parameters.AddWithValue("$dur", (int)log.Duration.TotalSeconds);
+        insertLog.Parameters.AddWithValue("$tmpl", log.SourceTemplateId);
+
+        var logId = Convert.ToInt32(
+            await insertLog.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false),
+            CultureInfo.InvariantCulture);
+
+        foreach (var exercise in log.Exercises)
+        {
+            foreach (var set in exercise.Sets)
+            {
+                await using var insertSet = conn.CreateCommand();
+                insertSet.Transaction = tx;
+                insertSet.CommandText = @"
+                    INSERT INTO workout_log_sets
+                        (workout_log_id, exercise_name, set_index, target_reps, actual_reps, target_weight, actual_weight)
+                    VALUES ($lid, $ex, $si, $tr, $ar, $tw, $aw);";
+                insertSet.Parameters.AddWithValue("$lid", logId);
+                insertSet.Parameters.AddWithValue("$ex", exercise.ExerciseName);
+                insertSet.Parameters.AddWithValue("$si", set.SetIndex);
+                insertSet.Parameters.AddWithValue("$tr", (object?)set.TargetReps ?? DBNull.Value);
+                insertSet.Parameters.AddWithValue("$ar", (object?)set.ActualReps ?? DBNull.Value);
+                insertSet.Parameters.AddWithValue("$tw", (object?)set.TargetWeight ?? DBNull.Value);
+                insertSet.Parameters.AddWithValue("$aw", (object?)set.ActualWeight ?? DBNull.Value);
+                await insertSet.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+            }
+        }
+
+        tx.Commit();
+        return logId;
     }
 
     /// <inheritdoc />
