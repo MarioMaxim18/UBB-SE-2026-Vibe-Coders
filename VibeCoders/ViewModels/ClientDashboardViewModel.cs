@@ -228,11 +228,15 @@ public sealed partial class ClientDashboardViewModel : ObservableObject
             {
                 Values = buckets.Select(b => b.WorkoutCount).ToArray(),
                 Name = "Workouts",
-                GeometrySize = 10,
-                Stroke = new SolidColorPaint(new SKColor(0x60, 0xCD, 0xFF), 3),
-                GeometryStroke = new SolidColorPaint(new SKColor(0x60, 0xCD, 0xFF), 3),
-                GeometryFill = new SolidColorPaint(new SKColor(0x60, 0xCD, 0xFF)),
-                Fill = null,
+                GeometrySize = 12,
+                Stroke = new SolidColorPaint(new SKColor(0x00, 0x5F, 0xB8)) { StrokeThickness = 3 },
+                GeometryStroke = new SolidColorPaint(new SKColor(0x00, 0x5F, 0xB8)) { StrokeThickness = 3 },
+                GeometryFill = new SolidColorPaint(new SKColor(0xFF, 0xFF, 0xFF)),
+                Fill = new LinearGradientPaint(
+                    new[] { new SKColor(0x00, 0x5F, 0xB8, 90), new SKColor(0x00, 0x5F, 0xB8, 0) },
+                    new SKPoint(0.5f, 0),
+                    new SKPoint(0.5f, 1)
+                ),
             }
         };
 
@@ -243,6 +247,8 @@ public sealed partial class ClientDashboardViewModel : ObservableObject
                 Labels = buckets.Select(b =>
                     b.WeekStart.ToString("MMM dd", CultureInfo.InvariantCulture)).ToArray(),
                 LabelsRotation = 0,
+                TextSize = 12,
+                LabelsPaint = new SolidColorPaint(new SKColor(0x8A, 0x8A, 0x8A)), // subtle gray
             }
         };
     }

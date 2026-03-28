@@ -22,6 +22,7 @@ public sealed partial class ClientDashboardPage : Page
         {
             HorizontalAlignment = HorizontalAlignment.Stretch,
             VerticalAlignment = VerticalAlignment.Stretch,
+            Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Transparent)
         };
 
         SyncChartToViewModel();
