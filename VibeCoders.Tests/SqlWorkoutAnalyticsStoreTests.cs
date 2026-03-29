@@ -1,4 +1,5 @@
 using Microsoft.Data.Sqlite;
+using VibeCoders.Models;
 using VibeCoders.Services;
 
 namespace VibeCoders.Tests;
@@ -207,6 +208,95 @@ public sealed class SqlWorkoutAnalyticsStoreTests : IAsyncLifetime
     {
         var logId = await InsertLogReturningId(1, "Push", "2026-03-01", 3600);
         Assert.Null(await _store.GetWorkoutSessionDetailAsync(2, logId));
+    }
+
+    // -- SaveWorkoutAsync --
+
+    [Fact]
+    public async Task SaveWorkout_inserts_log_and_sets()
+    {
+        var log = new WorkoutLog
+        {
+            WorkoutName = "Full Body",
+            Date = new DateTime(2026, 3, 20),
+            Duration = TimeSpan.FromMinutes(45),
+            SourceTemplateId = 7,
+            Exercises = new List<LoggedExercise>
+            {
+                new()
+                {
+                    ExerciseName = "Squat",
+                    Sets = new List<LoggedSet>
+                    {
+                        new() { SetIndex = 0, ActualReps = 10, ActualWeight = 80.0, TargetReps = 12, TargetWeight = 80.0 },
+                        new() { SetIndex = 1, ActualReps = 8, ActualWeight = 85.0 },
+                    }
+                },
+                new()
+                {
+                    ExerciseName = "Bench Press",
+                    Sets = new List<LoggedSet>
+                    {
+                        new() { SetIndex = 0, ActualReps = 10, ActualWeight = 60.0 },
+                    }
+                }
+            }
+        };
+
+        var logId = await _store.SaveWorkoutAsync(1, log);
+        Assert.True(logId > 0);
+
+        var detail = await _store.GetWorkoutSessionDetailAsync(1, logId);
+        Assert.NotNull(detail);
+        Assert.Equal("Full Body", detail!.WorkoutName);
+        Assert.Equal(2700, detail.DurationSeconds);
+        Assert.Equal(3, detail.Sets.Count);
+    }
+
+    [Fact]
+    public async Task SaveWorkout_updates_dashboard_summary()
+    {
+        var log = new WorkoutLog
+        {
+            WorkoutName = "Legs",
+            Date = DateTime.Today,
+            Duration = TimeSpan.FromMinutes(30),
+            Exercises = new List<LoggedExercise>()
+        };
+
+        await _store.SaveWorkoutAsync(1, log);
+        var summary = await _store.GetDashboardSummaryAsync(1);
+        Assert.Equal(1, summary.TotalWorkouts);
+        Assert.Equal("Legs", summary.PreferredWorkoutName);
+    }
+
+    [Fact]
+    public async Task SaveWorkout_preserves_nullable_set_fields()
+    {
+        var log = new WorkoutLog
+        {
+            WorkoutName = "Arms",
+            Date = new DateTime(2026, 3, 15),
+            Duration = TimeSpan.FromMinutes(20),
+            Exercises = new List<LoggedExercise>
+            {
+                new()
+                {
+                    ExerciseName = "Curl",
+                    Sets = new List<LoggedSet>
+                    {
+                        new() { SetIndex = 0, ActualReps = null, ActualWeight = null }
+                    }
+                }
+            }
+        };
+
+        var logId = await _store.SaveWorkoutAsync(1, log);
+        var detail = await _store.GetWorkoutSessionDetailAsync(1, logId);
+        Assert.NotNull(detail);
+        Assert.Single(detail!.Sets);
+        Assert.Null(detail.Sets[0].ActualReps);
+        Assert.Null(detail.Sets[0].ActualWeight);
     }
 
     // -- Monday calculation helper --
