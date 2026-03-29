@@ -14,6 +14,12 @@
             
             <TextBlock Text="Set up your workout calendar by selecting your workout, duration, and the days you want to train." TextWrapping="Wrap" />
 
+            <!-- Status Message InfoBar -->
+            <InfoBar x:Name="StatusInfoBar" 
+                     IsOpen="False" 
+                     CloseButtonCommand="{x:Null}" 
+                     Margin="0,0,0,8"/>
+
             <!-- Workout Selector Dropdown -->
             <ComboBox x:Name="WorkoutComboBox" Header="Select Workout" PlaceholderText="Choose a workout program" HorizontalAlignment="Stretch">
                 <ComboBoxItem Content="Full Body Strength"/>

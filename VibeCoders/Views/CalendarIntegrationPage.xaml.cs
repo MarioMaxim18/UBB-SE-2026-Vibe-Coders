@@ -14,7 +14,7 @@ namespace VibeCoders.Views
             // Validate workout selection
             if (WorkoutComboBox.SelectedIndex == -1)
             {
-                ShowErrorToast("Please select a workout from the dropdown.");
+                ShowError("Please select a workout from the dropdown.");
                 return;
             }
 
@@ -22,26 +22,26 @@ namespace VibeCoders.Views
             string durationInput = DurationWeeksTextBox.Text.Trim();
             if (string.IsNullOrEmpty(durationInput))
             {
-                ShowErrorToast("Please enter the number of weeks (1-52).");
+                ShowError("Please enter the number of weeks (1-52).");
                 return;
             }
 
             if (!int.TryParse(durationInput, out int weeks))
             {
-                ShowErrorToast("Duration must be a number between 1 and 52.");
+                ShowError("Duration must be a number between 1 and 52.");
                 return;
             }
 
             if (weeks < 1 || weeks > 52)
             {
-                ShowErrorToast("Duration must be between 1 and 52 weeks.");
+                ShowError("Duration must be between 1 and 52 weeks.");
                 return;
             }
 
             // Validate at least one training day selected
             if (!IsAnyDaySelected())
             {
-                ShowErrorToast("Please select at least one training day.");
+                ShowError("Please select at least one training day.");
                 return;
             }
 
@@ -51,7 +51,7 @@ namespace VibeCoders.Views
             {
                 selectedWorkout = item.Content?.ToString() ?? "Unknown Workout";
             }
-            ShowSuccessToast($"Calendar will be generated for {selectedWorkout} - {weeks} weeks");
+            ShowSuccess($"Calendar will be generated for {selectedWorkout} - {weeks} weeks");
         }
 
         private bool IsAnyDaySelected()
@@ -65,26 +65,20 @@ namespace VibeCoders.Views
                    DaySunday.IsChecked == true;
         }
 
-        private void ShowErrorToast(string message)
+        private void ShowError(string message)
         {
-            var toast = new TeachingTip()
-            {
-                Title = "Validation Error",
-                Subtitle = message,
-                CloseButtonContent = "OK"
-            };
-            toast.IsOpen = true;
+            StatusInfoBar.Severity = InfoBarSeverity.Error;
+            StatusInfoBar.Title = "Validation Error";
+            StatusInfoBar.Message = message;
+            StatusInfoBar.IsOpen = true;
         }
 
-        private void ShowSuccessToast(string message)
+        private void ShowSuccess(string message)
         {
-            var toast = new TeachingTip()
-            {
-                Title = "Success",
-                Subtitle = message,
-                CloseButtonContent = "OK"
-            };
-            toast.IsOpen = true;
+            StatusInfoBar.Severity = InfoBarSeverity.Success;
+            StatusInfoBar.Title = "Success";
+            StatusInfoBar.Message = message;
+            StatusInfoBar.IsOpen = true;
         }
     }
 }
