@@ -20,7 +20,7 @@ namespace VibeCoders.Models
             
         }
 
-        public void ModifyWorkout(WorkoutLog oldWorkout, WorkoutLog newWorkout)
+        public void ModifyWorkout(WorkoutLog OldWorkout, WorkoutLog NewWorkout)
         {
             
         }

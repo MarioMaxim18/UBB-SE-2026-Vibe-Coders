@@ -8,7 +8,7 @@ using VibeCoders.Services;
 using User = VibeCoders.Models.User;
 using Microsoft.Data.SqlClient;
 
-namespace VibeCoders.Core.Services
+namespace VibeCoders.Services
 {
 
     public partial class SqlDataStorage : IDataStorage
@@ -32,7 +32,7 @@ namespace VibeCoders.Core.Services
                         c.height,
                         (SELECT MAX(date) FROM WORKOUT_LOG wl WHERE wl.client_id = c.id) AS LastWorkoutDate
                     FROM CLIENT c
-                    JOIN USER u ON c.user_id = u.id
+                    JOIN [USER] u ON c.user_id = u.id
                     WHERE c.trainer_id = @TrainerId;";
 
                 using (SqlCommand cmd = new SqlCommand(sql, conn))
@@ -72,22 +72,26 @@ namespace VibeCoders.Core.Services
 
         public bool SaveUser(User u)
         {
-            throw new NotImplementedException("Auth team is working on this!");
+            //TODO
+            return false;
         }
 
         public User LoadUser(string username)
         {
-            throw new NotImplementedException("Auth team is working on this!");
+            //TODO
+            return null;
         }
 
         public bool SaveClientData(Client c)
         {
-            throw new NotImplementedException("Client team is working on this!");
+            //TODO
+            return false;
         }
 
         public bool SaveWorkoutLog(WorkoutLog log)
         {
-            throw new NotImplementedException("Trainer assigned workout log logic goes here later!");
+            //TODO
+            return false;
         }
 
         //public bool saveNutritionPlan(NutritionPlan plan)
