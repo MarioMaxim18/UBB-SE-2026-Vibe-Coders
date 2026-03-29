@@ -1,5 +1,4 @@
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
 
 namespace VibeCoders.Views
 {
@@ -47,7 +46,11 @@ namespace VibeCoders.Views
             }
 
             // TODO: Generate calendar with validated data
-            string selectedWorkout = ((ComboBoxItem)WorkoutComboBox.SelectedItem).Content.ToString();
+            string selectedWorkout = "";
+            if (WorkoutComboBox.SelectedItem is ComboBoxItem item)
+            {
+                selectedWorkout = item.Content?.ToString() ?? "Unknown Workout";
+            }
             ShowSuccessToast($"Calendar will be generated for {selectedWorkout} - {weeks} weeks");
         }
 
@@ -68,8 +71,7 @@ namespace VibeCoders.Views
             {
                 Title = "Validation Error",
                 Subtitle = message,
-                CloseButtonContent = "OK",
-                Background = new SolidColorBrush(Microsoft.UI.Colors.ErrorRed)
+                CloseButtonContent = "OK"
             };
             toast.IsOpen = true;
         }
@@ -80,8 +82,7 @@ namespace VibeCoders.Views
             {
                 Title = "Success",
                 Subtitle = message,
-                CloseButtonContent = "OK",
-                Background = new SolidColorBrush(Microsoft.UI.Colors.Success)
+                CloseButtonContent = "OK"
             };
             toast.IsOpen = true;
         }
