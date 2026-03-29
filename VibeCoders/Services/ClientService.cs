@@ -24,8 +24,9 @@ namespace VibeCoders.Services
             {
                 await _storage.SaveLoggedSetAsync(set);
             }
-            catch
+            catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"Error saving set: {ex.Message}");
                 throw;
             }
         }
@@ -44,8 +45,9 @@ namespace VibeCoders.Services
 
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"Error finalizing workout: {ex.Message}");
                 return false;
             }
         }
