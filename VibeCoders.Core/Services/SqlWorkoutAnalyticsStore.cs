@@ -68,6 +68,7 @@ public sealed class SqlWorkoutAnalyticsStore : IWorkoutAnalyticsStore
                     actual_reps     INTEGER,
                     target_weight   REAL,
                     actual_weight   REAL,
+                    met             REAL,
                     FOREIGN KEY (workout_log_id)
                         REFERENCES workout_log(id) ON DELETE CASCADE
                 );
