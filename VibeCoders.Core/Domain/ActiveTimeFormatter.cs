@@ -36,7 +36,7 @@ public static class ActiveTimeFormatter
 
         return duration.TotalHours;
     }
-
+     
     /// Converts a duration expressed in whole seconds to decimal hours
     public static double ToDecimalHours(int durationSeconds)
     {
