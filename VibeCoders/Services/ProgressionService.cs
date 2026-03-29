@@ -19,6 +19,8 @@ namespace VibeCoders.Services
 
         public void EvaluateWorkout(WorkoutLog log)
         {
+            if (log.Exercises == null) return;
+
             foreach (var exercise in log.Exercises)
             {
                 EvaluateExercise(exercise);
@@ -29,47 +31,49 @@ namespace VibeCoders.Services
         {
             if (exercise.Sets == null || exercise.Sets.Count == 0) return;
 
-            TemplateExercise template = _storage.GetTemplateExercise(exercise.Id);
+            int templateId = exercise.Sets[0].ParentTemplateExerciseId;
+            TemplateExercise template = _storage.GetTemplateExercise(templateId);
+
             if (template == null) return;
 
-            bool isOverload = true;
-            int plateauCount = 0;
-            double lastRatio = 0.0;
+            bool isOverloadPossible = true;
+            bool plateauDetected = false;
+            int consecutiveLowSets = 0;
             double currentWeight = exercise.Sets[0].Weight;
+            double sumOfRatios = 0;
 
             foreach (var set in exercise.Sets)
             {
                 double ratio = ProgressionUtils.CalculateRatio(set.ActReps, template.TargetReps);
-                exercise.PerformanceRatio = ratio;
 
-                if (ratio < 1.0)
-                {
-                    isOverload = false;
-                }
+                set.PerformanceRatio = ratio;
+                sumOfRatios += ratio;
+
+                if (ratio < 1.0) isOverloadPossible = false;
 
                 if (ratio < 0.9)
                 {
-                    plateauCount++;
+                    consecutiveLowSets++;
+                    if (consecutiveLowSets >= 2) plateauDetected = true;
                 }
                 else
                 {
-                    plateauCount = 0;
+                    consecutiveLowSets = 0;
                 }
-
-                lastRatio = ratio;
             }
 
-            if (isOverload)
+            exercise.PerformanceRatio = sumOfRatios / exercise.Sets.Count;
+
+            if (isOverloadPossible)
             {
                 double increment = ProgressionUtils.DetermineWeightIncrement(template.MuscleGroup);
                 double newWeight = currentWeight + increment;
-
                 _storage.UpdateTemplateWeight(template.Id, newWeight);
 
                 exercise.IsSystemAdjusted = true;
-                exercise.AdjustmentNote = $"Previous: {currentWeight}kg -> New: {newWeight}kg (Performance Ratio {lastRatio})";
+                exercise.AdjustmentNote = $"Overload: {currentWeight}kg -> {newWeight}kg (Avg Ratio: {exercise.PerformanceRatio:F2})";
             }
-            else if (plateauCount >= 2)
+            else if (plateauDetected)
             {
                 var notification = new Notification(
                     "Deload Recommended",
@@ -79,9 +83,8 @@ namespace VibeCoders.Services
                 );
 
                 _storage.SaveNotification(notification);
-
                 exercise.IsSystemAdjusted = true;
-                exercise.AdjustmentNote = "Plateau detected. Deload notification sent.";
+                exercise.AdjustmentNote = "Plateau detected. Deload recommendation sent to dashboard.";
             }
         }
     }
