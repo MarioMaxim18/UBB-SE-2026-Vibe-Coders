@@ -1,6 +1,5 @@
 using Microsoft.UI.Xaml.Controls;
 using System;
-using VibeCoders.Core.Services;
 using VibeCoders.Services;
 using VibeCoders.ViewModels;
 

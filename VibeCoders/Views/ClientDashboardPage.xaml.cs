@@ -28,11 +28,19 @@ public sealed partial class ClientDashboardPage : Page
         SyncChartToViewModel();
         ViewModel.PropertyChanged += OnViewModelPropertyChanged;
         ChartContainer.Children.Add(_chart);
+
+        Unloaded += Page_Unloaded;
     }
 
     private async void Page_Loaded(object sender, RoutedEventArgs e)
     {
         await ViewModel.LoadInitialAsync();
+    }
+
+    private void Page_Unloaded(object sender, RoutedEventArgs e)
+    {
+        ViewModel.PropertyChanged -= OnViewModelPropertyChanged;
+        ChartContainer.Children.Remove(_chart);
     }
 
     private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)

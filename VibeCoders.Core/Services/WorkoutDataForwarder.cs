@@ -24,8 +24,7 @@ public sealed class WorkoutDataForwarder : IWorkoutDataForwarder
     public async Task<int> ForwardCompletedWorkoutAsync(
         long userId, WorkoutLog log, CancellationToken cancellationToken = default)
     {
-        var logId = await _store.SaveWorkoutAsync(userId, log, cancellationToken)
-            .ConfigureAwait(false);
+        var logId = await _store.SaveWorkoutAsync(userId, log, cancellationToken);
 
         _refreshBus.RequestRefresh();
 

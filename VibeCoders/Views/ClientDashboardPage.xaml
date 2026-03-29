@@ -131,11 +131,12 @@
                     </Border>
                 </Grid>
 
-                <!-- Consistency Chart (control added in code-behind) -->
+                <!-- Consistency Chart (control added in code-behind; hidden when empty) -->
                 <Border
                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="1" CornerRadius="8" Padding="24">
+                    BorderThickness="1" CornerRadius="8" Padding="24"
+                    Visibility="{x:Bind ViewModel.ShowEmptyState, Mode=OneWay, Converter={StaticResource BoolToVisibility}, ConverterParameter=Invert}">
                     <StackPanel>
                         <Grid>
                             <TextBlock Text="4-Week Consistency"
@@ -164,7 +165,9 @@
                         <TextBlock Grid.Column="2" Text="DURATION" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                     </Grid>
 
-                    <ItemsRepeater ItemsSource="{x:Bind ViewModel.HistoryItems, Mode=OneWay}">
+                    <ItemsRepeater
+                        ItemsSource="{x:Bind ViewModel.HistoryItems, Mode=OneWay}"
+                        Visibility="{x:Bind ViewModel.ShowEmptyState, Mode=OneWay, Converter={StaticResource BoolToVisibility}, ConverterParameter=Invert}">
                         <ItemsRepeater.ItemTemplate>
                             <DataTemplate x:DataType="vm:WorkoutHistoryItemViewModel">
                                 <Expander
@@ -198,6 +201,7 @@
                                         <StackPanel Padding="0,4,0,12">
                                             <ProgressRing
                                                 IsActive="{x:Bind IsLoadingDetail, Mode=OneWay}"
+                                                Visibility="{x:Bind IsLoadingDetail, Mode=OneWay, Converter={StaticResource BoolToVisibility}}"
                                                 Width="20" Height="20"
                                                 HorizontalAlignment="Center"
                                                 Margin="0,8" />
