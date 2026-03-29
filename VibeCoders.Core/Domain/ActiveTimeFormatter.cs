@@ -44,5 +44,5 @@ public static class ActiveTimeFormatter
             return 0.0;
 
         return durationSeconds / 3600.0;
-    }
+    } 
 }
