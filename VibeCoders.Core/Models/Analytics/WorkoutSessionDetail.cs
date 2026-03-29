@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace VibeCoders.Models.Analytics;
 
 /// <summary>
@@ -22,4 +24,12 @@ public sealed class WorkoutSetRow
     public int SetIndex { get; init; }
     public int? ActualReps { get; init; }
     public double? ActualWeight { get; init; }
+
+    public string RepsDisplay =>
+        ActualReps?.ToString(CultureInfo.InvariantCulture) ?? "\u2014";
+
+    public string WeightDisplay =>
+        ActualWeight.HasValue
+            ? ActualWeight.Value.ToString("F1", CultureInfo.InvariantCulture)
+            : "\u2014";
 }
