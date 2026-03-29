@@ -6,7 +6,12 @@ using System.Threading.Tasks;
 
 namespace VibeCoders.Models
 {
-    internal class TemplateExercise
+    public class TemplateExercise
     {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public int WorkoutId { get; set; }
+        public MuscleGroup MuscleGroup { get; set; }
+        public int TargetReps { get; set; }
     }
 }
