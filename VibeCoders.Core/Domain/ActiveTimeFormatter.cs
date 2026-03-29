@@ -27,4 +27,22 @@ public static class ActiveTimeFormatter
         var seconds = totalSeconds % 60;
         return string.Create(CultureInfo.InvariantCulture, $"{hours}:{minutes:D2}:{seconds:D2}");
     }
+
+    /// Converts a <see cref="TimeSpan"/> duration to decimal hours
+    public static double ToDecimalHours(TimeSpan duration)
+    {
+        if (duration < TimeSpan.Zero)
+            return 0.0;
+
+        return duration.TotalHours;
+    }
+     
+    /// Converts a duration expressed in whole seconds to decimal hours
+    public static double ToDecimalHours(int durationSeconds)
+    {
+        if (durationSeconds <= 0)
+            return 0.0;
+
+        return durationSeconds / 3600.0;
+    } 
 }
