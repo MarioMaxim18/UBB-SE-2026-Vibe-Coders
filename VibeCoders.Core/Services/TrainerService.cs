@@ -10,19 +10,19 @@ namespace VibeCoders.Services
     public class TrainerService
     {
        
-        public IDataStorage dataStorage { get; set; }
+        public IDataStorage DataStorage { get; }
 
      
         public TrainerService(IDataStorage storage)
         {
-            dataStorage = storage;
+            DataStorage = storage;
         }
 
         
-        public List<Client> getAssignedClient(int trainerId)
+        public List<Client> GetAssignedClients(int trainerId)
         {
             
-            return dataStorage.getTrainerClient(trainerId);
+            return DataStorage.GetTrainerClient(trainerId);
         }
 
         

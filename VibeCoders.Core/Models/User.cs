@@ -8,8 +8,8 @@ namespace VibeCoders.Models
 {
     public class User
     {
-        public int id { get; set; }
-        public string username { get; set; }
-        public string passwordHash { get; set; }
+        public int Id { get; set; }
+        public string Username { get; set; }
+        public string PasswordHash { get; set; }
     }
 }

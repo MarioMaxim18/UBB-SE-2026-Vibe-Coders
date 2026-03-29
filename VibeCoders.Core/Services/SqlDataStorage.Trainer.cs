@@ -5,8 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using VibeCoders.Models;
 using VibeCoders.Services;
-using Windows.Media.Protection.PlayReady;
-using Windows.System;
 using User = VibeCoders.Models.User;
 using Microsoft.Data.SqlClient;
 
@@ -18,7 +16,7 @@ namespace VibeCoders.Core.Services
         private readonly string _connectionString = @"Server=(localdb)\MSSQLLocalDB;Database=VibeCodersDB;Trusted_Connection=True;";
 
        
-        public List<Client> getTrainerClient(int trainerId)
+        public List<Client> GetTrainerClient(int trainerId)
         {
             var roster = new List<Client>();
 
@@ -47,17 +45,17 @@ namespace VibeCoders.Core.Services
                         {
                             var client = new Client
                             {
-                                id = reader.GetInt32(0),
-                                username = reader.GetString(1),
-                                weight = reader.IsDBNull(2) ? 0 : reader.GetDouble(2),
-                                height = reader.IsDBNull(3) ? 0 : reader.GetDouble(3)
+                                Id = reader.GetInt32(0),
+                                Username = reader.GetString(1),
+                                Weight = reader.IsDBNull(2) ? 0 : reader.GetDouble(2),
+                                Height = reader.IsDBNull(3) ? 0 : reader.GetDouble(3)
                             };
 
                             // Attaching the last workout date to satisfy the UI requirement
                             if (!reader.IsDBNull(4))
                             {
                                 
-                                client.workoutLog = new List<WorkoutLog>
+                                client.WorkoutLog = new List<WorkoutLog>
                                 {
                                     new WorkoutLog { Date = reader.GetDateTime(4) }
                                 };
@@ -72,22 +70,22 @@ namespace VibeCoders.Core.Services
         }
 
 
-        public bool saveUser(User u)
+        public bool SaveUser(User u)
         {
             throw new NotImplementedException("Auth team is working on this!");
         }
 
-        public User loadUser(string username)
+        public User LoadUser(string username)
         {
             throw new NotImplementedException("Auth team is working on this!");
         }
 
-        public bool saveClientData(Client c)
+        public bool SaveClientData(Client c)
         {
             throw new NotImplementedException("Client team is working on this!");
         }
 
-        public bool saveWorkoutLog(WorkoutLog log)
+        public bool SaveWorkoutLog(WorkoutLog log)
         {
             throw new NotImplementedException("Trainer assigned workout log logic goes here later!");
         }

@@ -8,16 +8,19 @@ namespace VibeCoders.Models
 {
     public class Client : User
     {
-        public double weight { get; set; }
-        public double height { get; set; }
-        public List<WorkoutLog> workoutLog { get; set; } = new List<WorkoutLog>();
+        public double Weight { get; set; }
+        public double Height { get; set; }
+        public List<WorkoutLog> WorkoutLog { get; set; } = new List<WorkoutLog>();
 
-        public void setWorkout(WorkoutLog workout)
+        public string PrimaryGoal { get; set; } = "No goal set";
+        public string FormattedLastWorkout { get; set; } = "Never";
+
+        public void SetWorkout(WorkoutLog workout)
         {
             
         }
 
-        public void modifyWorkout(WorkoutLog oldWorkout, WorkoutLog newWorkout)
+        public void ModifyWorkout(WorkoutLog oldWorkout, WorkoutLog newWorkout)
         {
             
         }
