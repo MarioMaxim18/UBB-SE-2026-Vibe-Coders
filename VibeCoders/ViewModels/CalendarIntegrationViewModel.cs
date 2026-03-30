@@ -3,100 +3,115 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 using VibeCoders.Models;
 using VibeCoders.Services;
 
 namespace VibeCoders.ViewModels
 {
-    /// <summary>
-    /// Represents the selection state of a single day of the week.
-    /// Provides observable properties for UI binding.
-    /// </summary>
-    public partial class DaySelectionItem : ObservableObject
+    public class DaySelectionItem : ObservableObject
     {
+        private bool _isSelected;
+
         public int DayOfWeekIndex { get; }
         public string DayName { get; }
 
-        [ObservableProperty]
-        private bool isSelected;
+        public bool IsSelected
+        {
+            get => _isSelected;
+            set => SetProperty(ref _isSelected, value);
+        }
 
         public DaySelectionItem(int dayOfWeekIndex, string dayName, bool initialSelection = false)
         {
             DayOfWeekIndex = dayOfWeekIndex;
             DayName = dayName;
-            IsSelected = initialSelection;
+            _isSelected = initialSelection;
         }
     }
 
-    /// <summary>
-    /// ViewModel for the Calendar Integration feature.
-    /// Manages workout template selection, duration, day selection, and .ics file generation.
-    /// </summary>
-    public partial class CalendarIntegrationViewModel : ObservableObject
+    public class CalendarIntegrationViewModel : ObservableObject
     {
         private readonly IDataStorage _dataStorage;
         private readonly ICalendarExportService _calendarExportService;
         private readonly IUserSession _userSession;
 
-        [ObservableProperty]
-        private ObservableCollection<WorkoutTemplate> availableWorkouts = new();
+        private ObservableCollection<WorkoutTemplate> _availableWorkouts = new();
+        private WorkoutTemplate? _selectedWorkout;
+        private int _durationWeeks = 4;
+        private ObservableCollection<DaySelectionItem> _selectedDays = new();
+        private bool _isLoading;
+        private string _generatedIcsContent = string.Empty;
 
-        [ObservableProperty]
-        private WorkoutTemplate? selectedWorkout;
+        public ObservableCollection<WorkoutTemplate> AvailableWorkouts
+        {
+            get => _availableWorkouts;
+            set => SetProperty(ref _availableWorkouts, value);
+        }
 
-        [ObservableProperty]
-        private int durationWeeks = 4; // Default to 4 weeks
+        public WorkoutTemplate? SelectedWorkout
+        {
+            get => _selectedWorkout;
+            set => SetProperty(ref _selectedWorkout, value);
+        }
 
-        [ObservableProperty]
-        private ObservableCollection<DaySelectionItem> selectedDays = new();
+        public int DurationWeeks
+        {
+            get => _durationWeeks;
+            set => SetProperty(ref _durationWeeks, value);
+        }
 
-        [ObservableProperty]
-        private bool isLoading = false;
+        public ObservableCollection<DaySelectionItem> SelectedDays
+        {
+            get => _selectedDays;
+            set => SetProperty(ref _selectedDays, value);
+        }
 
-        [ObservableProperty]
-        private string generatedIcsContent = string.Empty;
+        public bool IsLoading
+        {
+            get => _isLoading;
+            set => SetProperty(ref _isLoading, value);
+        }
 
-        public CalendarIntegrationViewModel(IDataStorage dataStorage, ICalendarExportService calendarExportService, IUserSession userSession)
+        public string GeneratedIcsContent
+        {
+            get => _generatedIcsContent;
+            set => SetProperty(ref _generatedIcsContent, value);
+        }
+
+        public CalendarIntegrationViewModel(
+            IDataStorage dataStorage,
+            ICalendarExportService calendarExportService,
+            IUserSession userSession)
         {
             _dataStorage = dataStorage ?? throw new ArgumentNullException(nameof(dataStorage));
             _calendarExportService = calendarExportService ?? throw new ArgumentNullException(nameof(calendarExportService));
             _userSession = userSession ?? throw new ArgumentNullException(nameof(userSession));
 
-            // Initialize day selection items (0=Sunday, 1=Monday, etc.)
             InitializeDaySelection();
-
             _ = LoadAvailableWorkoutsAsync();
         }
 
-        /// <summary>
-        /// Initializes the day selection collection with all 7 days (Sunday through Saturday).
-        /// Sets default selection to Monday-Friday.
-        /// </summary>
         private void InitializeDaySelection()
         {
             var dayNames = new[] { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
-            var defaultSelections = new[] { false, true, true, true, true, true, false }; // Mon-Fri
+            var defaultSelections = new[] { false, true, true, true, true, true, false };
 
-            selectedDays.Clear();
+            SelectedDays.Clear();
             for (int i = 0; i < 7; i++)
             {
-                selectedDays.Add(new DaySelectionItem(i, dayNames[i], defaultSelections[i]));
+                SelectedDays.Add(new DaySelectionItem(i, dayNames[i], defaultSelections[i]));
             }
         }
 
-        /// <summary>
-        /// Loads all available workout templates for the current user from the backend.
-        /// </summary>
         public async Task LoadAvailableWorkoutsAsync()
         {
             try
             {
                 IsLoading = true;
-                
+
                 var clientId = (int)_userSession.CurrentUserId;
                 var workouts = await Task.Run(() => _dataStorage.GetAvailableWorkouts(clientId));
-                
+
                 AvailableWorkouts.Clear();
                 foreach (var workout in workouts)
                 {
@@ -113,27 +128,20 @@ namespace VibeCoders.ViewModels
             }
         }
 
-        /// <summary>
-        /// Gets the array of selected day-of-week indices (0=Sunday, 6=Saturday).
-        /// </summary>
         public int[] GetSelectedDaysOfWeek()
         {
-            return selectedDays
+            return SelectedDays
                 .Where(d => d.IsSelected)
                 .Select(d => d.DayOfWeekIndex)
                 .ToArray();
         }
 
-        /// <summary>
-        /// Validates user input before generation.
-        /// Returns error message if invalid, null if valid.
-        /// </summary>
         public string? ValidateInput()
         {
-            if (selectedWorkout == null)
+            if (SelectedWorkout == null)
                 return "Please select a workout from the dropdown.";
 
-            if (durationWeeks < 1 || durationWeeks > 52)
+            if (DurationWeeks < 1 || DurationWeeks > 52)
                 return "Duration must be between 1 and 52 weeks.";
 
             var selectedDaysArray = GetSelectedDaysOfWeek();
@@ -143,10 +151,6 @@ namespace VibeCoders.ViewModels
             return null;
         }
 
-        /// <summary>
-        /// Generates the .ics file content based on selected workout, duration, and days.
-        /// Returns the generated .ics content, or throws exception on validation failure.
-        /// </summary>
         public async Task<string> GenerateCalendarAsync()
         {
             return await Task.Run(() =>
@@ -155,22 +159,23 @@ namespace VibeCoders.ViewModels
                 if (validationError != null)
                     throw new InvalidOperationException(validationError);
 
-                if (selectedWorkout == null)
+                if (SelectedWorkout == null)
                     throw new InvalidOperationException("No workout selected.");
 
                 var selectedDaysArray = GetSelectedDaysOfWeek();
-                var icsContent = _calendarExportService.GenerateCalendar(selectedWorkout, durationWeeks, selectedDaysArray);
+                var icsContent = _calendarExportService.GenerateCalendar(
+                    SelectedWorkout,
+                    DurationWeeks,
+                    selectedDaysArray);
+
                 GeneratedIcsContent = icsContent;
                 return icsContent;
             });
         }
 
-        /// <summary>
-        /// Toggles the selection state of a specific day of the week.
-        /// </summary>
         public void ToggleDaySelection(int dayOfWeek)
         {
-            var dayItem = selectedDays.FirstOrDefault(d => d.DayOfWeekIndex == dayOfWeek);
+            var dayItem = SelectedDays.FirstOrDefault(d => d.DayOfWeekIndex == dayOfWeek);
             if (dayItem != null)
             {
                 dayItem.IsSelected = !dayItem.IsSelected;
