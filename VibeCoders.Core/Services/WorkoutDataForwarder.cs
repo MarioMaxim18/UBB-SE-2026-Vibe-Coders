@@ -25,6 +25,11 @@ public sealed class WorkoutDataForwarder : IWorkoutDataForwarder
         long userId, WorkoutLog log, CancellationToken cancellationToken = default)
     {
         log.TotalCaloriesBurned = log.Exercises.Sum(e => e.ExerciseCaloriesBurned);
+        
+        if (log.Exercises.Count > 0)
+        {
+            log.AverageMet = log.Exercises.Average(e => e.Met);
+        }
 
         var logId = await _store.SaveWorkoutAsync(userId, log, cancellationToken);
 
