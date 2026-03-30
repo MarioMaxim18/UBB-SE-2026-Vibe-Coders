@@ -10,10 +10,17 @@ public sealed class LoggedExercise
     public string ExerciseName { get; set; } = string.Empty;
     public int WorkoutLogId { get; set; }
     public float Met { get; set; }
+
     public List<LoggedSet> Sets { get; set; } = new List<LoggedSet>();
     public List<string> MuscleGroups { get; set; } = new List<string>();
+
     public int ExerciseCaloriesBurned { get; set; }
     public double? PerformanceRatio { get; set; }
     public bool IsSystemAdjusted { get; set; }
     public string? AdjustmentNote { get; set; }
+
+    // Relationship modeled as a Class (Parent)
+    public WorkoutLog Log { get; set; }
+
+
 }

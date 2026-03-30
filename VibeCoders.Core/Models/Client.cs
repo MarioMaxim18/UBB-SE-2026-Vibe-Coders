@@ -8,7 +8,7 @@ namespace VibeCoders.Models
 {
     public class Client : User
     {
-        public int? TrainerId { get; set; }
+        
         public double Weight { get; set; }
         public double Height { get; set; }
         public List<WorkoutLog> WorkoutLog { get; set; } = new List<WorkoutLog>();

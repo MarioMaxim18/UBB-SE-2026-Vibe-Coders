@@ -12,4 +12,5 @@ public sealed class WorkoutLog
     public int SourceTemplateId { get; set; }
     public List<LoggedExercise> Exercises { get; set; } = new();
     public int TotalCaloriesBurned { get; set; }
+    public int? Rating { get; set; }
 }
