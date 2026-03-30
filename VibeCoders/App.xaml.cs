@@ -22,10 +22,17 @@ public partial class App : Application
         ConfigureServices(services);
         _services = services.BuildServiceProvider();
 
+        // Ensure DB schema and seed prebuilt workouts on startup.
+        var storage = _services.GetRequiredService<IDataStorage>();
+        if (storage is SqlDataStorage sqlStorage)
+        {
+            sqlStorage.EnsureSchemaCreated();
+            sqlStorage.SeedPrebuiltWorkouts();
+        }
+
         var navService = (NavigationService)_services.GetRequiredService<INavigationService>();
         _window = new MainWindow(navService);
         _window.Activate();
-
         navService.NavigateToClientDashboard(requestRefresh: true);
     }
 
@@ -40,7 +47,6 @@ public partial class App : Application
             throw new InvalidOperationException(
                 "Service provider is not initialized. Ensure OnLaunched has run.");
         }
-
         return _services.GetRequiredService<T>();
     }
 
@@ -48,12 +54,25 @@ public partial class App : Application
     {
         var dbPath = DatabasePaths.GetAnalyticsDatabasePath();
 
-        services.AddSingleton<IUserSession, UserSession>();
+        // Storage
+        services.AddSingleton<IDataStorage, SqlDataStorage>();
         services.AddSingleton<IWorkoutAnalyticsStore>(
             new SqlWorkoutAnalyticsStore(dbPath));
+
+        // Session & buses
+        services.AddSingleton<IUserSession, UserSession>();
         services.AddSingleton<IAnalyticsDashboardRefreshBus, AnalyticsDashboardRefreshBus>();
         services.AddSingleton<IWorkoutDataForwarder, WorkoutDataForwarder>();
+
+        // Navigation
         services.AddSingleton<INavigationService, NavigationService>();
+
+        // Services
+        services.AddSingleton<ProgressionService>();
+        services.AddSingleton<ClientService>();
+
+        // ViewModels
         services.AddTransient<ClientDashboardViewModel>();
+        services.AddTransient<ActiveWorkoutViewModel>();
     }
 }
