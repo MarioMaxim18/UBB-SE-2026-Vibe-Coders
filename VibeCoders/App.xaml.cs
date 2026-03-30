@@ -12,7 +12,7 @@ namespace VibeCoders;
 public partial class App : Application
 {
     private static IServiceProvider? _services;
-    private Window? _window;
+    public Window? _window;
 
     public App()
     {
