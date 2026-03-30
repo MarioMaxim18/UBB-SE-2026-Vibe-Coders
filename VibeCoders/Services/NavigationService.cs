@@ -25,10 +25,7 @@ public sealed class NavigationService : INavigationService
     /// <inheritdoc />
     public void NavigateToClientDashboard(bool requestRefresh)
     {
-        if (_frame is null)
-        {
-            return;
-        }
+        if (_frame is null) return;
 
         _frame.Navigate(typeof(Views.ClientDashboardPage));
 
@@ -41,11 +38,27 @@ public sealed class NavigationService : INavigationService
     /// <inheritdoc />
     public void NavigateToCalendarIntegration()
     {
-        if (_frame is null)
-        {
-            return;
-        }
+        if (_frame is null) return;
 
         _frame.Navigate(typeof(Views.CalendarIntegrationPage));
+    }
+
+    /// <inheritdoc />
+    public void NavigateToActiveWorkout()
+    {
+        if (_frame is null) return;
+
+        _frame.Navigate(typeof(Views.ActiveWorkoutPage));
+    }
+
+    /// <inheritdoc />
+    public void GoBack()
+    {
+        if (_frame is null) return;
+
+        if (_frame.CanGoBack)
+        {
+            _frame.GoBack();
+        }
     }
 }

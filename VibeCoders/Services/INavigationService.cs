@@ -16,4 +16,14 @@ public interface INavigationService
     /// Navigates to the calendar integration page.
     /// </summary>
     void NavigateToCalendarIntegration();
+
+    /// <summary>
+    /// Navigates to the active workout session page.
+    /// </summary>
+    void NavigateToActiveWorkout();
+
+    /// <summary>
+    /// Navigates back to the previous page.
+    /// </summary>
+    void GoBack();
 }
