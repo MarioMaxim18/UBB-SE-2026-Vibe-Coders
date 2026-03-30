@@ -1,74 +1,106 @@
+using System;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using VibeCoders.ViewModels;
+using Windows.Storage.Pickers;
 
 namespace VibeCoders.Views
 {
     public sealed partial class CalendarIntegrationPage : Page
     {
+        private CalendarIntegrationViewModel? _viewModel;
+
         public CalendarIntegrationPage()
         {
             this.InitializeComponent();
+            
+            // Get ViewModel from DI container
+            _viewModel = App.GetService<CalendarIntegrationViewModel>();
+            this.DataContext = _viewModel;
         }
 
-        private void GenerateCalendarButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        /// <summary>
+        /// User clicked the Generate button - initiate calendar generation and download.
+        /// </summary>
+        protected override void OnLoaded()
         {
-            // Validate workout selection
-            if (WorkoutComboBox.SelectedIndex == -1)
-            {
-                ShowError("Please select a workout from the dropdown.");
-                return;
-            }
-
-            // Validate duration input
-            string durationInput = DurationWeeksTextBox.Text.Trim();
-            if (string.IsNullOrEmpty(durationInput))
-            {
-                ShowError("Please enter the number of weeks (1-52).");
-                return;
-            }
-
-            if (!int.TryParse(durationInput, out int weeks))
-            {
-                ShowError("Duration must be a number between 1 and 52.");
-                return;
-            }
-
-            if (weeks < 1 || weeks > 52)
-            {
-                ShowError("Duration must be between 1 and 52 weeks.");
-                return;
-            }
-
-            // Validate at least one training day selected
-            if (!IsAnyDaySelected())
-            {
-                ShowError("Please select at least one training day.");
-                return;
-            }
-
-            // TODO: Generate calendar with validated data
-            string selectedWorkout = "";
-            if (WorkoutComboBox.SelectedItem is ComboBoxItem item)
-            {
-                selectedWorkout = item.Content?.ToString() ?? "Unknown Workout";
-            }
-            ShowSuccess($"Calendar will be generated for {selectedWorkout} - {weeks} weeks");
+            base.OnLoaded();
+            
+            // Wire up the Generate button to handle async operation
+            GenerateCalendarButton.Click += GenerateCalendarButton_Click;
         }
 
-        private bool IsAnyDaySelected()
+        private async void GenerateCalendarButton_Click(object sender, RoutedEventArgs e)
         {
-            return DayMonday.IsChecked == true ||
-                   DayTuesday.IsChecked == true ||
-                   DayWednesday.IsChecked == true ||
-                   DayThursday.IsChecked == true ||
-                   DayFriday.IsChecked == true ||
-                   DaySaturday.IsChecked == true ||
-                   DaySunday.IsChecked == true;
+            if (_viewModel == null)
+                return;
+
+            try
+            {
+                GenerateCalendarButton.IsEnabled = false;
+                
+                // Validate input in ViewModel
+                string? validationError = _viewModel.ValidateInput();
+                if (validationError != null)
+                {
+                    ShowError(validationError);
+                    return;
+                }
+
+                // Generate the calendar .ics file asynchronously
+                var icsContent = await _viewModel.GenerateCalendarAsync();
+                
+                if (string.IsNullOrEmpty(icsContent))
+                {
+                    ShowError("Failed to generate calendar file. Please try again.");
+                    return;
+                }
+
+                // Prompt user to select save location
+                var savePicker = new FileSavePicker();
+                savePicker.SuggestedStartLocation = PickerLocationId.Downloads;
+                savePicker.FileTypeChoices.Add("iCalendar", new System.Collections.Generic.List<string> { ".ics" });
+                
+                // Get the HWND for the file picker (WinUI 3 requirement)
+                var window = (Application.Current as App)?._window;
+                if (window != null)
+                {
+                    var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(window);
+                    WinRT.Interop.InitializeWithWindow.Initialize(savePicker, hWnd);
+                }
+                
+                var file = await savePicker.PickSaveFileAsync();
+                
+                if (file == null)
+                {
+                    // User cancelled the save dialog
+                    return;
+                }
+
+                // Write the .ics content to the file
+                await Windows.Storage.FileIO.WriteTextAsync(file, icsContent);
+                
+                ShowSuccess($"Calendar file '{file.Name}' saved successfully! You can now import it into your calendar application.");
+            }
+            catch (InvalidOperationException ex)
+            {
+                // Validation error from ViewModel
+                ShowError(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                ShowError($"Error saving calendar file: {ex.Message}");
+            }
+            finally
+            {
+                GenerateCalendarButton.IsEnabled = true;
+            }
         }
 
         private void ShowError(string message)
         {
             StatusInfoBar.Severity = InfoBarSeverity.Error;
-            StatusInfoBar.Title = "Validation Error";
+            StatusInfoBar.Title = "Error";
             StatusInfoBar.Message = message;
             StatusInfoBar.IsOpen = true;
         }
@@ -82,3 +114,4 @@ namespace VibeCoders.Views
         }
     }
 }
+

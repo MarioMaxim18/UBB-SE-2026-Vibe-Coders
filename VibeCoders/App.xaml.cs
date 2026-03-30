@@ -1,6 +1,7 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
+using VibeCoders.Domain;
 using VibeCoders.Services;
 using VibeCoders.ViewModels;
 
@@ -9,7 +10,7 @@ namespace VibeCoders;
 public partial class App : Application
 {
     private static IServiceProvider? _services;
-    private Window? _window;
+    public Window? _window;
 
     public App()
     {
@@ -21,6 +22,11 @@ public partial class App : Application
         var services = new ServiceCollection();
         ConfigureServices(services);
         _services = services.BuildServiceProvider();
+
+        // Initialize database schema and seed data
+        var dataStorage = _services.GetRequiredService<IDataStorage>();
+        dataStorage.EnsureSchemaCreated();
+        dataStorage.SeedPrebuiltWorkouts();
 
         var navService = (NavigationService)_services.GetRequiredService<INavigationService>();
         _window = new MainWindow(navService);
@@ -48,12 +54,22 @@ public partial class App : Application
     {
         var dbPath = DatabasePaths.GetAnalyticsDatabasePath();
 
+        // Core services
         services.AddSingleton<IUserSession, UserSession>();
+        services.AddSingleton<IDataStorage, SqlDataStorage>();
+        services.AddSingleton<ICalendarExportService, CalendarExportService>();
+        
+        // Analytics
         services.AddSingleton<IWorkoutAnalyticsStore>(
             new SqlWorkoutAnalyticsStore(dbPath));
         services.AddSingleton<IAnalyticsDashboardRefreshBus, AnalyticsDashboardRefreshBus>();
         services.AddSingleton<IWorkoutDataForwarder, WorkoutDataForwarder>();
+        
+        // Navigation & UI
         services.AddSingleton<INavigationService, NavigationService>();
+        
+        // ViewModels
         services.AddTransient<ClientDashboardViewModel>();
+        services.AddTransient<CalendarIntegrationViewModel>();
     }
 }
