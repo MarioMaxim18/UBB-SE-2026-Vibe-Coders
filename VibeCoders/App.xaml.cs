@@ -23,6 +23,11 @@ public partial class App : Application
         ConfigureServices(services);
         _services = services.BuildServiceProvider();
 
+        // UNCOMMENT TO POPULATE DATABASE, REQUIRES SQL SERVER INSTALLED
+        // var dataStorage = _services.GetRequiredService<IDataStorage>();
+        // dataStorage.EnsureSchemaCreated();
+        // dataStorage.SeedPrebuiltWorkouts();
+
         var navService = (NavigationService)_services.GetRequiredService<INavigationService>();
         _window = new MainWindow(navService);
         _window.Activate();
