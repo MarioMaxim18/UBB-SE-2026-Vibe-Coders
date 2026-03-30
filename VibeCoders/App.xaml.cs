@@ -52,6 +52,7 @@ public partial class App : Application
         services.AddSingleton<IWorkoutAnalyticsStore>(
             new SqlWorkoutAnalyticsStore(dbPath));
         services.AddSingleton<IAnalyticsDashboardRefreshBus, AnalyticsDashboardRefreshBus>();
+        services.AddSingleton<IWorkoutDataForwarder, WorkoutDataForwarder>();
         services.AddSingleton<INavigationService, NavigationService>();
         services.AddTransient<ClientDashboardViewModel>();
     }
