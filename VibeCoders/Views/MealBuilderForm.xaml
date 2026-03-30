@@ -7,9 +7,7 @@
              d:DesignHeight="500" d:DesignWidth="450">
 
 	<Border Background="#FFFFFF" CornerRadius="8" Padding="24" Margin="10" BorderBrush="#E5E7EB" BorderThickness="1">
-		<Border.Effect>
-			<DropShadowEffect BlurRadius="8" Opacity="0.05" ShadowDepth="2" Color="Black"/>
-		</Border.Effect>
+		
 
 		<StackPanel>
 			<TextBlock Text="Build a Meal" FontSize="22" FontWeight="Bold" Foreground="#111827" Margin="0,0,0,20"/>
