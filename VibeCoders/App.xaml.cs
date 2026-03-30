@@ -23,11 +23,6 @@ public partial class App : Application
         ConfigureServices(services);
         _services = services.BuildServiceProvider();
 
-        // Initialize database schema and seed data
-        var dataStorage = _services.GetRequiredService<IDataStorage>();
-        dataStorage.EnsureSchemaCreated();
-        dataStorage.SeedPrebuiltWorkouts();
-
         var navService = (NavigationService)_services.GetRequiredService<INavigationService>();
         _window = new MainWindow(navService);
         _window.Activate();
