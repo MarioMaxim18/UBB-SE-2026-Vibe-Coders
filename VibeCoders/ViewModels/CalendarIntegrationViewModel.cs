@@ -1,4 +1,7 @@
+using System;
 using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using VibeCoders.Models;
@@ -89,7 +92,7 @@ namespace VibeCoders.ViewModels
         {
             try
             {
-                isLoading = true;
+                IsLoading = true;
                 
                 var clientId = (int)_userSession.CurrentUserId;
                 var workouts = await Task.Run(() => _dataStorage.GetAvailableWorkouts(clientId));
@@ -106,7 +109,7 @@ namespace VibeCoders.ViewModels
             }
             finally
             {
-                isLoading = false;
+                IsLoading = false;
             }
         }
 
