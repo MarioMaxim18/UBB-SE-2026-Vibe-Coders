@@ -13,4 +13,5 @@ public sealed class WorkoutLog
     public List<LoggedExercise> Exercises { get; set; } = new();
     public int TotalCaloriesBurned { get; set; }
     public float AverageMet { get; set; }
+    public string IntensityTag { get; set; } = string.Empty;
 }
