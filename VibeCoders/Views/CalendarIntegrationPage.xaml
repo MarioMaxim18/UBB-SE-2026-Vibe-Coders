@@ -17,31 +17,48 @@
             <!-- Status Message InfoBar -->
             <InfoBar x:Name="StatusInfoBar" IsOpen="False" Margin="0,0,0,8"/>
 
-            <!-- Workout Selector Dropdown -->
-            <ComboBox x:Name="WorkoutComboBox" Header="Select Workout" PlaceholderText="Choose a workout program" HorizontalAlignment="Stretch">
-                <ComboBoxItem Content="Full Body Strength"/>
-                <ComboBoxItem Content="Cardio Blast"/>
-                <ComboBoxItem Content="Yoga &amp; Flexibility"/>
-                <ComboBoxItem Content="Core Crusher"/>
+            <!-- Workout Selector Dropdown - Bound to ViewModel -->
+            <ComboBox 
+                x:Name="WorkoutComboBox" 
+                Header="Select Workout" 
+                PlaceholderText="Choose a workout program" 
+                HorizontalAlignment="Stretch"
+                ItemsSource="{Binding AvailableWorkouts}"
+                SelectedItem="{Binding SelectedWorkout, Mode=TwoWay}"
+                DisplayMemberPath="Name">
             </ComboBox>
 
-            <!-- Duration Input (1-52 weeks) -->
-            <TextBox x:Name="DurationWeeksTextBox" Header="Schedule Duration (Weeks)" PlaceholderText="Enter weeks (1-52)" HorizontalAlignment="Stretch" InputScope="Number"/>
+            <!-- Duration Input (1-52 weeks) - Bound to ViewModel -->
+            <TextBox 
+                x:Name="DurationWeeksTextBox" 
+                Header="Schedule Duration (Weeks)" 
+                PlaceholderText="Enter weeks (1-52)" 
+                HorizontalAlignment="Stretch" 
+                InputScope="Number"
+                Text="{Binding DurationWeeks, Mode=TwoWay}"/>
 
-            <!-- Days of the Week Selection (Multi-select) -->
+            <!-- Days of the Week Selection (Multi-select) - Bound to ViewModel -->
             <TextBlock Text="Training Days" />
-            <StackPanel Orientation="Horizontal" Spacing="8">
-                <ToggleButton x:Name="DayMonday" Content="Mon" />
-                <ToggleButton x:Name="DayTuesday" Content="Tue" />
-                <ToggleButton x:Name="DayWednesday" Content="Wed" />
-                <ToggleButton x:Name="DayThursday" Content="Thu" />
-                <ToggleButton x:Name="DayFriday" Content="Fri" />
-                <ToggleButton x:Name="DaySaturday" Content="Sat" />
-                <ToggleButton x:Name="DaySunday" Content="Sun" />
-            </StackPanel>
+            <ItemsControl ItemsSource="{Binding SelectedDays}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" Spacing="8"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <ToggleButton Content="{Binding DayName}" IsChecked="{Binding IsSelected, Mode=TwoWay}"/>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
 
             <!-- Generate Calendar Action Button -->
-            <Button x:Name="GenerateCalendarButton" Content="Generate Calendar" Style="{ThemeResource AccentButtonStyle}" HorizontalAlignment="Stretch" Margin="0,16,0,0" Click="GenerateCalendarButton_Click"/>
+            <Button 
+                x:Name="GenerateCalendarButton" 
+                Content="Generate Calendar" 
+                Style="{ThemeResource AccentButtonStyle}" 
+                HorizontalAlignment="Stretch" 
+                Margin="0,16,0,0"/>
         </StackPanel>
     </Grid>
 </Page>
