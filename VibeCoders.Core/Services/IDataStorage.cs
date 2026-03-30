@@ -41,8 +41,9 @@ namespace VibeCoders.Services
 
         // ── Achievements ─────────────────────────────────────────────────────
         /// <summary>
-        /// Returns achievements the client has unlocked (<c>CLIENT_ACHIEVEMENT.unlocked = 1</c>).
+        /// Returns every catalog achievement for the client with unlock state.
+        /// Locked entries remain in the list so the showcase can show future goals.
         /// </summary>
-        List<EarnedAchievement> GetEarnedAchievements(int clientId);
+        List<AchievementShowcaseItem> GetAchievementShowcaseForClient(int clientId);
     }
 }

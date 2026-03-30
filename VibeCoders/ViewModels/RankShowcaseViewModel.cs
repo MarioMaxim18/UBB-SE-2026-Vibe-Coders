@@ -11,7 +11,8 @@ namespace VibeCoders.ViewModels;
 
 /// <summary>
 /// Presents the client's level and rank derived from lifetime active time and
-/// lists achievements unlocked in <see cref="IDataStorage.GetEarnedAchievements"/>.
+/// lists all catalog achievements via <see cref="IDataStorage.GetAchievementShowcaseForClient"/>,
+/// including locked rows for visibility in the showcase.
 /// Until login maps users to clients, <see cref="IUserSession.CurrentUserId"/> is
 /// treated as the client id for the achievements query.
 /// </summary>
@@ -43,7 +44,7 @@ public sealed partial class RankShowcaseViewModel : ObservableObject
     [ObservableProperty]
     private bool isLoading;
 
-    public ObservableCollection<EarnedAchievement> EarnedAchievements { get; } = new();
+    public ObservableCollection<AchievementShowcaseItem> ShowcaseAchievements { get; } = new();
 
     /// <summary>
     /// Loads level, rank, lifetime time, and earned achievements from storage.
@@ -62,11 +63,11 @@ public sealed partial class RankShowcaseViewModel : ObservableObject
             RankTitle = leveling.RankTitle;
             TotalActiveTimeDisplay = ActiveTimeFormatter.ToHourMinuteSecond(total);
 
-            EarnedAchievements.Clear();
+            ShowcaseAchievements.Clear();
             var clientId = (int)userId;
-            foreach (var row in _data.GetEarnedAchievements(clientId))
+            foreach (var row in _data.GetAchievementShowcaseForClient(clientId))
             {
-                EarnedAchievements.Add(row);
+                ShowcaseAchievements.Add(row);
             }
         }
         finally

@@ -61,9 +61,16 @@
                 </StackPanel>
             </Border>
 
-            <TextBlock
-                Text="Earned achievements"
-                Style="{StaticResource SubtitleTextBlockStyle}" />
+            <StackPanel Spacing="4">
+                <TextBlock
+                    Text="Achievements"
+                    Style="{StaticResource SubtitleTextBlockStyle}" />
+                <TextBlock
+                    Text="Locked goals stay listed so you can see what is next."
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    TextWrapping="Wrap" />
+            </StackPanel>
 
             <ProgressRing
                 Width="24"
@@ -72,9 +79,9 @@
                 IsActive="{x:Bind ViewModel.IsLoading, Mode=OneWay}"
                 Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource BoolToVisibility}}" />
 
-            <ItemsControl ItemsSource="{x:Bind ViewModel.EarnedAchievements, Mode=OneWay}">
+            <ItemsControl ItemsSource="{x:Bind ViewModel.ShowcaseAchievements, Mode=OneWay}">
                 <ItemsControl.ItemTemplate>
-                    <DataTemplate x:DataType="models:EarnedAchievement">
+                    <DataTemplate x:DataType="models:AchievementShowcaseItem">
                         <Border
                             Margin="0,0,0,8"
                             Padding="16"
@@ -82,7 +89,7 @@
                             BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                             BorderThickness="1"
                             CornerRadius="6">
-                            <StackPanel Spacing="4">
+                            <StackPanel Spacing="6">
                                 <TextBlock
                                     Text="{x:Bind Title}"
                                     Style="{StaticResource BodyStrongTextBlockStyle}" />
@@ -91,6 +98,10 @@
                                     Style="{StaticResource BodyTextBlockStyle}"
                                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                     TextWrapping="Wrap" />
+                                <TextBlock
+                                    Text="{x:Bind StatusLine}"
+                                    Style="{StaticResource CaptionTextBlockStyle}"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                             </StackPanel>
                         </Border>
                     </DataTemplate>
