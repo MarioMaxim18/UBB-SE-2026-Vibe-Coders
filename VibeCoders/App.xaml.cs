@@ -1,7 +1,9 @@
 using System;
+using System.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
-using VibeCoders.Domain;
 using VibeCoders.Services;
 using VibeCoders.ViewModels;
 
@@ -10,7 +12,7 @@ namespace VibeCoders;
 public partial class App : Application
 {
     private static IServiceProvider? _services;
-    public Window? _window;
+    private Window? _window;
 
     public App()
     {
@@ -23,16 +25,34 @@ public partial class App : Application
         ConfigureServices(services);
         _services = services.BuildServiceProvider();
 
-        // UNCOMMENT TO POPULATE DATABASE, REQUIRES SQL SERVER INSTALLED
-        // var dataStorage = _services.GetRequiredService<IDataStorage>();
-        // dataStorage.EnsureSchemaCreated();
-        // dataStorage.SeedPrebuiltWorkouts();
-
         var navService = (NavigationService)_services.GetRequiredService<INavigationService>();
         _window = new MainWindow(navService);
         _window.Activate();
 
-        navService.NavigateToClientDashboard(requestRefresh: true);
+        // Show the shell first; schema/seed can block on first LocalDB connection.
+        var dispatcher = _window.DispatcherQueue ?? DispatcherQueue.GetForCurrentThread();
+        dispatcher.TryEnqueue(async () =>
+        {
+            try
+            {
+                var storage = _services.GetRequiredService<IDataStorage>();
+                if (storage is SqlDataStorage sql)
+                {
+                    await Task.Run(() =>
+                    {
+                        sql.EnsureSchemaCreated();
+                        sql.SeedPrebuiltWorkouts();
+                        sql.SeedAchievementCatalog();
+                    }).ConfigureAwait(true);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Startup database init failed: {ex}");
+            }
+
+            navService.NavigateToClientDashboard(requestRefresh: true);
+        });
     }
 
     /// <summary>
@@ -52,24 +72,25 @@ public partial class App : Application
 
     private static void ConfigureServices(IServiceCollection services)
     {
-        var dbPath = DatabasePaths.GetAnalyticsDatabasePath();
+        var connectionString = DatabasePaths.GetSqlServerConnectionString();
 
-        // Core services
-        services.AddSingleton<IUserSession, UserSession>();
+        // Primary storage (SQL Server LocalDB); achievements and workout templates live here.
         services.AddSingleton<IDataStorage, SqlDataStorage>();
-        services.AddSingleton<ICalendarExportService, CalendarExportService>();
-        
-        // Analytics
+
+        // Session and analytics (same DB as IDataStorage).
+        services.AddSingleton<IUserSession, UserSession>();
         services.AddSingleton<IWorkoutAnalyticsStore>(
-            new SqlWorkoutAnalyticsStore(dbPath));
+            new SqlWorkoutAnalyticsStore(connectionString));
+
         services.AddSingleton<IAnalyticsDashboardRefreshBus, AnalyticsDashboardRefreshBus>();
         services.AddSingleton<IWorkoutDataForwarder, WorkoutDataForwarder>();
-        
-        // Navigation & UI
         services.AddSingleton<INavigationService, NavigationService>();
-        
-        // ViewModels
+
+        services.AddSingleton<ProgressionService>();
+        services.AddSingleton<ClientService>();
+
         services.AddTransient<ClientDashboardViewModel>();
-        services.AddTransient<CalendarIntegrationViewModel>();
+        services.AddTransient<RankShowcaseViewModel>();
+        services.AddTransient<ActiveWorkoutViewModel>();
     }
 }

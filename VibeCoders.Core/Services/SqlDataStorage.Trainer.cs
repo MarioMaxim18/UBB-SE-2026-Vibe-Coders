@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,7 +11,7 @@ using Microsoft.Data.SqlClient;
 namespace VibeCoders.Services
 {
 
-    public partial class SqlDataStorage 
+    public partial class SqlDataStorage : IDataStorage
     {
         private readonly string _connectionString = @"Server=(localdb)\MSSQLLocalDB;Database=VibeCodersDB;Trusted_Connection=True;";
 
@@ -76,7 +76,7 @@ namespace VibeCoders.Services
             return false;
         }
 
-        public User LoadUser(string username)
+        public User? LoadUser(string username)
         {
             //TODO
             return null;
