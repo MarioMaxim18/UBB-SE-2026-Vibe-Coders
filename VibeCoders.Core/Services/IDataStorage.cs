@@ -5,6 +5,19 @@ namespace VibeCoders.Services
 {
     public interface IDataStorage
     {
+        // ── Database Initialization ──────────────────────────────────────────
+        /// <summary>
+        /// Creates all required database tables if they do not exist.
+        /// Call once at application startup.
+        /// </summary>
+        void EnsureSchemaCreated();
+
+        /// <summary>
+        /// Seeds the database with predefined workout templates if they don't exist.
+        /// Call once at application startup after EnsureSchemaCreated.
+        /// </summary>
+        void SeedPrebuiltWorkouts();
+
         // ── User ────────────────────────────────────────────────────────────
         bool SaveUser(User u);
         User LoadUser(string username);
