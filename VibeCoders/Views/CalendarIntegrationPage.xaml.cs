@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
@@ -102,7 +103,16 @@ namespace VibeCoders.Views
             {
                 if (ex is COMException)
                 {
-                    ShowError("Error saving calendar file: could not open the save dialog.");
+                    // Fallback path for environments where WinRT picker cannot open.
+                    var fallbackPath = await SaveToDownloadsFallbackAsync();
+                    if (!string.IsNullOrWhiteSpace(fallbackPath))
+                    {
+                        ShowSuccess($"Save dialog unavailable. Calendar saved to: {fallbackPath}");
+                    }
+                    else
+                    {
+                        ShowError("Error saving calendar file: could not open the save dialog.");
+                    }
                 }
                 else
                 {
@@ -129,6 +139,37 @@ namespace VibeCoders.Views
             StatusInfoBar.Title = "Success";
             StatusInfoBar.Message = message;
             StatusInfoBar.IsOpen = true;
+        }
+
+        private async Task<string?> SaveToDownloadsFallbackAsync()
+        {
+            if (_viewModel == null || string.IsNullOrEmpty(_viewModel.GeneratedIcsContent))
+            {
+                return null;
+            }
+
+            try
+            {
+                var downloadsPath = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                    "Downloads");
+                Directory.CreateDirectory(downloadsPath);
+
+                var safeWorkoutName = (_viewModel.SelectedWorkout?.Name ?? "Workout")
+                    .Replace(" ", "-")
+                    .Replace("/", "-")
+                    .Replace("\\", "-");
+
+                var fileName = $"{safeWorkoutName}-{DateTime.Now:yyyyMMdd-HHmmss}.ics";
+                var fullPath = Path.Combine(downloadsPath, fileName);
+
+                await File.WriteAllTextAsync(fullPath, _viewModel.GeneratedIcsContent);
+                return fullPath;
+            }
+            catch
+            {
+                return null;
+            }
         }
     }
 }

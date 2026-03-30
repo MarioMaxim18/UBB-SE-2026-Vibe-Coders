@@ -89,6 +89,12 @@ namespace VibeCoders.ViewModels
             _userSession = userSession ?? throw new ArgumentNullException(nameof(userSession));
 
             InitializeDaySelection();
+
+            // Populate immediately so UI is responsive even if DB is unavailable.
+            var clientId = (int)_userSession.CurrentUserId;
+            LoadFallbackWorkouts(clientId);
+
+            // Try to refresh from DB in background.
             _ = LoadAvailableWorkoutsAsync();
         }
 
@@ -111,7 +117,16 @@ namespace VibeCoders.ViewModels
                 IsLoading = true;
 
                 var clientId = (int)_userSession.CurrentUserId;
-                var workouts = await Task.Run(() => _dataStorage.GetAvailableWorkouts(clientId));
+                var dbLoadTask = Task.Run(() => _dataStorage.GetAvailableWorkouts(clientId));
+                var completedTask = await Task.WhenAny(dbLoadTask, Task.Delay(1500));
+
+                // If DB is slow/unavailable, keep fallback list and return quickly.
+                if (completedTask != dbLoadTask)
+                {
+                    return;
+                }
+
+                var workouts = await dbLoadTask;
 
                 AvailableWorkouts.Clear();
                 foreach (var workout in workouts)
@@ -122,10 +137,8 @@ namespace VibeCoders.ViewModels
                 // Keep the calendar page testable even when DB returns no data.
                 if (AvailableWorkouts.Count == 0)
                 {
-                    foreach (var workout in CreateFallbackWorkouts(clientId))
-                    {
-                        AvailableWorkouts.Add(workout);
-                    }
+                    LoadFallbackWorkouts(clientId);
+                    return;
                 }
 
                 if (SelectedWorkout == null && AvailableWorkouts.Count > 0)
@@ -136,18 +149,8 @@ namespace VibeCoders.ViewModels
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error loading workouts: {ex.Message}");
-
-                AvailableWorkouts.Clear();
                 var clientId = (int)_userSession.CurrentUserId;
-                foreach (var workout in CreateFallbackWorkouts(clientId))
-                {
-                    AvailableWorkouts.Add(workout);
-                }
-
-                if (SelectedWorkout == null && AvailableWorkouts.Count > 0)
-                {
-                    SelectedWorkout = AvailableWorkouts[0];
-                }
+                LoadFallbackWorkouts(clientId);
             }
             finally
             {
@@ -218,6 +221,20 @@ namespace VibeCoders.ViewModels
                 pushPull,
                 coreMobility
             };
+        }
+
+        private void LoadFallbackWorkouts(int clientId)
+        {
+            AvailableWorkouts.Clear();
+            foreach (var workout in CreateFallbackWorkouts(clientId))
+            {
+                AvailableWorkouts.Add(workout);
+            }
+
+            if (AvailableWorkouts.Count > 0)
+            {
+                SelectedWorkout = AvailableWorkouts[0];
+            }
         }
 
         public int[] GetSelectedDaysOfWeek()
