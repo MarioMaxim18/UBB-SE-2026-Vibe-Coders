@@ -29,6 +29,7 @@ public sealed class WorkoutDataForwarder : IWorkoutDataForwarder
         if (log.Exercises.Count > 0)
         {
             log.AverageMet = log.Exercises.Average(e => e.Met);
+            log.IntensityTag = CalculateIntensityTag(log.AverageMet);
         }
 
         var logId = await _store.SaveWorkoutAsync(userId, log, cancellationToken);
@@ -36,5 +37,21 @@ public sealed class WorkoutDataForwarder : IWorkoutDataForwarder
         _refreshBus.RequestRefresh();
 
         return logId;
+    }
+
+    private static string CalculateIntensityTag(float averageMet)
+    {
+        if (averageMet < 3.0f)
+        {
+            return "light";
+        }
+        else if (averageMet < 6.0f)
+        {
+            return "moderate";
+        }
+        else
+        {
+            return "intense";
+        }
     }
 }
