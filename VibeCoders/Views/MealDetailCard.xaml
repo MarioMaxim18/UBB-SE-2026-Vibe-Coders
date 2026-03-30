@@ -9,10 +9,6 @@
 	<!--Card Container -->
 	<Border Background="#FFFFFF" CornerRadius="8" Padding="16" Margin="0,8"
             BorderBrush="#E5E7EB" BorderThickness="1">
-		<Border.Effect>
-			<DropShadowEffect BlurRadius="6" Opacity="0.08" ShadowDepth="2" Color="Black"/>
-		</Border.Effect>
-
 		<StackPanel>
 			<!-- Meal Name -->
 			<TextBlock Text="{Binding Name}"
