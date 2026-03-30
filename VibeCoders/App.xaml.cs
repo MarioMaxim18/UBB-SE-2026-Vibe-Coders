@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using VibeCoders.Services;
 using VibeCoders.ViewModels;
@@ -31,7 +32,8 @@ public partial class App : Application
         _window = new MainWindow(navService);
         _window.Activate();
 
-        navService.NavigateToClientDashboard(requestRefresh: true);
+        var dispatcher = _window.DispatcherQueue ?? DispatcherQueue.GetForCurrentThread();
+        dispatcher.TryEnqueue(() => navService.NavigateToClientDashboard(requestRefresh: true));
     }
 
     /// <summary>
