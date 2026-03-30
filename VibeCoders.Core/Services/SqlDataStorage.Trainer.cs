@@ -11,7 +11,7 @@ using Microsoft.Data.SqlClient;
 namespace VibeCoders.Services
 {
 
-    public partial class SqlDataStorage : IDataStorage
+    public partial class SqlDataStorage 
     {
         private readonly string _connectionString = @"Server=(localdb)\MSSQLLocalDB;Database=VibeCodersDB;Trusted_Connection=True;";
 
@@ -88,11 +88,6 @@ namespace VibeCoders.Services
             return false;
         }
 
-        public bool SaveWorkoutLog(WorkoutLog log)
-        {
-            //TODO
-            return false;
-        }
 
         //public bool saveNutritionPlan(NutritionPlan plan)
         //{
