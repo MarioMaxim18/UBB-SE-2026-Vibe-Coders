@@ -1,4 +1,5 @@
 using Microsoft.UI.Xaml.Controls;
+using VibeCoders.Views;
 
 namespace VibeCoders.Services;
 
@@ -48,4 +49,17 @@ public sealed class NavigationService : INavigationService
 
         _frame.Navigate(typeof(Views.CalendarIntegrationPage));
     }
+
+
+    public void NavigateToTrainerDashboard()
+    {
+        if (_frame is null)
+        {
+            return;
+        }
+
+        _frame?.Navigate(typeof(Views.TrainerDashboardView));
+
+    }
+
 }
