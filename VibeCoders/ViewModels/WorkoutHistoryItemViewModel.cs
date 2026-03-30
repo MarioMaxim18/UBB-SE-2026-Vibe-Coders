@@ -29,6 +29,7 @@ public sealed partial class WorkoutHistoryItemViewModel : ObservableObject
         DateLine = row.LogDate.ToString("d", System.Globalization.CultureInfo.CurrentCulture);
         DurationLine = ActiveTimeFormatter.ToHourMinuteSecond(
             TimeSpan.FromSeconds(row.DurationSeconds));
+        TotalCaloriesBurned = row.TotalCaloriesBurned;
         IntensityTag = row.IntensityTag;
     }
 
@@ -36,9 +37,11 @@ public sealed partial class WorkoutHistoryItemViewModel : ObservableObject
     public string Title { get; }
     public string DateLine { get; }
     public string DurationLine { get; }
+    public int TotalCaloriesBurned { get; }
     public string IntensityTag { get; }
 
     public ObservableCollection<WorkoutSetRow> Sets { get; } = new();
+    public ObservableCollection<ExerciseCalorieInfo> ExerciseCalories { get; } = new();
 
     [ObservableProperty]
     private bool isExpanded;
@@ -64,11 +67,16 @@ public sealed partial class WorkoutHistoryItemViewModel : ObservableObject
             var detail = await _store.GetWorkoutSessionDetailAsync(
                 _userId, WorkoutLogId).ConfigureAwait(true);
             Sets.Clear();
+            ExerciseCalories.Clear();
             if (detail is not null)
             {
                 foreach (var s in detail.Sets)
                 {
                     Sets.Add(s);
+                }
+                foreach (var e in detail.ExerciseCalories)
+                {
+                    ExerciseCalories.Add(e);
                 }
             }
 
