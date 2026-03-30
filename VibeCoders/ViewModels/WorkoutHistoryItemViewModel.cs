@@ -29,12 +29,14 @@ public sealed partial class WorkoutHistoryItemViewModel : ObservableObject
         DateLine = row.LogDate.ToString("d", System.Globalization.CultureInfo.CurrentCulture);
         DurationLine = ActiveTimeFormatter.ToHourMinuteSecond(
             TimeSpan.FromSeconds(row.DurationSeconds));
+        IntensityTag = row.IntensityTag;
     }
 
     public int WorkoutLogId { get; }
     public string Title { get; }
     public string DateLine { get; }
     public string DurationLine { get; }
+    public string IntensityTag { get; }
 
     public ObservableCollection<WorkoutSetRow> Sets { get; } = new();
 

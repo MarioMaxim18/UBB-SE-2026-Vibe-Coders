@@ -54,7 +54,8 @@ public sealed class SqlWorkoutAnalyticsStore : IWorkoutAnalyticsStore
                     workout_name       TEXT    NOT NULL,
                     log_date           TEXT    NOT NULL,
                     duration_seconds   INTEGER NOT NULL CHECK (duration_seconds >= 0),
-                    source_template_id INTEGER NOT NULL DEFAULT 0
+                    source_template_id INTEGER NOT NULL DEFAULT 0,
+                    intensity_tag      TEXT    NOT NULL DEFAULT ''
                 );
 
                 CREATE INDEX IF NOT EXISTS ix_workout_log_user_date_id
@@ -98,8 +99,8 @@ public sealed class SqlWorkoutAnalyticsStore : IWorkoutAnalyticsStore
         await using var insertLog = conn.CreateCommand();
         insertLog.Transaction = tx;
         insertLog.CommandText = @"
-            INSERT INTO workout_log (user_id, workout_name, log_date, duration_seconds, source_template_id)
-            VALUES ($uid, $name, $date, $dur, $tmpl);
+            INSERT INTO workout_log (user_id, workout_name, log_date, duration_seconds, source_template_id, intensity_tag)
+            VALUES ($uid, $name, $date, $dur, $tmpl, $intensity);
             SELECT last_insert_rowid();";
         insertLog.Parameters.AddWithValue("$uid", userId);
         insertLog.Parameters.AddWithValue("$name", log.WorkoutName);
@@ -107,6 +108,7 @@ public sealed class SqlWorkoutAnalyticsStore : IWorkoutAnalyticsStore
             DateOnly.FromDateTime(log.Date).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
         insertLog.Parameters.AddWithValue("$dur", (int)log.Duration.TotalSeconds);
         insertLog.Parameters.AddWithValue("$tmpl", log.SourceTemplateId);
+        insertLog.Parameters.AddWithValue("$intensity", log.IntensityTag);
 
         var logId = Convert.ToInt32(
             await insertLog.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false),
@@ -238,7 +240,7 @@ public sealed class SqlWorkoutAnalyticsStore : IWorkoutAnalyticsStore
 
         await using var cmd = conn.CreateCommand();
         cmd.CommandText = @"
-            SELECT id, workout_name, log_date, duration_seconds
+            SELECT id, workout_name, log_date, duration_seconds, intensity_tag
             FROM workout_log
             WHERE user_id = $uid
             ORDER BY log_date DESC, id DESC
@@ -257,7 +259,8 @@ public sealed class SqlWorkoutAnalyticsStore : IWorkoutAnalyticsStore
                 WorkoutName = reader.GetString(1),
                 LogDate = DateOnly.Parse(reader.GetString(2), CultureInfo.InvariantCulture)
                     .ToDateTime(TimeOnly.MinValue),
-                DurationSeconds = reader.GetInt32(3)
+                DurationSeconds = reader.GetInt32(3),
+                IntensityTag = reader.GetString(4)
             });
         }
 
@@ -277,7 +280,7 @@ public sealed class SqlWorkoutAnalyticsStore : IWorkoutAnalyticsStore
 
         await using var head = conn.CreateCommand();
         head.CommandText = @"
-            SELECT workout_name, log_date, duration_seconds
+            SELECT workout_name, log_date, duration_seconds, intensity_tag
             FROM workout_log
             WHERE id = $id AND user_id = $uid;";
         head.Parameters.AddWithValue("$id", workoutLogId);
@@ -286,6 +289,7 @@ public sealed class SqlWorkoutAnalyticsStore : IWorkoutAnalyticsStore
         string? workoutName;
         string logDateStr;
         int duration;
+        string intensityTag;
         await using (var r = await head.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false))
         {
             if (!await r.ReadAsync(cancellationToken).ConfigureAwait(false))
@@ -296,6 +300,7 @@ public sealed class SqlWorkoutAnalyticsStore : IWorkoutAnalyticsStore
             workoutName = r.GetString(0);
             logDateStr = r.GetString(1);
             duration = r.GetInt32(2);
+            intensityTag = r.GetString(3);
         }
 
         await using var setsCmd = conn.CreateCommand();
@@ -330,6 +335,7 @@ public sealed class SqlWorkoutAnalyticsStore : IWorkoutAnalyticsStore
             WorkoutName = workoutName,
             LogDate = logDate,
             DurationSeconds = duration,
+            IntensityTag = intensityTag,
             Sets = sets
         };
     }
