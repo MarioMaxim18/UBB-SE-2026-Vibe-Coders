@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -19,10 +20,15 @@ namespace VibeCoders.Views
             _viewModel = App.GetService<CalendarIntegrationViewModel>();
             this.DataContext = _viewModel;
             
-            // Wire up the Generate button to handle async operation when page is loaded
-            this.Loaded += (s, e) =>
+            // Wire up events when page is loaded.
+            this.Loaded += async (s, e) =>
             {
                 GenerateCalendarButton.Click += GenerateCalendarButton_Click;
+
+                if (_viewModel != null)
+                {
+                    await _viewModel.EnsureWorkoutsLoadedAsync();
+                }
             };
         }
 
@@ -59,11 +65,20 @@ namespace VibeCoders.Views
                 
                 // Get the HWND for the file picker (WinUI 3 requirement)
                 var window = (Application.Current as App)?._window;
-                if (window != null)
+                if (window == null)
                 {
-                    var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(window);
-                    WinRT.Interop.InitializeWithWindow.Initialize(savePicker, hWnd);
+                    ShowError("Unable to access app window for save dialog.");
+                    return;
                 }
+
+                var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(window);
+                if (hWnd == IntPtr.Zero)
+                {
+                    ShowError("Unable to initialize save dialog window handle.");
+                    return;
+                }
+
+                WinRT.Interop.InitializeWithWindow.Initialize(savePicker, hWnd);
                 
                 var file = await savePicker.PickSaveFileAsync();
                 
@@ -85,7 +100,14 @@ namespace VibeCoders.Views
             }
             catch (Exception ex)
             {
-                ShowError($"Error saving calendar file: {ex.Message}");
+                if (ex is COMException)
+                {
+                    ShowError("Error saving calendar file: could not open the save dialog.");
+                }
+                else
+                {
+                    ShowError($"Error saving calendar file: {ex.Message}");
+                }
             }
             finally
             {

@@ -127,6 +127,11 @@ namespace VibeCoders.ViewModels
                         AvailableWorkouts.Add(workout);
                     }
                 }
+
+                if (SelectedWorkout == null && AvailableWorkouts.Count > 0)
+                {
+                    SelectedWorkout = AvailableWorkouts[0];
+                }
             }
             catch (Exception ex)
             {
@@ -138,11 +143,26 @@ namespace VibeCoders.ViewModels
                 {
                     AvailableWorkouts.Add(workout);
                 }
+
+                if (SelectedWorkout == null && AvailableWorkouts.Count > 0)
+                {
+                    SelectedWorkout = AvailableWorkouts[0];
+                }
             }
             finally
             {
                 IsLoading = false;
             }
+        }
+
+        public async Task EnsureWorkoutsLoadedAsync()
+        {
+            if (IsLoading || AvailableWorkouts.Count > 0)
+            {
+                return;
+            }
+
+            await LoadAvailableWorkoutsAsync();
         }
 
         private static List<WorkoutTemplate> CreateFallbackWorkouts(int clientId)
