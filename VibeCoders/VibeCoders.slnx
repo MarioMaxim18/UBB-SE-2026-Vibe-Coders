@@ -10,5 +10,5 @@
     <Platform Solution="*|x86" Project="x86" />
     <Deploy />
   </Project>
-  <Project Path="..\VibeCoders.Core\VibeCoders.Core.csproj" />
+  <Project Path="..\VibeCoders.Tests\VibeCoders.Tests.csproj" />
 </Solution>
