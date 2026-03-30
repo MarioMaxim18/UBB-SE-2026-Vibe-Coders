@@ -82,7 +82,6 @@ public sealed class SqlWorkoutAnalyticsStore : IWorkoutAnalyticsStore
                     actual_reps     INTEGER,
                     target_weight   REAL,
                     actual_weight   REAL,
-                    met             REAL,
                     FOREIGN KEY (workout_log_id)
                         REFERENCES workout_log(id) ON DELETE CASCADE
                 );
@@ -91,6 +90,12 @@ public sealed class SqlWorkoutAnalyticsStore : IWorkoutAnalyticsStore
                     ON workout_log_sets (workout_log_id, set_index);
             ";
             await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+
+            await AddColumnIfMissingAsync(conn,
+                "workout_log", "total_calories_burned",
+                "total_calories_burned INTEGER NOT NULL DEFAULT 0",
+                cancellationToken).ConfigureAwait(false);
+
             _initialized = true;
         }
         finally
@@ -157,7 +162,7 @@ public sealed class SqlWorkoutAnalyticsStore : IWorkoutAnalyticsStore
             }
         }
 
-        tx.Commit();
+        await tx.CommitAsync(cancellationToken).ConfigureAwait(false);
         return logId;
     }
 
@@ -424,6 +429,24 @@ public sealed class SqlWorkoutAnalyticsStore : IWorkoutAnalyticsStore
         cmd.Parameters.AddWithValue(p3, v3);
         var obj = await cmd.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
         return Convert.ToInt64(obj ?? 0L, CultureInfo.InvariantCulture);
+    }
+
+    private static async Task AddColumnIfMissingAsync(
+        SqliteConnection conn, string table, string column, string columnDef,
+        CancellationToken ct)
+    {
+        await using var check = conn.CreateCommand();
+        check.CommandText =
+            $"SELECT COUNT(*) FROM pragma_table_info('{table}') WHERE name = '{column}';";
+        var count = Convert.ToInt64(
+            await check.ExecuteScalarAsync(ct).ConfigureAwait(false) ?? 0L,
+            CultureInfo.InvariantCulture);
+        if (count == 0)
+        {
+            await using var alter = conn.CreateCommand();
+            alter.CommandText = $"ALTER TABLE {table} ADD COLUMN {columnDef};";
+            await alter.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+        }
     }
 
     /// <summary>
