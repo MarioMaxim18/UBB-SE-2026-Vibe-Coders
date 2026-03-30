@@ -41,9 +41,11 @@ namespace VibeCoders.Services
 
         // ── Achievements ─────────────────────────────────────────────────────
         /// <summary>
-        /// Returns every catalog achievement for the client with unlock state.
-        /// Locked entries remain in the list so the showcase can show future goals.
+        /// Returns the full achievement catalog for <paramref name="clientId"/>, each row
+        /// including whether the client has unlocked it. Locked rows are included so the
+        /// rank showcase can keep future goals visible (product requirement).
         /// </summary>
+        /// <param name="clientId">Client whose <c>CLIENT_ACHIEVEMENT</c> rows join the catalog.</param>
         List<AchievementShowcaseItem> GetAchievementShowcaseForClient(int clientId);
     }
 }

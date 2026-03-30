@@ -13,6 +13,8 @@ public partial class SqlDataStorage
         using var conn = new SqlConnection(_connectionString);
         conn.Open();
 
+        // Drive rows from ACHIEVEMENT so every catalog item appears. LEFT JOIN CLIENT_ACHIEVEMENT
+        // supplies unlock state when present; missing join = locked. Unlocked rows sort first.
         const string sql = @"
             SELECT
                 a.achievement_id,

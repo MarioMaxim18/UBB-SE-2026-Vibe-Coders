@@ -25,27 +25,26 @@ public partial class App : Application
         ConfigureServices(services);
         _services = services.BuildServiceProvider();
 
-        var sqlStorage = _services.GetRequiredService<SqlDataStorage>();
-        sqlStorage.EnsureSchemaCreated();
-        sqlStorage.SeedPrebuiltWorkouts();
-        sqlStorage.SeedAchievementCatalog();
-
         var navService = (NavigationService)_services.GetRequiredService<INavigationService>();
         _window = new MainWindow(navService);
         _window.Activate();
 
+        // Show the shell first; schema/seed can block on first LocalDB connection.
         var dispatcher = _window.DispatcherQueue ?? DispatcherQueue.GetForCurrentThread();
         dispatcher.TryEnqueue(async () =>
         {
             try
             {
-                var sqlStorage = _services.GetRequiredService<SqlDataStorage>();
-                await Task.Run(() =>
+                var storage = _services.GetRequiredService<IDataStorage>();
+                if (storage is SqlDataStorage sql)
                 {
-                    sqlStorage.EnsureSchemaCreated();
-                    sqlStorage.SeedPrebuiltWorkouts();
-                    sqlStorage.SeedAchievementCatalog();
-                }).ConfigureAwait(true);
+                    await Task.Run(() =>
+                    {
+                        sql.EnsureSchemaCreated();
+                        sql.SeedPrebuiltWorkouts();
+                        sql.SeedAchievementCatalog();
+                    }).ConfigureAwait(true);
+                }
             }
             catch (Exception ex)
             {
@@ -75,15 +74,23 @@ public partial class App : Application
     {
         var connectionString = DatabasePaths.GetSqlServerConnectionString();
 
+        // Primary storage (SQL Server LocalDB); achievements and workout templates live here.
+        services.AddSingleton<IDataStorage, SqlDataStorage>();
+
+        // Session and analytics (same DB as IDataStorage).
         services.AddSingleton<IUserSession, UserSession>();
         services.AddSingleton<IWorkoutAnalyticsStore>(
             new SqlWorkoutAnalyticsStore(connectionString));
-        services.AddSingleton<SqlDataStorage>();
-        services.AddSingleton<IDataStorage>(sp => sp.GetRequiredService<SqlDataStorage>());
+
         services.AddSingleton<IAnalyticsDashboardRefreshBus, AnalyticsDashboardRefreshBus>();
         services.AddSingleton<IWorkoutDataForwarder, WorkoutDataForwarder>();
         services.AddSingleton<INavigationService, NavigationService>();
+
+        services.AddSingleton<ProgressionService>();
+        services.AddSingleton<ClientService>();
+
         services.AddTransient<ClientDashboardViewModel>();
         services.AddTransient<RankShowcaseViewModel>();
+        services.AddTransient<ActiveWorkoutViewModel>();
     }
 }

@@ -44,10 +44,11 @@ public sealed partial class RankShowcaseViewModel : ObservableObject
     [ObservableProperty]
     private bool isLoading;
 
+    /// <summary>Bound to the achievements list (unlocked and locked).</summary>
     public ObservableCollection<AchievementShowcaseItem> ShowcaseAchievements { get; } = new();
 
     /// <summary>
-    /// Loads level, rank, lifetime time, and earned achievements from storage.
+    /// Loads level, rank, lifetime active time, and the full achievement showcase from storage.
     /// </summary>
     public async Task LoadAsync(CancellationToken cancellationToken = default)
     {

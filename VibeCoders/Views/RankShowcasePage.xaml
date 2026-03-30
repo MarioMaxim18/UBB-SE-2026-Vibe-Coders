@@ -11,6 +11,7 @@
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel Padding="20,20,28,32" Spacing="24">
+            <!-- Page chrome: title + manual refresh (useful after DB or workout changes). -->
             <Grid>
                 <TextBlock
                     Text="Rank showcase"
@@ -28,6 +29,7 @@
                 </Button>
             </Grid>
 
+            <!-- Level / rank / lifetime time from analytics + LevelingTierEvaluator. -->
             <Border
                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
@@ -61,6 +63,7 @@
                 </StackPanel>
             </Border>
 
+            <!-- Full catalog: locked rows stay visible per showcase requirements. -->
             <StackPanel Spacing="4">
                 <TextBlock
                     Text="Achievements"
@@ -72,6 +75,7 @@
                     TextWrapping="Wrap" />
             </StackPanel>
 
+            <!-- Shown only while LoadAsync runs on the UI thread. -->
             <ProgressRing
                 Width="24"
                 Height="24"
@@ -79,6 +83,7 @@
                 IsActive="{x:Bind ViewModel.IsLoading, Mode=OneWay}"
                 Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource BoolToVisibility}}" />
 
+            <!-- One card per AchievementShowcaseItem; StatusLine is Unlocked vs Locked. -->
             <ItemsControl ItemsSource="{x:Bind ViewModel.ShowcaseAchievements, Mode=OneWay}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="models:AchievementShowcaseItem">

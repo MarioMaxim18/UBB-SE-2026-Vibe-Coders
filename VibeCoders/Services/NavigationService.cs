@@ -2,7 +2,9 @@ using Microsoft.UI.Xaml.Controls;
 using VibeCoders.Views;
 
 namespace VibeCoders.Services;
-/// <inheritdoc />
+
+/// <inheritdoc cref="INavigationService" />
+/// <remarks>Resolves WinUI <see cref="Microsoft.UI.Xaml.Controls.Page"/> types for the shell <see cref="Microsoft.UI.Xaml.Controls.Frame"/>.</remarks>
 public sealed class NavigationService : INavigationService
 {
     private Frame? _frame;
@@ -25,10 +27,7 @@ public sealed class NavigationService : INavigationService
     /// <inheritdoc />
     public void NavigateToClientDashboard(bool requestRefresh)
     {
-        if (_frame is null)
-        {
-            return;
-        }
+        if (_frame is null) return;
 
         _frame.Navigate(typeof(ClientDashboardPage));
 
@@ -41,10 +40,7 @@ public sealed class NavigationService : INavigationService
     /// <inheritdoc />
     public void NavigateToCalendarIntegration()
     {
-        if (_frame is null)
-        {
-            return;
-        }
+        if (_frame is null) return;
 
         _frame.Navigate(typeof(CalendarIntegrationPage));
     }
@@ -58,5 +54,24 @@ public sealed class NavigationService : INavigationService
         }
 
         _frame.Navigate(typeof(RankShowcasePage));
+    }
+
+    /// <inheritdoc />
+    public void NavigateToActiveWorkout()
+    {
+        if (_frame is null) return;
+
+        _frame.Navigate(typeof(Views.ActiveWorkoutPage));
+    }
+
+    /// <inheritdoc />
+    public void GoBack()
+    {
+        if (_frame is null) return;
+
+        if (_frame.CanGoBack)
+        {
+            _frame.GoBack();
+        }
     }
 }

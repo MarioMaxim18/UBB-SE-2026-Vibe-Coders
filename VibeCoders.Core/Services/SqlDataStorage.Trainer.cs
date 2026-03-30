@@ -11,7 +11,7 @@ using Microsoft.Data.SqlClient;
 namespace VibeCoders.Services
 {
 
-    public partial class SqlDataStorage 
+    public partial class SqlDataStorage : IDataStorage
     {
         private readonly string _connectionString = @"Server=(localdb)\MSSQLLocalDB;Database=VibeCodersDB;Trusted_Connection=True;";
 
