@@ -17,7 +17,7 @@
         SelectionChanged="NavView_SelectionChanged">
 
         <NavigationView.MenuItems>
-            <NavigationViewItem Content="Dashboard" Tag="Dashboard">
+            <NavigationViewItem Content="Dashboard" Tag="Dashboard" IsSelected="True">
                 <NavigationViewItem.Icon>
                     <SymbolIcon Symbol="Home" />
                 </NavigationViewItem.Icon>

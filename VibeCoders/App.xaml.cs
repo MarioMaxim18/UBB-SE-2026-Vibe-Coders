@@ -1,4 +1,6 @@
 using System;
+using System.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
@@ -33,7 +35,25 @@ public partial class App : Application
         _window.Activate();
 
         var dispatcher = _window.DispatcherQueue ?? DispatcherQueue.GetForCurrentThread();
-        dispatcher.TryEnqueue(() => navService.NavigateToClientDashboard(requestRefresh: true));
+        dispatcher.TryEnqueue(async () =>
+        {
+            try
+            {
+                var sqlStorage = _services.GetRequiredService<SqlDataStorage>();
+                await Task.Run(() =>
+                {
+                    sqlStorage.EnsureSchemaCreated();
+                    sqlStorage.SeedPrebuiltWorkouts();
+                    sqlStorage.SeedAchievementCatalog();
+                }).ConfigureAwait(true);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Startup database init failed: {ex}");
+            }
+
+            navService.NavigateToClientDashboard(requestRefresh: true);
+        });
     }
 
     /// <summary>
