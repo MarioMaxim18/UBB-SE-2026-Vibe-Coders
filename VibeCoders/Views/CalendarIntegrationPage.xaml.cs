@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using VibeCoders.ViewModels;
@@ -17,14 +18,6 @@ namespace VibeCoders.Views
             // Get ViewModel from DI container
             _viewModel = App.GetService<CalendarIntegrationViewModel>();
             this.DataContext = _viewModel;
-        }
-
-        /// <summary>
-        /// User clicked the Generate button - initiate calendar generation and download.
-        /// </summary>
-        protected override void OnLoaded()
-        {
-            base.OnLoaded();
             
             // Wire up the Generate button to handle async operation
             GenerateCalendarButton.Click += GenerateCalendarButton_Click;
