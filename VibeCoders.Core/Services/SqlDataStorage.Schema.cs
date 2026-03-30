@@ -2,7 +2,7 @@
 
 namespace VibeCoders.Services
 {
-    public partial class SqlDataStorage
+    public partial class SqlDataStorage : IDataStorage
     {
         /// <summary>
         /// Creates all tables required by the workout tracking and progression
