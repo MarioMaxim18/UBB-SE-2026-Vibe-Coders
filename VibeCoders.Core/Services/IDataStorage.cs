@@ -12,7 +12,7 @@ namespace VibeCoders.Services
 
         // ── User ────────────────────────────────────────────────────────────
         bool SaveUser(User u);
-        User LoadUser(string username);
+        User? LoadUser(string username);
 
         // ── Client ──────────────────────────────────────────────────────────
         bool SaveClientData(Client c);
@@ -32,7 +32,7 @@ namespace VibeCoders.Services
         List<WorkoutLog> GetLastTwoLogsForExercise(int templateExerciseId);
 
         // ── Template Exercise ────────────────────────────────────────────────
-        TemplateExercise GetTemplateExercise(int templateExerciseId);
+        TemplateExercise? GetTemplateExercise(int templateExerciseId);
         bool UpdateTemplateWeight(int templateExerciseId, double newWeight);
 
         // ── Notifications ────────────────────────────────────────────────────
