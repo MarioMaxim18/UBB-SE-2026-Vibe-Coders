@@ -1,10 +1,15 @@
-﻿using VibeCoders.Models;
+using VibeCoders.Models;
 using User = VibeCoders.Models.User;
 
 namespace VibeCoders.Services
 {
     public interface IDataStorage
     {
+        /// <summary>
+        /// Creates SQL Server tables used by the app when missing (idempotent).
+        /// </summary>
+        void EnsureSchemaCreated();
+
         // ── User ────────────────────────────────────────────────────────────
         bool SaveUser(User u);
         User LoadUser(string username);
@@ -33,5 +38,11 @@ namespace VibeCoders.Services
         // ── Notifications ────────────────────────────────────────────────────
         bool SaveNotification(Notification notification);
         List<Notification> GetNotifications(int clientId);
+
+        // ── Achievements ─────────────────────────────────────────────────────
+        /// <summary>
+        /// Returns achievements the client has unlocked (<c>CLIENT_ACHIEVEMENT.unlocked = 1</c>).
+        /// </summary>
+        List<EarnedAchievement> GetEarnedAchievements(int clientId);
     }
 }
