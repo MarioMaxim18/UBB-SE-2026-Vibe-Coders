@@ -19,8 +19,11 @@ namespace VibeCoders.Views
             _viewModel = App.GetService<CalendarIntegrationViewModel>();
             this.DataContext = _viewModel;
             
-            // Wire up the Generate button to handle async operation
-            GenerateCalendarButton.Click += GenerateCalendarButton_Click;
+            // Wire up the Generate button to handle async operation when page is loaded
+            this.Loaded += (s, e) =>
+            {
+                GenerateCalendarButton.Click += GenerateCalendarButton_Click;
+            };
         }
 
         private async void GenerateCalendarButton_Click(object sender, RoutedEventArgs e)
