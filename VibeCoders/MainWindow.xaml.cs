@@ -28,6 +28,13 @@ public sealed partial class MainWindow : Window
             {
                 _navigationService.NavigateToCalendarIntegration();
             }
+
+            else if (tag == "TrainerDashboard")
+            {
+                _navigationService.NavigateToTrainerDashboard();
+            }
+
+
         }
     }
 }
