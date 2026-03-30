@@ -194,7 +194,7 @@ public sealed class SqlWorkoutAnalyticsStore : IWorkoutAnalyticsStore
             "@end", today.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
             cancellationToken).ConfigureAwait(false);
 
-        // Most frequent workout — SQL Server uses TOP 1 instead of LIMIT 1.
+        // Most frequent workout ? SQL Server uses TOP 1 instead of LIMIT 1.
         string? preferred = null;
         await using (var prefCmd = new SqlCommand(@"
             SELECT TOP 1 workout_name
@@ -217,6 +217,24 @@ public sealed class SqlWorkoutAnalyticsStore : IWorkoutAnalyticsStore
             TotalActiveTimeLastSevenDays = TimeSpan.FromSeconds(activeSeconds),
             PreferredWorkoutName = preferred
         };
+    }
+
+    /// <inheritdoc />
+    public async Task<TimeSpan> GetTotalActiveTimeAsync(
+        long userId, CancellationToken cancellationToken = default)
+    {
+        await EnsureCreatedAsync(cancellationToken).ConfigureAwait(false);
+
+        await using var conn = new SqlConnection(_connectionString);
+        await conn.OpenAsync(cancellationToken).ConfigureAwait(false);
+
+        var totalSeconds = await ScalarLongAsync(conn, @"
+            SELECT ISNULL(SUM(CAST(duration_seconds AS BIGINT)), 0)
+            FROM workout_log
+            WHERE user_id = @uid;",
+            "@uid", userId, cancellationToken).ConfigureAwait(false);
+
+        return TimeSpan.FromSeconds(totalSeconds);
     }
 
     // ?? Consistency ??????????????????????????????????????????????????????????
@@ -278,7 +296,7 @@ public sealed class SqlWorkoutAnalyticsStore : IWorkoutAnalyticsStore
             "SELECT COUNT(*) FROM workout_log WHERE user_id = @uid;",
             "@uid", userId, cancellationToken).ConfigureAwait(false);
 
-        // SQL Server uses OFFSET … FETCH instead of LIMIT … OFFSET.
+        // SQL Server uses OFFSET ? FETCH instead of LIMIT ? OFFSET.
         await using var cmd = new SqlCommand(@"
             SELECT id, workout_name, log_date, duration_seconds
             FROM workout_log

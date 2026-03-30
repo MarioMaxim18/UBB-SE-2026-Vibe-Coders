@@ -46,11 +46,11 @@ public partial class App : Application
 
     private static void ConfigureServices(IServiceCollection services)
     {
-        var dbPath = DatabasePaths.GetAnalyticsDatabasePath();
+        var connectionString = DatabasePaths.GetSqlServerConnectionString();
 
         services.AddSingleton<IUserSession, UserSession>();
         services.AddSingleton<IWorkoutAnalyticsStore>(
-            new SqlWorkoutAnalyticsStore(dbPath));
+            new SqlWorkoutAnalyticsStore(connectionString));
         services.AddSingleton<IAnalyticsDashboardRefreshBus, AnalyticsDashboardRefreshBus>();
         services.AddSingleton<IWorkoutDataForwarder, WorkoutDataForwarder>();
         services.AddSingleton<INavigationService, NavigationService>();
