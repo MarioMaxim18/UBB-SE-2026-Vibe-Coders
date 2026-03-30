@@ -12,6 +12,13 @@ public sealed class WorkoutDataForwarder : IWorkoutDataForwarder
     private readonly IWorkoutAnalyticsStore _store;
     private readonly IAnalyticsDashboardRefreshBus _refreshBus;
 
+    private const float LightThreshold = 3.0f;
+    private const float ModerateThreshold = 6.0f;
+    
+    private const string LightIntensity = "light";
+    private const string ModerateIntensity = "moderate";
+    private const string IntenseIntensity = "intense";
+
     public WorkoutDataForwarder(
         IWorkoutAnalyticsStore store,
         IAnalyticsDashboardRefreshBus refreshBus)
@@ -41,17 +48,17 @@ public sealed class WorkoutDataForwarder : IWorkoutDataForwarder
 
     private static string CalculateIntensityTag(float averageMet)
     {
-        if (averageMet < 3.0f)
+        if (averageMet < LightThreshold)
         {
-            return "light";
+            return LightIntensity;
         }
-        else if (averageMet < 6.0f)
+        else if (averageMet < ModerateThreshold)
         {
-            return "moderate";
+            return ModerateIntensity;
         }
         else
         {
-            return "intense";
+            return IntenseIntensity;
         }
     }
 }
