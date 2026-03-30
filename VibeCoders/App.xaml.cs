@@ -22,6 +22,11 @@ public partial class App : Application
         ConfigureServices(services);
         _services = services.BuildServiceProvider();
 
+        var sqlStorage = _services.GetRequiredService<SqlDataStorage>();
+        sqlStorage.EnsureSchemaCreated();
+        sqlStorage.SeedPrebuiltWorkouts();
+        sqlStorage.SeedAchievementCatalog();
+
         var navService = (NavigationService)_services.GetRequiredService<INavigationService>();
         _window = new MainWindow(navService);
         _window.Activate();
@@ -51,9 +56,12 @@ public partial class App : Application
         services.AddSingleton<IUserSession, UserSession>();
         services.AddSingleton<IWorkoutAnalyticsStore>(
             new SqlWorkoutAnalyticsStore(connectionString));
+        services.AddSingleton<SqlDataStorage>();
+        services.AddSingleton<IDataStorage>(sp => sp.GetRequiredService<SqlDataStorage>());
         services.AddSingleton<IAnalyticsDashboardRefreshBus, AnalyticsDashboardRefreshBus>();
         services.AddSingleton<IWorkoutDataForwarder, WorkoutDataForwarder>();
         services.AddSingleton<INavigationService, NavigationService>();
         services.AddTransient<ClientDashboardViewModel>();
+        services.AddTransient<RankShowcaseViewModel>();
     }
 }

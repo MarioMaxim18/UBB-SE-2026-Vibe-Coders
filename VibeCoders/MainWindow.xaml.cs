@@ -28,6 +28,10 @@ public sealed partial class MainWindow : Window
             {
                 _navigationService.NavigateToCalendarIntegration();
             }
+            else if (tag == "Rank")
+            {
+                _navigationService.NavigateToRankShowcase();
+            }
         }
     }
 }

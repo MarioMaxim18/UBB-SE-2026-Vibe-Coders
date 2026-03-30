@@ -16,4 +16,9 @@ public interface INavigationService
     /// Navigates to the calendar integration page.
     /// </summary>
     void NavigateToCalendarIntegration();
+
+    /// <summary>
+    /// Navigates to the rank showcase (level, rank title, achievements).
+    /// </summary>
+    void NavigateToRankShowcase();
 }

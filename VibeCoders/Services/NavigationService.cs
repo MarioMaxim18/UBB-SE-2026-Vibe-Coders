@@ -1,7 +1,7 @@
 using Microsoft.UI.Xaml.Controls;
+using VibeCoders.Views;
 
 namespace VibeCoders.Services;
-
 /// <inheritdoc />
 public sealed class NavigationService : INavigationService
 {
@@ -30,7 +30,7 @@ public sealed class NavigationService : INavigationService
             return;
         }
 
-        _frame.Navigate(typeof(Views.ClientDashboardPage));
+        _frame.Navigate(typeof(ClientDashboardPage));
 
         if (requestRefresh)
         {
@@ -46,6 +46,17 @@ public sealed class NavigationService : INavigationService
             return;
         }
 
-        _frame.Navigate(typeof(Views.CalendarIntegrationPage));
+        _frame.Navigate(typeof(CalendarIntegrationPage));
+    }
+
+    /// <inheritdoc />
+    public void NavigateToRankShowcase()
+    {
+        if (_frame is null)
+        {
+            return;
+        }
+
+        _frame.Navigate(typeof(RankShowcasePage));
     }
 }

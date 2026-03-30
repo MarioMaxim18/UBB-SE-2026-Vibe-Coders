@@ -53,6 +53,9 @@
     <Page Update="Views\TrainerDashboardView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Update="Views\RankShowcasePage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 
   <!--
