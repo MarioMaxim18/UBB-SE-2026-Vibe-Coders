@@ -13,7 +13,7 @@ namespace VibeCoders.Services
 
     public partial class SqlDataStorage : IDataStorage
     {
-        private readonly string _connectionString = @"Server=(localdb)\MSSQLLocalDB;Database=VibeCodersDB;Trusted_Connection=True;";
+        private readonly string _connectionString = @"Server=localhost\SQLEXPRESS;Database=VibeCodersDB;Trusted_Connection=True;TrustServerCertificate=True;";
 
        
         public List<Client> GetTrainerClient(int trainerId)
@@ -26,14 +26,14 @@ namespace VibeCoders.Services
 
                 string sql = @"
                     SELECT 
-                        c.id, 
-                        u.username, 
-                        c.weight, 
-                        c.height,
-                        (SELECT MAX(date) FROM WORKOUT_LOG wl WHERE wl.client_id = c.id) AS LastWorkoutDate
-                    FROM CLIENT c
-                    JOIN [USER] u ON c.user_id = u.id
-                    WHERE c.trainer_id = @TrainerId;";
+                        c.UserId, 
+                        u.Username, 
+                        c.Weight, 
+                        c.Height,
+                        (SELECT MAX(Date) FROM WorkoutLogs wl WHERE wl.ClientId = c.UserId) AS LastWorkoutDate
+                    FROM Clients c
+                    JOIN Users u ON c.UserId = u.Id
+                    WHERE c.TrainerId = @TrainerId;";
 
                 using (SqlCommand cmd = new SqlCommand(sql, conn))
                 {
@@ -48,17 +48,15 @@ namespace VibeCoders.Services
                                 Id = reader.GetInt32(0),
                                 Username = reader.GetString(1),
                                 Weight = reader.IsDBNull(2) ? 0 : reader.GetDouble(2),
-                                Height = reader.IsDBNull(3) ? 0 : reader.GetDouble(3)
+                                Height = reader.IsDBNull(3) ? 0 : reader.GetDouble(3),
+                                WorkoutLog = new List<WorkoutLog>()
                             };
 
                             // Attaching the last workout date to satisfy the UI requirement
                             if (!reader.IsDBNull(4))
                             {
-                                
-                                client.WorkoutLog = new List<WorkoutLog>
-                                {
-                                    new WorkoutLog { Date = reader.GetDateTime(4) }
-                                };
+                                client.WorkoutLog.Add(new WorkoutLog { Date = reader.GetDateTime(4) });
+
                             }
 
                             roster.Add(client);
