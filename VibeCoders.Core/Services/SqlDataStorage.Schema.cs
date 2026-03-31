@@ -4,6 +4,9 @@ namespace VibeCoders.Services
 {
     public partial class SqlDataStorage : IDataStorage
     {
+
+        private readonly string _connectionString = DatabasePaths.GetSqlServerConnectionString();
+
         /// <summary>
         /// Creates all tables required by the workout tracking and progression
         /// module if they do not already exist. Call this once at application
