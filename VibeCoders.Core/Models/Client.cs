@@ -24,6 +24,8 @@ namespace VibeCoders.Models
         {
             
         }
+        
+        public NutritionPlan nutritionPlan { get; set; }
 
     }
 }

@@ -83,7 +83,10 @@ namespace VibeCoders.Services
                 return false;
             }
         }
-
+        public NutritionPlan GetActiveNutritionPlan(int clientId)
+        {
+            return new NutritionPlan();
+        }
         /// <summary>
         /// Updates an existing workout log entry (e.g. trainer modifies a
         /// client's assigned workout after the fact).

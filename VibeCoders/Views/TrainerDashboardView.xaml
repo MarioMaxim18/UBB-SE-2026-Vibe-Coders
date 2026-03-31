@@ -56,26 +56,41 @@
                         </ListView.ItemTemplate>
                     </ListView>
                 </Grid>
+
+                <!-- Issue #119: Nutrition Plan Assignment Controls -->
+                <Grid Grid.Row="1" Margin="10,20,10,10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Text="Assign Nutrition Plan" FontSize="24" FontWeight="SemiBold" Padding="12"/>
+
+                    <StackPanel Grid.Row="1" Spacing="16" Padding="16" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="8">
+                        <TextBlock Text="Select the duration for the new diet plan for the selected client." 
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" 
+                                   TextWrapping="Wrap"/>
+
+                        <DatePicker Header="Start Date" Date="{x:Bind ViewModel.NutritionStartDate, Mode=TwoWay}" />
+                        <DatePicker Header="End Date" Date="{x:Bind ViewModel.NutritionEndDate, Mode=TwoWay}" />
+
+                        <Button Content="Assign Nutrition Plan" 
+                                Command="{x:Bind ViewModel.AssignNutritionCommand}" 
+                                Style="{ThemeResource AccentButtonStyle}" 
+                                Margin="0,8,0,0"/>
+                    </StackPanel>
+                </Grid>
+
             </Grid>
         </Border>
 
     </Grid>
 
-
-    <!-- here, in the second column of the grid, needs another grid with i think some sections,
-
-            one of the section with a scrollable list of the selected client's workout log where you can
-
-            select a workout, and the second section a listview or something that can dinamically modify 
-
-            the number of rows / columns to display a table of details of the workout selected, 
-
-            and a leave feedback expandable (maybe these two sections should be one, a small dropdown for 
-
-            the selection of the past workouts), we need to also create a section where you can see assigned 
-
-            workouts and add / edit / delete them-->
-
-
+    <!-- here, in the second column of the grid, needs another grid with i think some sections,            
+         one of the section with a scrollable list of the selected client's workout log where you can            
+         select a workout, and the second section a listview or something that can dinamically modify             
+         the number of rows / columns to display a table of details of the workout selected,             
+         and a leave feedback expandable (maybe these two sections should be one, a small dropdown for             
+         the selection of the past workouts), we need to also create a section where you can see assigned             
+         workouts and add / edit / delete them-->
 </Page>
-    
