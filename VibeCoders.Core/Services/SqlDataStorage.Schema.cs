@@ -20,8 +20,7 @@ namespace VibeCoders.Services
             using var cmd = new SqlCommand();
             cmd.Connection = conn;
 
-
-            //REMOVE!!!!!!!!!!!!!!!!
+            // ── USER ─────────────────────────────────────────────
             cmd.CommandText = @"
                 IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='USER' AND xtype='U')
                 CREATE TABLE [USER] (
@@ -31,7 +30,7 @@ namespace VibeCoders.Services
                 );";
             cmd.ExecuteNonQuery();
 
-            //REMOVE!!!!!!!!!!!!!!!!!!!!!!!
+            // ── TRAINER ─────────────────────────────────────────────
             cmd.CommandText = @"
                 IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='TRAINER' AND xtype='U')
                 CREATE TABLE TRAINER (
@@ -41,7 +40,7 @@ namespace VibeCoders.Services
                 );";
             cmd.ExecuteNonQuery();
 
-            //REMOVE!!!!!!!!!!!!!!!!!!!!
+            // ── CLIENT ─────────────────────────────────────────────
             cmd.CommandText = @"
                 IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='CLIENT' AND xtype='U')
                 CREATE TABLE CLIENT (

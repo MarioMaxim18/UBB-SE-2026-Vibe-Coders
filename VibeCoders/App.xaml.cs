@@ -45,7 +45,7 @@ public partial class App : Application
                         sql.SeedAchievementCatalog();
 
 
-                        //REMOVE!!!!!!!!!!!!!!!!!!!!!!!
+                        //TEST DATA
                         sql.SeedTestData();
 
 
