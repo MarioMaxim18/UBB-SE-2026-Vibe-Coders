@@ -88,11 +88,19 @@ public partial class SqlDataStorage
                 INSERT INTO CLIENT_ACHIEVEMENT (client_id, achievement_id, unlocked)
                 VALUES (@ClientId, @AchievementId, 1);";
 
-        using var upsertCmd = new SqlCommand(upsertSql, conn);
-        upsertCmd.Parameters.AddWithValue("@ClientId",      clientId);
-        upsertCmd.Parameters.AddWithValue("@AchievementId", achievementId);
-        upsertCmd.ExecuteNonQuery();
-
-        return true;
+        try
+        {
+            using var upsertCmd = new SqlCommand(upsertSql, conn);
+            upsertCmd.Parameters.AddWithValue("@ClientId",      clientId);
+            upsertCmd.Parameters.AddWithValue("@AchievementId", achievementId);
+            upsertCmd.ExecuteNonQuery();
+            return true;
+        }
+        catch (SqlException ex) when (ex.Number == 2627 || ex.Number == 2601)
+        {
+            // PK or unique-index violation — another concurrent request already
+            // awarded this badge between our check and the insert. Treat as no-op.
+            return false;
+        }
     }
 }
