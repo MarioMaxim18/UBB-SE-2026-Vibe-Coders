@@ -30,5 +30,6 @@ public interface INavigationService
     /// <summary>
     /// Navigates back to the previous page when the frame history allows it.
     /// </summary>
+    void NavigateToWorkoutLogs();
     void GoBack();
 }

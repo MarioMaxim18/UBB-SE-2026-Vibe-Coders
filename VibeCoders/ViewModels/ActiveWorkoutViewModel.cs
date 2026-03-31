@@ -1,10 +1,10 @@
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 using System;
 using System.Collections.ObjectModel;
+using System.Linq;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using VibeCoders.Models;
 using VibeCoders.Services;
-
 
 namespace VibeCoders.ViewModels
 {
@@ -157,6 +157,7 @@ namespace VibeCoders.ViewModels
 
                 if (success)
                 {
+                    LastCompletedLog = _activeLog;
                     IsWorkoutStarted = false;
                     ExerciseRows.Clear();
                     _activeLog = new WorkoutLog { Date = DateTime.Now };
@@ -178,6 +179,31 @@ namespace VibeCoders.ViewModels
             {
                 IsFinishing = false;
             }
+        }
+
+        // ── Repeat Workout (#77) ─────────────────────────────────────────────
+
+        /// <summary>
+        /// Stores the last completed workout log so it can be repeated.
+        /// Set by FinishWorkout after a successful save.
+        /// </summary>
+        public WorkoutLog? LastCompletedLog { get; private set; }
+
+        /// <summary>
+        /// Repeats the last completed workout by reloading the same template
+        /// and resetting all sets to their target values. (#77)
+        /// </summary>
+        [RelayCommand]
+        private void RepeatWorkout(int clientId)
+        {
+            if (LastCompletedLog == null) return;
+
+            var template = _storage.GetAvailableWorkouts(clientId)
+                .FirstOrDefault(t => t.Id == LastCompletedLog.SourceTemplateId);
+
+            if (template == null) return;
+
+            SelectedTemplate = template;
         }
 
         // ── Notifications ────────────────────────────────────────────────────
@@ -212,7 +238,7 @@ namespace VibeCoders.ViewModels
         /// </summary>
         private void FocusNextSet(ActiveSetViewModel completedSet)
         {
-            foreach (var exercise in exerciseRows)
+            foreach (var exercise in ExerciseRows)
             {
                 foreach (var set in exercise.Sets)
                 {

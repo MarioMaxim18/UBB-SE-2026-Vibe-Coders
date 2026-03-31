@@ -4,7 +4,6 @@ using VibeCoders.Views;
 namespace VibeCoders.Services;
 
 /// <inheritdoc cref="INavigationService" />
-/// <remarks>Resolves WinUI <see cref="Microsoft.UI.Xaml.Controls.Page"/> types for the shell <see cref="Microsoft.UI.Xaml.Controls.Frame"/>.</remarks>
 public sealed class NavigationService : INavigationService
 {
     private Frame? _frame;
@@ -28,31 +27,21 @@ public sealed class NavigationService : INavigationService
     public void NavigateToClientDashboard(bool requestRefresh)
     {
         if (_frame is null) return;
-
         _frame.Navigate(typeof(ClientDashboardPage));
-
-        if (requestRefresh)
-        {
-            _refreshBus.RequestRefresh();
-        }
+        if (requestRefresh) _refreshBus.RequestRefresh();
     }
 
     /// <inheritdoc />
     public void NavigateToCalendarIntegration()
     {
         if (_frame is null) return;
-
         _frame.Navigate(typeof(CalendarIntegrationPage));
     }
 
     /// <inheritdoc />
     public void NavigateToRankShowcase()
     {
-        if (_frame is null)
-        {
-            return;
-        }
-
+        if (_frame is null) return;
         _frame.Navigate(typeof(RankShowcasePage));
     }
 
@@ -60,18 +49,33 @@ public sealed class NavigationService : INavigationService
     public void NavigateToActiveWorkout()
     {
         if (_frame is null) return;
+        _frame.Navigate(typeof(ActiveWorkoutPage));
+    }
 
-        _frame.Navigate(typeof(Views.ActiveWorkoutPage));
+    /// <inheritdoc />
+    public void NavigateToWorkoutLogs()
+    {
+        if (_frame is null) return;
+        _frame.Navigate(typeof(WorkoutLogsPage));
     }
 
     /// <inheritdoc />
     public void GoBack()
     {
         if (_frame is null) return;
-
-        if (_frame.CanGoBack)
-        {
-            _frame.GoBack();
-        }
+        if (_frame.CanGoBack) _frame.GoBack();
     }
+
+
+    public void NavigateToTrainerDashboard()
+    {
+        if (_frame is null)
+        {
+            return;
+        }
+
+        _frame?.Navigate(typeof(Views.TrainerDashboardView));
+
+    }
+
 }

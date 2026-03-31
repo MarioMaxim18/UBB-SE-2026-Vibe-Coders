@@ -51,6 +51,11 @@
     <ProjectReference Include="..\VibeCoders.Core\VibeCoders.Core.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <Page Update="Views\WorkoutLogsPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
     <Page Update="Views\TrainerDashboardView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
