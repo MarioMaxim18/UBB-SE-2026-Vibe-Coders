@@ -165,6 +165,20 @@ namespace VibeCoders.Services
                     FOREIGN KEY (achievement_id) REFERENCES ACHIEVEMENT(achievement_id)
                 );";
             cmd.ExecuteNonQuery();
+
+            // ── CLIENT_ACHIEVEMENT migration: ensure PK exists on older databases ──
+            // The PRIMARY KEY on (client_id, achievement_id) is the DB-level uniqueness
+            // enforcer that prevents duplicate awards even under concurrent operations.
+            cmd.CommandText = @"
+                IF NOT EXISTS (
+                    SELECT 1 FROM sys.key_constraints
+                    WHERE name = 'PK_CLIENT_ACHIEVEMENT'
+                      AND parent_object_id = OBJECT_ID('CLIENT_ACHIEVEMENT')
+                )
+                    ALTER TABLE CLIENT_ACHIEVEMENT
+                        ADD CONSTRAINT PK_CLIENT_ACHIEVEMENT
+                        PRIMARY KEY (client_id, achievement_id);";
+            cmd.ExecuteNonQuery();
         }
     }
 }
