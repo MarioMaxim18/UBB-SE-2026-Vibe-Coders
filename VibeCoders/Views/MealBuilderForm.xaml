@@ -4,77 +4,78 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d"
+             x:Name="RootControl"
              d:DesignHeight="500" d:DesignWidth="450">
 
-	<Border Background="#FFFFFF" CornerRadius="8" Padding="24" Margin="10" BorderBrush="#E5E7EB" BorderThickness="1">
-		
+    <Border Background="#FFFFFF" CornerRadius="8" Padding="24" Margin="10" BorderBrush="#E5E7EB" BorderThickness="1">
+        
+        <StackPanel>
+            <TextBlock Text="Build a Meal" FontSize="22" FontWeight="Bold" Foreground="#111827" Margin="0,0,0,20"/>
 
-		<StackPanel>
-			<TextBlock Text="Build a Meal" FontSize="22" FontWeight="Bold" Foreground="#111827" Margin="0,0,0,20"/>
-
-			<!-- Meal Name -->
-			<TextBlock Text="Meal Name" FontWeight="SemiBold" Foreground="#374151" Margin="0,0,0,4"/>
-			<TextBox Text="{Binding NewMealName, UpdateSourceTrigger=PropertyChanged}"
+            <!-- Meal Name -->
+            <TextBlock Text="Meal Name" FontWeight="SemiBold" Foreground="#374151" Margin="0,0,0,4"/>
+            <TextBox Text="{Binding NewMealName, UpdateSourceTrigger=PropertyChanged}"
                      Padding="8" Margin="0,0,0,16" BorderBrush="#D1D5DB" BorderThickness="1" FontSize="14"/>
 
-			<!-- Ingredients Input -->
-			<TextBlock Text="Ingredients" FontWeight="SemiBold" Foreground="#374151" Margin="0,0,0,4"/>
-			<Grid Margin="0,0,0,8">
-				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="*"/>
-					<ColumnDefinition Width="Auto"/>
-				</Grid.ColumnDefinitions>
+            <!-- Ingredients Input -->
+            <TextBlock Text="Ingredients" FontWeight="SemiBold" Foreground="#374151" Margin="0,0,0,4"/>
+            <Grid Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
 
-				<TextBox Grid.Column="0"
+                <TextBox Grid.Column="0"
                          Text="{Binding CurrentIngredientInput, UpdateSourceTrigger=PropertyChanged}"
                          Padding="8" Margin="0,0,8,0" BorderBrush="#D1D5DB" BorderThickness="1" FontSize="14"/>
 
-				<Button Grid.Column="1" Content="Add"
+                <Button Grid.Column="1" Content="Add"
                         Command="{Binding AddIngredientCommand}"
                         Background="#E5E7EB" Foreground="#374151" FontWeight="Bold"
-                        Padding="16,8" BorderThickness="0" Cursor="Hand"/>
-			</Grid>
+                        Padding="16,8" BorderThickness="0"/>
+            </Grid>
 
-			<!-- Tags Display -->
-			<ItemsControl ItemsSource="{Binding NewMealIngredients}" Margin="0,0,0,16">
-				<ItemsControl.ItemsPanel>
-					<ItemsPanelTemplate>
-						<WrapPanel Orientation="Horizontal"/>
-					</ItemsPanelTemplate>
-				</ItemsControl.ItemsPanel>
-				<ItemsControl.ItemTemplate>
-					<DataTemplate>
-						<!-- Tag Style -->
-						<Border Background="#E0F2FE" CornerRadius="12" Padding="8,4" Margin="0,0,8,8">
-							<StackPanel Orientation="Horizontal">
-								<TextBlock Text="{Binding}" Foreground="#0369A1" VerticalAlignment="Center" Margin="0,0,8,0"/>
-								<!-- Remove Button -->
-								<Button Content="✕"
-                                        Command="{Binding DataContext.RemoveIngredientCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+            <!-- Tags Display -->
+            <ItemsControl ItemsSource="{Binding NewMealIngredients}" Margin="0,0,0,16">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <!-- Se cambió WrapPanel por VariableSizedWrapGrid -->
+                        <VariableSizedWrapGrid Orientation="Horizontal"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <!-- Tag Style -->
+                        <Border Background="#E0F2FE" CornerRadius="12" Padding="8,4" Margin="0,0,8,8">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{Binding}" Foreground="#0369A1" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <!-- Remove Button usando ElementName en lugar de AncestorType -->
+                                <Button Content="✕"
+                                        Command="{Binding DataContext.RemoveIngredientCommand, ElementName=RootControl}"
                                         CommandParameter="{Binding}"
-                                        Background="Transparent" BorderThickness="0" Foreground="#0369A1" Cursor="Hand" Padding="0"/>
-							</StackPanel>
-						</Border>
-					</DataTemplate>
-				</ItemsControl.ItemTemplate>
-			</ItemsControl>
+                                        Background="Transparent" BorderThickness="0" Foreground="#0369A1" Padding="0"/>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
 
-			<!-- Instructions Input -->
-			<TextBlock Text="Preparation Instructions" FontWeight="SemiBold" Foreground="#374151" Margin="0,0,0,4"/>
-			<TextBox Text="{Binding NewMealInstructions, UpdateSourceTrigger=PropertyChanged}"
+            <!-- Instructions Input -->
+            <TextBlock Text="Preparation Instructions" FontWeight="SemiBold" Foreground="#374151" Margin="0,0,0,4"/>
+            <TextBox Text="{Binding NewMealInstructions, UpdateSourceTrigger=PropertyChanged}"
                      AcceptsReturn="True" TextWrapping="Wrap" Height="100" Padding="8" Margin="0,0,0,24"
                      BorderBrush="#D1D5DB" BorderThickness="1" FontSize="14"/>
 
-			<!-- Submit Button -->
-			<Button Content="Save Meal"
+            <!-- Submit Button -->
+            <Button Content="Save Meal"
                     Command="{Binding SaveMealCommand}"
-                    Background="#005FB8" Foreground="White" FontSize="16" FontWeight="Bold" Padding="0,12" Cursor="Hand" BorderThickness="0">
-				<Button.Resources>
-					<Style TargetType="Border">
-						<Setter Property="CornerRadius" Value="6"/>
-					</Style>
-				</Button.Resources>
-			</Button>
-		</StackPanel>
-	</Border>
+                    Background="#005FB8" Foreground="White" FontSize="16" FontWeight="Bold" Padding="0,12" BorderThickness="0">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="6"/>
+                    </Style>
+                </Button.Resources>
+            </Button>
+        </StackPanel>
+    </Border>
 </UserControl>
