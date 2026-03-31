@@ -35,6 +35,13 @@
                     <SymbolIcon Symbol="Favorite" />
                 </NavigationViewItem.Icon>
             </NavigationViewItem>
+
+			<NavigationViewItem Content="Trainer Dashboard" Tag="TrainerDashboard">
+				<NavigationViewItem.Icon>
+					<SymbolIcon Symbol="People" />
+				</NavigationViewItem.Icon>
+			</NavigationViewItem>
+			
         </NavigationView.MenuItems>
         <Frame x:Name="ContentFrame" />
     </NavigationView>

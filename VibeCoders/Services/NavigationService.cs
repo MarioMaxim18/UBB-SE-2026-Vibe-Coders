@@ -65,4 +65,17 @@ public sealed class NavigationService : INavigationService
         if (_frame is null) return;
         if (_frame.CanGoBack) _frame.GoBack();
     }
+
+
+    public void NavigateToTrainerDashboard()
+    {
+        if (_frame is null)
+        {
+            return;
+        }
+
+        _frame?.Navigate(typeof(Views.TrainerDashboardView));
+
+    }
+
 }

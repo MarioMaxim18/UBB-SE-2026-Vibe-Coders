@@ -215,6 +215,57 @@
                                                 Width="20" Height="20"
                                                 HorizontalAlignment="Center"
                                                 Margin="0,8" />
+                                            
+                                            <!-- Total Calories Burned Summary -->
+                                            <Border Background="{ThemeResource AccentFillColorSecondaryBrush}"
+                                                    CornerRadius="4"
+                                                    Padding="16,12"
+                                                    Margin="44,8,0,12"
+                                                    Visibility="{x:Bind IsLoadingDetail, Mode=OneWay, Converter={StaticResource BoolToVisibility}, ConverterParameter=Invert}">
+                                                <StackPanel Orientation="Horizontal" Spacing="12">
+                                                    <FontIcon Glyph="&#xE91B;" FontSize="20" 
+                                                              Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
+                                                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}"
+                                                               Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}">
+                                                        <Run Text="Total Calories Burned: "/>
+                                                        <Run Text="{x:Bind TotalCaloriesBurned}" FontWeight="Bold"/>
+                                                        <Run Text=" kcal"/>
+                                                    </TextBlock>
+                                                </StackPanel>
+                                            </Border>
+                                            
+                                            <!-- Calories by Exercise Section -->
+                                            <StackPanel Margin="44,0,0,16"
+                                                       Visibility="{x:Bind IsLoadingDetail, Mode=OneWay, Converter={StaticResource BoolToVisibility}, ConverterParameter=Invert}">
+                                                <TextBlock Text="Calories by Exercise"
+                                                          Style="{StaticResource BodyStrongTextBlockStyle}"
+                                                          Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                          Margin="0,0,0,8"/>
+                                                <ItemsControl ItemsSource="{x:Bind ExerciseCalories, Mode=OneWay}">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate x:DataType="models:ExerciseCalorieInfo">
+                                                            <Grid ColumnDefinitions="*,Auto" Padding="0,4">
+                                                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                                                    <FontIcon Glyph="&#xE9C9;" FontSize="14" 
+                                                                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                                                    <TextBlock Text="{x:Bind ExerciseName}" 
+                                                                              Style="{StaticResource BodyTextBlockStyle}"/>
+                                                                </StackPanel>
+                                                                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                                                                    <TextBlock Text="{x:Bind CaloriesBurned}" 
+                                                                              Style="{StaticResource BodyStrongTextBlockStyle}"
+                                                                              Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
+                                                                    <TextBlock Text="kcal" 
+                                                                              Style="{StaticResource CaptionTextBlockStyle}"
+                                                                              Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                                              VerticalAlignment="Center"/>
+                                                                </StackPanel>
+                                                            </Grid>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </StackPanel>
+                                            
                                             <Grid ColumnDefinitions="3*,*,*,*" Margin="44,0,0,8"
                                                   Visibility="{x:Bind IsLoadingDetail, Mode=OneWay, Converter={StaticResource BoolToVisibility}, ConverterParameter=Invert}">
                                                 <TextBlock Text="Exercise" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
