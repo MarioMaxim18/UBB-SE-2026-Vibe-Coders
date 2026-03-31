@@ -139,8 +139,18 @@ namespace VibeCoders.Services
                 CREATE TABLE ACHIEVEMENT (
                     achievement_id  INT PRIMARY KEY IDENTITY(1,1),
                     title           VARCHAR(100) NOT NULL,
-                    description     VARCHAR(250) NOT NULL
+                    description     VARCHAR(250) NOT NULL,
+                    criteria        VARCHAR(500) NOT NULL DEFAULT ''
                 );";
+            cmd.ExecuteNonQuery();
+
+            // ── ACHIEVEMENT migration: add criteria column if it was created without it ──
+            cmd.CommandText = @"
+                IF NOT EXISTS (
+                    SELECT 1 FROM sys.columns
+                    WHERE object_id = OBJECT_ID('ACHIEVEMENT') AND name = 'criteria'
+                )
+                    ALTER TABLE ACHIEVEMENT ADD criteria VARCHAR(500) NOT NULL DEFAULT '';";
             cmd.ExecuteNonQuery();
 
             // ── CLIENT_ACHIEVEMENT ────────────────────────────────────────────
