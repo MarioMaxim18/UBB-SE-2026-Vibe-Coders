@@ -234,7 +234,7 @@
                                                             <!-- Actual Reps input -->
                                                             <NumberBox
                                                                 Grid.Column="2"
-                                                                Value="{x:Bind ActualReps, Mode=TwoWay}"
+                                                                Value="{x:Bind ActualRepsValue, Mode=TwoWay}"
                                                                 Minimum="0"
                                                                 Maximum="999"
                                                                 SpinButtonPlacementMode="Compact"
@@ -245,7 +245,7 @@
                                                             <!-- Actual Weight input -->
                                                             <NumberBox
                                                                 Grid.Column="3"
-                                                                Value="{x:Bind ActualWeight, Mode=TwoWay}"
+                                                                Value="{x:Bind ActualWeightValue, Mode=TwoWay}"
                                                                 Minimum="0"
                                                                 Maximum="9999"
                                                                 SmallChange="0.5"

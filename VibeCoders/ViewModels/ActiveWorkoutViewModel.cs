@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System;
 using System.Collections.ObjectModel;
@@ -284,5 +284,41 @@ namespace VibeCoders.ViewModels
 
         [ObservableProperty]
         private bool isFocused;
+
+        /// <summary>
+        /// NumberBox.Value is double-only; bridge nullable int? reps for binding.
+        /// NaN in UI maps to null in model.
+        /// </summary>
+        public double ActualRepsValue
+        {
+            get => ActualReps.HasValue ? ActualReps.Value : double.NaN;
+            set
+            {
+                ActualReps = double.IsNaN(value) ? null : (int)Math.Round(value);
+            }
+        }
+
+        /// <summary>
+        /// NumberBox.Value is double-only; bridge nullable double? weight for binding.
+        /// NaN in UI maps to null in model.
+        /// </summary>
+        public double ActualWeightValue
+        {
+            get => ActualWeight ?? double.NaN;
+            set
+            {
+                ActualWeight = double.IsNaN(value) ? null : value;
+            }
+        }
+
+        partial void OnActualRepsChanged(int? value)
+        {
+            OnPropertyChanged(nameof(ActualRepsValue));
+        }
+
+        partial void OnActualWeightChanged(double? value)
+        {
+            OnPropertyChanged(nameof(ActualWeightValue));
+        }
     }
 }
