@@ -20,6 +20,7 @@ public partial class SqlDataStorage
                 a.achievement_id,
                 a.title,
                 a.description,
+                a.criteria,
                 CASE WHEN ca.unlocked = 1 THEN 1 ELSE 0 END AS is_unlocked
             FROM ACHIEVEMENT a
             LEFT JOIN CLIENT_ACHIEVEMENT ca
@@ -38,9 +39,10 @@ public partial class SqlDataStorage
             list.Add(new AchievementShowcaseItem
             {
                 AchievementId = reader.GetInt32(0),
-                Title = reader.GetString(1),
-                Description = reader.GetString(2),
-                IsUnlocked = reader.GetInt32(3) != 0
+                Title         = reader.GetString(1),
+                Description   = reader.GetString(2),
+                Criteria      = reader.GetString(3),
+                IsUnlocked    = reader.GetInt32(4) != 0
             });
         }
 
