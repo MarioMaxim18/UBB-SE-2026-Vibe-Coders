@@ -181,6 +181,8 @@ namespace VibeCoders.ViewModels
             }
         }
 
+        // ── Repeat Workout (#77) ─────────────────────────────────────────────
+
         /// <summary>
         /// Stores the last completed workout log so it can be repeated.
         /// Set by FinishWorkout after a successful save.
@@ -204,8 +206,10 @@ namespace VibeCoders.ViewModels
             SelectedTemplate = template;
         }
 
+        // ── Notifications ────────────────────────────────────────────────────
+
         [ObservableProperty]
-        private ObservableCollection<Notification> notifications = new();
+        private ObservableCollection<Models.Notification> notifications = new();
 
         [RelayCommand]
         private void LoadNotifications(int clientId)
@@ -219,7 +223,7 @@ namespace VibeCoders.ViewModels
         }
 
         [RelayCommand]
-        private void ConfirmDeload(Notification notification)
+        private void ConfirmDeload(Models.Notification notification)
         {
             if (notification == null) return;
             _clientService.ConfirmDeload(notification);
@@ -306,5 +310,41 @@ namespace VibeCoders.ViewModels
 
         [ObservableProperty]
         private bool isFocused;
+
+        /// <summary>
+        /// NumberBox.Value is double-only; bridge nullable int? reps for binding.
+        /// NaN in UI maps to null in model.
+        /// </summary>
+        public double ActualRepsValue
+        {
+            get => ActualReps.HasValue ? ActualReps.Value : double.NaN;
+            set
+            {
+                ActualReps = double.IsNaN(value) ? null : (int)Math.Round(value);
+            }
+        }
+
+        /// <summary>
+        /// NumberBox.Value is double-only; bridge nullable double? weight for binding.
+        /// NaN in UI maps to null in model.
+        /// </summary>
+        public double ActualWeightValue
+        {
+            get => ActualWeight ?? double.NaN;
+            set
+            {
+                ActualWeight = double.IsNaN(value) ? null : value;
+            }
+        }
+
+        partial void OnActualRepsChanged(int? value)
+        {
+            OnPropertyChanged(nameof(ActualRepsValue));
+        }
+
+        partial void OnActualWeightChanged(double? value)
+        {
+            OnPropertyChanged(nameof(ActualWeightValue));
+        }
     }
 }
