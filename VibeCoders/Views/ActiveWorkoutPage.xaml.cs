@@ -1,6 +1,7 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
+using VibeCoders.Models;
 using VibeCoders.ViewModels;
 
 namespace VibeCoders.Views;
@@ -36,5 +37,17 @@ public sealed partial class ActiveWorkoutPage : Page
     {
         ViewModel.LoadAvailableWorkoutsCommand.Execute(ClientId);
         ViewModel.LoadNotificationsCommand.Execute(ClientId);
+    }
+
+    /// <summary>
+    /// Handles Confirm Deload button click from inside DataTemplate.
+    /// Tag="{x:Bind}" passes the Notification as the button's Tag.
+    /// </summary>
+    private void ConfirmDeloadButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button btn && btn.Tag is Notification notification)
+        {
+            ViewModel.ConfirmDeloadCommand.Execute(notification);
+        }
     }
 }

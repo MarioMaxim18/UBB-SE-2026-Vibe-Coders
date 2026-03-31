@@ -8,18 +8,21 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     Title="VibeCoders">
-
     <NavigationView
         x:Name="NavView"
         IsBackButtonVisible="Collapsed"
         IsSettingsVisible="False"
         PaneDisplayMode="LeftCompact"
         SelectionChanged="NavView_SelectionChanged">
-
         <NavigationView.MenuItems>
             <NavigationViewItem Content="Dashboard" Tag="Dashboard" IsSelected="True">
                 <NavigationViewItem.Icon>
                     <SymbolIcon Symbol="Home" />
+                </NavigationViewItem.Icon>
+            </NavigationViewItem>
+            <NavigationViewItem Content="Workout Logs" Tag="WorkoutLogs">
+                <NavigationViewItem.Icon>
+                    <FontIcon Glyph="&#xE14C;" />
                 </NavigationViewItem.Icon>
             </NavigationViewItem>
             <NavigationViewItem Content="Calendar" Tag="Calendar">
@@ -33,7 +36,6 @@
                 </NavigationViewItem.Icon>
             </NavigationViewItem>
         </NavigationView.MenuItems>
-
         <Frame x:Name="ContentFrame" />
     </NavigationView>
 </Window>

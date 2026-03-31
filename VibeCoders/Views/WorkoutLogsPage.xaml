@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="VibeCoders.Views.WorkoutLogsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="using:VibeCoders.ViewModels"
+    mc:Ignorable="d"
+    Loaded="Page_Loaded">
+
+    <Page.Transitions>
+        <TransitionCollection>
+            <NavigationThemeTransition />
+        </TransitionCollection>
+    </Page.Transitions>
+
+    <Grid>
+        <ScrollViewer
+            VerticalScrollBarVisibility="Auto"
+            HorizontalScrollBarVisibility="Disabled"
+            HorizontalContentAlignment="Left"
+            VerticalContentAlignment="Top">
+            <StackPanel
+                Padding="20,20,28,32"
+                Spacing="28"
+                HorizontalAlignment="Stretch">
+                <StackPanel.ChildrenTransitions>
+                    <TransitionCollection>
+                        <EntranceThemeTransition IsStaggeringEnabled="True" />
+                    </TransitionCollection>
+                </StackPanel.ChildrenTransitions>
+
+                <!-- Header -->
+                <Grid>
+                    <TextBlock
+                        Text="Workout Logs"
+                        Style="{StaticResource TitleTextBlockStyle}"
+                        VerticalAlignment="Center" />
+
+                    <!-- Start Workout button -->
+                    <Button
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Style="{StaticResource AccentButtonStyle}"
+                        Command="{x:Bind ViewModel.StartWorkoutCommand}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="&#xE102;" FontSize="14" />
+                            <TextBlock Text="Start Workout" />
+                        </StackPanel>
+                    </Button>
+                </Grid>
+
+                <!-- Loading spinner -->
+                <ProgressRing
+                    IsActive="{x:Bind ViewModel.IsLoading, Mode=OneWay}"
+                    Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource BoolToVisibility}}"
+                    Width="32" Height="32"
+                    HorizontalAlignment="Center" />
+
+                <!-- Empty state -->
+                <StackPanel
+                    Visibility="{x:Bind ViewModel.ShowEmptyState, Mode=OneWay, Converter={StaticResource BoolToVisibility}}"
+                    HorizontalAlignment="Center"
+                    Spacing="16"
+                    Padding="0,48">
+                    <FontIcon Glyph="&#xE787;" FontSize="56"
+                              Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                              HorizontalAlignment="Center" />
+                    <TextBlock
+                        Text="No workouts logged yet"
+                        Style="{StaticResource TitleTextBlockStyle}"
+                        HorizontalAlignment="Center" />
+                    <TextBlock
+                        Text="Start a workout to see your logs here."
+                        Style="{StaticResource BodyTextBlockStyle}"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        HorizontalAlignment="Center" />
+                    <Button
+                        Style="{StaticResource AccentButtonStyle}"
+                        HorizontalAlignment="Center"
+                        Command="{x:Bind ViewModel.StartWorkoutCommand}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="&#xE102;" FontSize="14" />
+                            <TextBlock Text="Start Your First Workout" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+
+                <!-- Workout Logs List -->
+                <ItemsRepeater
+                    ItemsSource="{x:Bind ViewModel.Logs, Mode=OneWay}"
+                    Visibility="{x:Bind ViewModel.ShowEmptyState, Mode=OneWay, Converter={StaticResource BoolToVisibility}, ConverterParameter=Invert}">
+                    <ItemsRepeater.ItemTemplate>
+                        <DataTemplate x:DataType="vm:WorkoutLogItemViewModel">
+
+                            <!-- Collapsed/Expanded container per requirements -->
+                            <Expander
+                                IsExpanded="{x:Bind IsExpanded, Mode=TwoWay}"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Stretch"
+                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                CornerRadius="8"
+                                Margin="0,0,0,8">
+
+                                <!-- Collapsed view: Workout Name + Total Duration HH:MM -->
+                                <Expander.Header>
+                                    <Grid ColumnDefinitions="*,Auto,Auto" Padding="0,8" ColumnSpacing="16">
+
+                                        <!-- Workout Name -->
+                                        <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                                            <FontIcon
+                                                Glyph="&#xE14C;"
+                                                FontSize="16"
+                                                Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+                                            <TextBlock
+                                                Text="{x:Bind WorkoutName}"
+                                                Style="{StaticResource BodyStrongTextBlockStyle}"
+                                                VerticalAlignment="Center" />
+                                        </StackPanel>
+
+                                        <!-- Date (YYYY-MM-DD) -->
+                                        <TextBlock
+                                            Grid.Column="1"
+                                            Text="{x:Bind DateDisplay}"
+                                            Style="{StaticResource BodyTextBlockStyle}"
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                            VerticalAlignment="Center" />
+
+                                        <!-- Total Duration HH:MM -->
+                                        <StackPanel
+                                            Grid.Column="2"
+                                            Orientation="Horizontal"
+                                            Spacing="6"
+                                            VerticalAlignment="Center">
+                                            <FontIcon
+                                                Glyph="&#xE121;"
+                                                FontSize="12"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            <TextBlock
+                                                Text="{x:Bind TotalDurationDisplay}"
+                                                Style="{StaticResource BodyTextBlockStyle}"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                        </StackPanel>
+                                    </Grid>
+                                </Expander.Header>
+
+                                <!-- Expanded view: Exercise Name, Sets, Reps, Weight -->
+                                <Expander.Content>
+                                    <StackPanel Padding="0,8,0,12" Spacing="4">
+
+                                        <!-- Column headers -->
+                                        <Grid ColumnDefinitions="2*,*,2*,2*,Auto" Padding="44,0,0,8">
+                                            <TextBlock
+                                                Text="Exercise"
+                                                Style="{StaticResource CaptionTextBlockStyle}"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            <TextBlock
+                                                Grid.Column="1"
+                                                Text="Sets"
+                                                Style="{StaticResource CaptionTextBlockStyle}"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                HorizontalAlignment="Center" />
+                                            <TextBlock
+                                                Grid.Column="2"
+                                                Text="Reps"
+                                                Style="{StaticResource CaptionTextBlockStyle}"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                HorizontalAlignment="Center" />
+                                            <TextBlock
+                                                Grid.Column="3"
+                                                Text="Weight"
+                                                Style="{StaticResource CaptionTextBlockStyle}"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                HorizontalAlignment="Center" />
+                                        </Grid>
+
+                                        <!-- Exercise rows -->
+                                        <ItemsControl
+                                            ItemsSource="{x:Bind Exercises}"
+                                            Margin="44,0,0,0">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate x:DataType="vm:WorkoutLogExerciseSummary">
+                                                    <Grid ColumnDefinitions="2*,*,2*,2*,Auto" Padding="0,6" ColumnSpacing="8">
+
+                                                        <!-- Exercise Name -->
+                                                        <TextBlock
+                                                            Text="{x:Bind ExerciseName}"
+                                                            Style="{StaticResource BodyTextBlockStyle}"
+                                                            VerticalAlignment="Center" />
+
+                                                        <!-- Number of Sets -->
+                                                        <TextBlock
+                                                            Grid.Column="1"
+                                                            Text="{x:Bind NumberOfSets}"
+                                                            Style="{StaticResource BodyTextBlockStyle}"
+                                                            HorizontalAlignment="Center"
+                                                            VerticalAlignment="Center" />
+
+                                                        <!-- Reps per set -->
+                                                        <TextBlock
+                                                            Grid.Column="2"
+                                                            Text="{x:Bind RepsDisplay}"
+                                                            Style="{StaticResource BodyTextBlockStyle}"
+                                                            HorizontalAlignment="Center"
+                                                            VerticalAlignment="Center" />
+
+                                                        <!-- Weight -->
+                                                        <TextBlock
+                                                            Grid.Column="3"
+                                                            Text="{x:Bind WeightDisplay}"
+                                                            Style="{StaticResource BodyTextBlockStyle}"
+                                                            HorizontalAlignment="Center"
+                                                            VerticalAlignment="Center" />
+
+                                                        <!-- System Adjusted Badge (#70) with Tooltip (#71) -->
+                                                        <Border
+                                                            Grid.Column="4"
+                                                            Background="{ThemeResource SystemFillColorCautionBackgroundBrush}"
+                                                            BorderBrush="{ThemeResource SystemFillColorCautionBrush}"
+                                                            BorderThickness="1"
+                                                            CornerRadius="4"
+                                                            Padding="6,2"
+                                                            VerticalAlignment="Center"
+                                                            Visibility="{x:Bind IsSystemAdjusted, Converter={StaticResource BoolToVisibility}}">
+                                                            <ToolTipService.ToolTip>
+                                                                <ToolTip>
+                                                                    <StackPanel Spacing="4" MaxWidth="300">
+                                                                        <TextBlock
+                                                                            Text="System Adjusted"
+                                                                            Style="{StaticResource BodyStrongTextBlockStyle}" />
+                                                                        <TextBlock
+                                                                            Text="{x:Bind TooltipText}"
+                                                                            Style="{StaticResource CaptionTextBlockStyle}"
+                                                                            TextWrapping="Wrap" />
+                                                                    </StackPanel>
+                                                                </ToolTip>
+                                                            </ToolTipService.ToolTip>
+                                                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                                                <FontIcon
+                                                                    Glyph="&#xE7BA;"
+                                                                    FontSize="10"
+                                                                    Foreground="{ThemeResource SystemFillColorCautionBrush}" />
+                                                                <TextBlock
+                                                                    Text="Adjusted"
+                                                                    Style="{StaticResource CaptionTextBlockStyle}"
+                                                                    Foreground="{ThemeResource SystemFillColorCautionBrush}" />
+                                                            </StackPanel>
+                                                        </Border>
+
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </Expander.Content>
+                            </Expander>
+
+                        </DataTemplate>
+                    </ItemsRepeater.ItemTemplate>
+                </ItemsRepeater>
+
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Page>

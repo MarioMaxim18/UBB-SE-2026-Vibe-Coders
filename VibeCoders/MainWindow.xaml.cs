@@ -20,11 +20,7 @@ public sealed partial class MainWindow : Window
         var placementDone = false;
         Activated += (_, _) =>
         {
-            if (placementDone)
-            {
-                return;
-            }
-
+            if (placementDone) return;
             placementDone = true;
             ApplyInitialPlacement();
         };
@@ -52,9 +48,14 @@ public sealed partial class MainWindow : Window
         if (args.SelectedItem is NavigationViewItem item)
         {
             var tag = item.Tag?.ToString();
+
             if (tag == "Dashboard")
             {
                 _navigationService.NavigateToClientDashboard(requestRefresh: true);
+            }
+            else if (tag == "WorkoutLogs")
+            {
+                _navigationService.NavigateToWorkoutLogs();
             }
             else if (tag == "Calendar")
             {

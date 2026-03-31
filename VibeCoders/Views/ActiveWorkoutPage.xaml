@@ -327,7 +327,9 @@
                                         <Button
                                             Grid.Column="2"
                                             Style="{StaticResource AccentButtonStyle}"
-                                            VerticalAlignment="Center">
+                                            VerticalAlignment="Center"
+                                            Tag="{x:Bind}"
+                                            Click="ConfirmDeloadButton_Click">
                                             <StackPanel Orientation="Horizontal" Spacing="8">
                                                 <FontIcon Glyph="&#xE74D;" FontSize="12" />
                                                 <TextBlock Text="Confirm Deload" />
@@ -356,6 +358,18 @@
                             Width="16" Height="16" />
                         <FontIcon Glyph="&#xE73E;" FontSize="14" />
                         <TextBlock Text="Finish Workout" />
+                    </StackPanel>
+                </Button>
+
+                <!-- Repeat This Workout button (#77) -->
+                <Button
+                    HorizontalAlignment="Stretch"
+                    Command="{x:Bind ViewModel.RepeatWorkoutCommand}"
+                    CommandParameter="{x:Bind ClientId}"
+                    Visibility="{x:Bind ViewModel.IsWorkoutStarted, Mode=OneWay, Converter={StaticResource BoolToVisibility}, ConverterParameter=Invert}">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon Glyph="&#xE72C;" FontSize="14" />
+                        <TextBlock Text="Repeat This Workout" />
                     </StackPanel>
                 </Button>
 
