@@ -16,4 +16,19 @@ public interface INavigationService
     /// Navigates to the calendar integration page.
     /// </summary>
     void NavigateToCalendarIntegration();
+
+    /// <summary>
+    /// Navigates to the rank showcase (level, rank title, full achievement list including locked).
+    /// </summary>
+    void NavigateToRankShowcase();
+
+    /// <summary>
+    /// Navigates to the active workout session page.
+    /// </summary>
+    void NavigateToActiveWorkout();
+
+    /// <summary>
+    /// Navigates back to the previous page when the frame history allows it.
+    /// </summary>
+    void GoBack();
 }

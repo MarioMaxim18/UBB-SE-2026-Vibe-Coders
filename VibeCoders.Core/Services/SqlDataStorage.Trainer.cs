@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -76,7 +76,7 @@ namespace VibeCoders.Services
             return false;
         }
 
-        public User LoadUser(string username)
+        public User? LoadUser(string username)
         {
             //TODO
             return null;
@@ -88,11 +88,6 @@ namespace VibeCoders.Services
             return false;
         }
 
-        public bool SaveWorkoutLog(WorkoutLog log)
-        {
-            //TODO
-            return false;
-        }
 
         //public bool saveNutritionPlan(NutritionPlan plan)
         //{
