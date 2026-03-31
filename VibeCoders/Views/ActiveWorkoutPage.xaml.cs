@@ -24,7 +24,7 @@ public sealed partial class ActiveWorkoutPage : Page
         _timer.Tick += (s, e) =>
         {
             _elapsed = _elapsed.Add(TimeSpan.FromSeconds(1));
-            WorkoutTimerDisplay.Text = _elapsed.ToString(@"hh\:mm\:ss");
+            WorkoutTimerDisplay.Text = _elapsed.ToString(@"mm\:ss");
         };
         _timer.Start();
     }
