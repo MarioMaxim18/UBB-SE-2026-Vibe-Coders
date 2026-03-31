@@ -102,5 +102,6 @@ public partial class App : Application
         services.AddTransient<ClientDashboardViewModel>();
         services.AddTransient<RankShowcaseViewModel>();
         services.AddTransient<ActiveWorkoutViewModel>();
+        services.AddTransient<WorkoutLogsViewModel>();
     }
 }
