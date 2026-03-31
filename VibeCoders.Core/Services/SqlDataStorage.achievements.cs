@@ -48,4 +48,51 @@ public partial class SqlDataStorage
 
         return list;
     }
+
+    /// <inheritdoc />
+    public bool AwardAchievement(int clientId, int achievementId)
+    {
+        using var conn = new SqlConnection(_connectionString);
+        conn.Open();
+
+        // Strict duplicate check: if the client already holds this badge, do nothing.
+        const string checkSql = @"
+            SELECT COUNT(1)
+            FROM CLIENT_ACHIEVEMENT
+            WHERE client_id      = @ClientId
+              AND achievement_id = @AchievementId
+              AND unlocked       = 1;";
+
+        using (var checkCmd = new SqlCommand(checkSql, conn))
+        {
+            checkCmd.Parameters.AddWithValue("@ClientId",      clientId);
+            checkCmd.Parameters.AddWithValue("@AchievementId", achievementId);
+
+            var alreadyAwarded = (int)checkCmd.ExecuteScalar() > 0;
+            if (alreadyAwarded)
+                return false;
+        }
+
+        // No existing row — insert with unlocked = 1.
+        // Uses INSERT OR UPDATE pattern so a pre-existing locked placeholder is
+        // also handled gracefully (e.g. seeded rows with unlocked = 0).
+        const string upsertSql = @"
+            IF EXISTS (
+                SELECT 1 FROM CLIENT_ACHIEVEMENT
+                WHERE client_id = @ClientId AND achievement_id = @AchievementId
+            )
+                UPDATE CLIENT_ACHIEVEMENT
+                   SET unlocked = 1
+                 WHERE client_id = @ClientId AND achievement_id = @AchievementId;
+            ELSE
+                INSERT INTO CLIENT_ACHIEVEMENT (client_id, achievement_id, unlocked)
+                VALUES (@ClientId, @AchievementId, 1);";
+
+        using var upsertCmd = new SqlCommand(upsertSql, conn);
+        upsertCmd.Parameters.AddWithValue("@ClientId",      clientId);
+        upsertCmd.Parameters.AddWithValue("@AchievementId", achievementId);
+        upsertCmd.ExecuteNonQuery();
+
+        return true;
+    }
 }
