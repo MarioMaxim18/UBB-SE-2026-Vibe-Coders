@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
+using VibeCoders.Domain;
 using VibeCoders.Services;
 using VibeCoders.ViewModels;
 
@@ -101,9 +102,12 @@ public partial class App : Application
         services.AddSingleton<ClientService>();
         services.AddSingleton<TrainerService>();
 
+        services.AddSingleton<ICalendarExportService, CalendarExportService>();
+
         services.AddTransient<ClientDashboardViewModel>();
         services.AddTransient<RankShowcaseViewModel>();
         services.AddTransient<ActiveWorkoutViewModel>();
         services.AddTransient<WorkoutLogsViewModel>();
+        services.AddTransient<CalendarIntegrationViewModel>();
     }
 }

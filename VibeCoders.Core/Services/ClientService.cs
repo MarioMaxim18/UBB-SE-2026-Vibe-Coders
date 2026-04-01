@@ -1,4 +1,5 @@
-﻿using System.Net.Http;
+using System.Diagnostics;
+using System.Net.Http;
 using System.Net.Http.Json;
 using VibeCoders.Models;
 using VibeCoders.Models.Integration;
@@ -10,14 +11,20 @@ namespace VibeCoders.Services
         private readonly IDataStorage _storage;
         private readonly ProgressionService _progressionService;
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IWorkoutDataForwarder _workoutAnalyticsForwarder;
 
         private const string NutritionApiEndpoint = "https://nutrition-app.vibecoders.internal/api/nutrition/sync";
 
-        public ClientService(IDataStorage storage, ProgressionService progressionService, IHttpClientFactory httpClientFactory)
+        public ClientService(
+            IDataStorage storage,
+            ProgressionService progressionService,
+            IHttpClientFactory httpClientFactory,
+            IWorkoutDataForwarder workoutAnalyticsForwarder)
         {
             _storage = storage;
             _progressionService = progressionService;
             _httpClientFactory = httpClientFactory;
+            _workoutAnalyticsForwarder = workoutAnalyticsForwarder;
         }
 
         // ── Workout ──────────────────────────────────────────────────────────
@@ -39,6 +46,21 @@ namespace VibeCoders.Services
                 _progressionService.EvaluateWorkout(log);
 
                 bool isSaved = _storage.SaveWorkoutLog(log);
+
+                if (isSaved)
+                {
+                    try
+                    {
+                        _workoutAnalyticsForwarder
+                            .ForwardCompletedWorkoutAsync(log.ClientId, log)
+                            .GetAwaiter()
+                            .GetResult();
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"Analytics copy failed after workout save: {ex.Message}");
+                    }
+                }
 
                 return isSaved;
             }
