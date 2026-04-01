@@ -88,5 +88,13 @@ namespace VibeCoders.Services
         /// (rolling window: today inclusive, going back 6 days).
         /// </summary>
         int GetWorkoutsInLastSevenDays(int clientId);
+        
+
+        bool SaveTrainerWorkout(WorkoutTemplate template);
+
+        bool DeleteWorkoutTemplate(int templateId);
+
+        List<string> GetAllExerciseNames();
+
     }
 }

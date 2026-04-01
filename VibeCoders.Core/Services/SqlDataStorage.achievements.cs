@@ -90,19 +90,19 @@ public partial class SqlDataStorage
             FROM ACHIEVEMENT
             ORDER BY achievement_id;";
 
-        using var cmd    = new SqlCommand(sql, conn);
+        using var cmd = new SqlCommand(sql, conn);
         using var reader = cmd.ExecuteReader();
 
         while (reader.Read())
         {
             list.Add(new Achievement
             {
-                AchievementId     = reader.GetInt32(0),
-                Name              = reader.GetString(1),
-                Description       = reader.GetString(2),
-                Criteria          = reader.GetString(3),
+                AchievementId = reader.GetInt32(0),
+                Name = reader.GetString(1),
+                Description = reader.GetString(2),
+                Criteria = reader.GetString(3),
                 ThresholdWorkouts = reader.IsDBNull(4) ? null : reader.GetInt32(4),
-                IsUnlocked        = false,
+                IsUnlocked = false,
             });
         }
 
@@ -229,10 +229,10 @@ public partial class SqlDataStorage
             list.Add(new AchievementShowcaseItem
             {
                 AchievementId = reader.GetInt32(0),
-                Title         = reader.GetString(1),
-                Description   = reader.GetString(2),
-                Criteria      = reader.GetString(3),
-                IsUnlocked    = reader.GetInt32(4) != 0
+                Title = reader.GetString(1),
+                Description = reader.GetString(2),
+                Criteria = reader.GetString(3),
+                IsUnlocked = reader.GetInt32(4) != 0
             });
         }
 
@@ -282,7 +282,7 @@ public partial class SqlDataStorage
 
         using var cmd = new SqlCommand(sql, conn);
         cmd.Parameters.AddWithValue("@AchievementId", achievementId);
-        cmd.Parameters.AddWithValue("@ClientId",      clientId);
+        cmd.Parameters.AddWithValue("@ClientId", clientId);
 
         using var reader = cmd.ExecuteReader();
         if (!reader.Read()) return null;
@@ -290,10 +290,10 @@ public partial class SqlDataStorage
         return new AchievementShowcaseItem
         {
             AchievementId = reader.GetInt32(0),
-            Title         = reader.GetString(1),
-            Description   = reader.GetString(2),
-            Criteria      = reader.GetString(3),
-            IsUnlocked    = reader.GetInt32(4) != 0
+            Title = reader.GetString(1),
+            Description = reader.GetString(2),
+            Criteria = reader.GetString(3),
+            IsUnlocked = reader.GetInt32(4) != 0
         };
     }
 
@@ -313,7 +313,7 @@ public partial class SqlDataStorage
 
         using (var checkCmd = new SqlCommand(checkSql, conn))
         {
-            checkCmd.Parameters.AddWithValue("@ClientId",      clientId);
+            checkCmd.Parameters.AddWithValue("@ClientId", clientId);
             checkCmd.Parameters.AddWithValue("@AchievementId", achievementId);
 
             var alreadyAwarded = (int)checkCmd.ExecuteScalar() > 0;
@@ -339,7 +339,7 @@ public partial class SqlDataStorage
         try
         {
             using var upsertCmd = new SqlCommand(upsertSql, conn);
-            upsertCmd.Parameters.AddWithValue("@ClientId",      clientId);
+            upsertCmd.Parameters.AddWithValue("@ClientId", clientId);
             upsertCmd.Parameters.AddWithValue("@AchievementId", achievementId);
             upsertCmd.ExecuteNonQuery();
             return true;

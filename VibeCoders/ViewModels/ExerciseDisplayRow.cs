@@ -12,8 +12,8 @@ namespace VibeCoders.ViewModels
     
     public class ExerciseDisplayRow
     {
-        public string Name { get; set; }
-        public string MuscleGroup { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string MuscleGroup { get; set; } = string.Empty;
         public List<VibeCoders.Models.LoggedSet> Sets { get; set; } = new();
 
         // ── Helper Methods ───────────────────────────────────────────────────
