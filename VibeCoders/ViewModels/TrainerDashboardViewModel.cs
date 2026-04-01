@@ -6,13 +6,21 @@ using System.Text;
 using System.Threading.Tasks;
 using VibeCoders.Models;
 using VibeCoders.Services;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace VibeCoders.ViewModels
 {
-    public class TrainerDashboardViewModel
+    public class TrainerDashboardViewModel : INotifyPropertyChanged
     {
         private readonly TrainerService _trainerService;
 
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        protected void OnPropertyChanged([CallerMemberName] string propertyName = "")
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
 
         public ObservableCollection<Client> AssignedClients { get; set; } = new ObservableCollection<Client>();
         public ObservableCollection<WorkoutLog> SelectedClientLogs { get; set; } = new ObservableCollection<WorkoutLog>();
@@ -28,6 +36,7 @@ namespace VibeCoders.ViewModels
                 {
                     _selectedClient = value;
                     LoadLogsForSelectedClient();
+                    OnPropertyChanged();
                 }
             }
         }
@@ -44,6 +53,7 @@ namespace VibeCoders.ViewModels
                 {
                     _selectedWorkoutLog = value;
                     OnWorkoutLogSelected();
+                    OnPropertyChanged();
                 }
             }
         }
@@ -51,6 +61,7 @@ namespace VibeCoders.ViewModels
         private void OnWorkoutLogSelected()
         {
             CurrentWorkoutDetails.Clear();
+
             if (_selectedWorkoutLog == null) return;
 
             foreach (var exercise in _selectedWorkoutLog.Exercises)
@@ -58,7 +69,7 @@ namespace VibeCoders.ViewModels
                 CurrentWorkoutDetails.Add(new ExerciseDisplayRow
                 {
                     Name = exercise.ExerciseName,
-                    MuscleGroup = "Hams", // Ideally pull this from your TemplateExercise data
+                    MuscleGroup = exercise.TargetMuscles.ToString(),
                     Sets = exercise.Sets
                 });
             }
@@ -100,6 +111,23 @@ namespace VibeCoders.ViewModels
                     SelectedWorkoutLog = SelectedClientLogs[0];
                 }
 
+            }
+        }
+
+        public void SaveCurrentFeedback()
+        {
+            if (SelectedWorkoutLog == null) return;
+
+            bool success = _trainerService.SaveWorkoutFeedback(SelectedWorkoutLog);
+
+            if (success)
+            {
+                System.Diagnostics.Debug.WriteLine("Feedback saved successfully!");
+
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine("Uh oh, feedback failed to save.");
             }
         }
     }

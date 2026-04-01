@@ -131,7 +131,7 @@ namespace VibeCoders.Services
         }
 
 
-        
+
 
         /// <summary>
         /// Seeds dummy users, clients, trainers, and workout logs for testing purposes.
@@ -182,25 +182,70 @@ namespace VibeCoders.Services
                 clientId = Convert.ToInt32(cmd.ExecuteScalar());
             }
 
-            // 6. Insert a dummy Workout Log for the Client
-            int workoutLogId;
-            using (var cmd = new SqlCommand(@"
-                INSERT INTO WORKOUT_LOG (client_id, date, total_duration, calories_burned, rating) 
-                VALUES (@ClientId, GETDATE(), '01:15:00', 450, 5);
-                SELECT SCOPE_IDENTITY();", conn))
+            // ─── LOCAL HELPERS FOR CLEAN DATA SEEDING ────────────────────────────
+
+            int CreateLog(DateTime date, string duration, int cals)
             {
+                using var cmd = new SqlCommand(@"
+                    INSERT INTO WORKOUT_LOG (client_id, date, total_duration, calories_burned, rating) 
+                    VALUES (@ClientId, @Date, @Duration, @Cals, 5);
+                    SELECT SCOPE_IDENTITY();", conn);
                 cmd.Parameters.AddWithValue("@ClientId", clientId);
-                workoutLogId = Convert.ToInt32(cmd.ExecuteScalar());
+                cmd.Parameters.AddWithValue("@Date", date);
+                cmd.Parameters.AddWithValue("@Duration", duration);
+                cmd.Parameters.AddWithValue("@Cals", cals);
+                return Convert.ToInt32(cmd.ExecuteScalar());
             }
 
-            // 7. Insert a dummy Set for that Workout
-            using (var cmd = new SqlCommand(@"
-                INSERT INTO WORKOUT_LOG_SETS (workout_log_id, exercise_name, sets, reps, weight)
-                VALUES (@LogId, 'Barbell Squat', 1, 10, 100.0);", conn))
+            void AddSet(int logId, string exName, int setIndex, int reps, double weight)
             {
-                cmd.Parameters.AddWithValue("@LogId", workoutLogId);
+                using var cmd = new SqlCommand(@"
+                    INSERT INTO WORKOUT_LOG_SETS (workout_log_id, exercise_name, sets, reps, weight)
+                    VALUES (@LogId, @Name, @SetIdx, @Reps, @Weight);", conn);
+                cmd.Parameters.AddWithValue("@LogId", logId);
+                cmd.Parameters.AddWithValue("@Name", exName);
+                cmd.Parameters.AddWithValue("@SetIdx", setIndex);
+                cmd.Parameters.AddWithValue("@Reps", reps);
+                cmd.Parameters.AddWithValue("@Weight", weight);
                 cmd.ExecuteNonQuery();
             }
+
+            // ─── GENERATE WORKOUT HISTORY ─────────────────────────────────────────
+
+            // WORKOUT 1: Heavy Leg Day (Today)
+            int log1 = CreateLog(DateTime.Now, "01:15:00", 450);
+            AddSet(log1, "Barbell Squat", 1, 10, 100.0);
+            AddSet(log1, "Barbell Squat", 2, 8, 105.0);
+            AddSet(log1, "Barbell Squat", 3, 6, 110.0);
+
+            AddSet(log1, "Romanian Deadlift", 1, 12, 80.0);
+            AddSet(log1, "Romanian Deadlift", 2, 12, 80.0);
+            AddSet(log1, "Romanian Deadlift", 3, 10, 85.0);
+            AddSet(log1, "Romanian Deadlift", 4, 8, 90.0); // 4 sets to test dynamic layout!
+
+            AddSet(log1, "Calf Raises", 1, 15, 60.0);
+            AddSet(log1, "Calf Raises", 2, 15, 60.0);
+
+
+            // WORKOUT 2: Push Day (3 days ago)
+            int log2 = CreateLog(DateTime.Now.AddDays(-3), "00:55:00", 320);
+            AddSet(log2, "Bench Press", 1, 10, 80.0);
+            AddSet(log2, "Bench Press", 2, 8, 85.0);
+            AddSet(log2, "Bench Press", 3, 8, 85.0);
+
+            AddSet(log2, "Overhead Press", 1, 10, 40.0);
+            AddSet(log2, "Overhead Press", 2, 10, 40.0);
+
+
+            // WORKOUT 3: Pull Day (1 week ago)
+            int log3 = CreateLog(DateTime.Now.AddDays(-7), "01:05:00", 400);
+            AddSet(log3, "Pull-ups", 1, 12, 0.0); // Bodyweight
+            AddSet(log3, "Pull-ups", 2, 10, 0.0);
+            AddSet(log3, "Pull-ups", 3, 8, 0.0);
+
+            AddSet(log3, "Barbell Row", 1, 10, 60.0);
+            AddSet(log3, "Barbell Row", 2, 10, 60.0);
+            AddSet(log3, "Barbell Row", 3, 8, 65.0);
         }
 
 

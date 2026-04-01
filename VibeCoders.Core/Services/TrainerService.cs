@@ -31,6 +31,13 @@ namespace VibeCoders.Services
             return DataStorage.GetWorkoutHistory(clientId);
         }
 
+        public bool SaveWorkoutFeedback(WorkoutLog log)
+        {
+            if (log == null) return false;
+
+            return DataStorage.UpdateWorkoutLogFeedback(log.Id, log.Rating, log.TrainerNotes);
+        }
+
 
         public void assignWorkout(Client client, WorkoutLog workout)
         {
