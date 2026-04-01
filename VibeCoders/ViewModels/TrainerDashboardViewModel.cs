@@ -169,6 +169,15 @@ namespace VibeCoders.ViewModels
 
             bool success = _trainerService.SaveWorkoutFeedback(SelectedWorkoutLog);
 
+            }
+        }
+
+        public void SaveCurrentFeedback()
+        {
+            if (SelectedWorkoutLog == null) return;
+
+            bool success = _trainerService.SaveWorkoutFeedback(SelectedWorkoutLog);
+
             if (success)
             {
                 System.Diagnostics.Debug.WriteLine("Feedback saved successfully!");
