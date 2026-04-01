@@ -37,7 +37,7 @@
         <Border Grid.Column="1" Margin="16,0,0,0" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="10">
             <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="1*"/>
+                    <RowDefinition Height="1.5*"/>
                     <RowDefinition Height="2*"/>
                 </Grid.RowDefinitions>
 
@@ -67,53 +67,91 @@
                             </ListView.ItemTemplate>
                         </ListView>
 
-					</Grid>
+					 </Grid>
 					
 					
 					<Grid Grid.Column="1">
-						<ListView
-                              ItemsSource="{x:Bind ViewModel.CurrentWorkoutDetails, Mode=OneWay}"
-                              SelectionMode="None">
 
-							<ListView.Header>
-								<Grid ColumnDefinitions="2*, 1*, 4*" Padding="12,8" Background="{ThemeResource LayerFillColorDefaultBrush}">
-									<TextBlock Text="Exercise Name" Grid.Column="0" Foreground="Gray" FontSize="12"/>
-									<TextBlock Text="Group" Grid.Column="1" Foreground="Gray" FontSize="12"/>
-									<TextBlock Text="Sets (Reps / Weight)" Grid.Column="2" Foreground="Gray" FontSize="12" Margin="12,0,0,0"/>
-								</Grid>
-							</ListView.Header>
+						<Grid>
 
-							<ListView.ItemTemplate>
-								<DataTemplate x:DataType="vm:ExerciseDisplayRow">
-									<Grid ColumnDefinitions="2*, 1*, 4*" Padding="0,8">
-										<TextBlock Text="{x:Bind Name}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+							<Grid.RowDefinitions>
+								<RowDefinition Height="*"/>
+								<RowDefinition Height="Auto"/>
+							</Grid.RowDefinitions>
+						
+						
+							<ListView
+								  Grid.Row="0"
+								  ItemsSource="{x:Bind ViewModel.CurrentWorkoutDetails, Mode=OneWay}"
+								  SelectionMode="None">
 
-										<Border Grid.Column="1" Background="#FFE0E0" CornerRadius="4" Padding="6,2" HorizontalAlignment="Left" VerticalAlignment="Center">
-											<TextBlock Text="{x:Bind MuscleGroup}" Foreground="#802020" FontSize="11"/>
-										</Border>
-
-										<ItemsControl Grid.Column="2" ItemsSource="{x:Bind Sets}">
-											<ItemsControl.ItemsPanel>
-												<ItemsPanelTemplate>
-													<StackPanel Orientation="Horizontal" Spacing="15"/>
-												</ItemsPanelTemplate>
-											</ItemsControl.ItemsPanel>
-											<ItemsControl.ItemTemplate>
-												<DataTemplate x:DataType="models:LoggedSet">
-													<StackPanel Orientation="Horizontal" Spacing="8">
-														<TextBlock Text="{x:Bind ActualReps}" FontWeight="SemiBold" VerticalAlignment="Center"/>
-														<TextBlock Text="×" Foreground="Gray" VerticalAlignment="Center" FontSize="10"/>
-														<TextBlock Text="{x:Bind ActualWeight}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
-
-														<TextBlock Text="|" Foreground="#20FFFFFF" VerticalAlignment="Center" Margin="5,0,0,0"/>
-													</StackPanel>
-												</DataTemplate>
-											</ItemsControl.ItemTemplate>
-										</ItemsControl>
+								<ListView.Header>
+									<Grid ColumnDefinitions="2*, 1*, 4*" Padding="12,8" Background="{ThemeResource LayerFillColorDefaultBrush}">
+										<TextBlock Text="Exercise Name" Grid.Column="0" Foreground="Gray" FontSize="12"/>
+										<TextBlock Text="Group" Grid.Column="1" Foreground="Gray" FontSize="12"/>
+										<TextBlock Text="Sets (Reps / Weight)" Grid.Column="2" Foreground="Gray" FontSize="12" Margin="12,0,0,0"/>
 									</Grid>
-								</DataTemplate>
-							</ListView.ItemTemplate>
-						</ListView>
+								</ListView.Header>
+
+								<ListView.ItemTemplate>
+									<DataTemplate x:DataType="vm:ExerciseDisplayRow">
+										<Grid ColumnDefinitions="2*, 1*, 4*" Padding="0,8">
+											<TextBlock Text="{x:Bind Name}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+
+											<Border Grid.Column="1" Background="#FFE0E0" CornerRadius="4" Padding="6,2" HorizontalAlignment="Left" VerticalAlignment="Center">
+												<TextBlock Text="{x:Bind MuscleGroup}" Foreground="#802020" FontSize="11"/>
+											</Border>
+
+											<ItemsControl Grid.Column="2" ItemsSource="{x:Bind Sets}">
+												<ItemsControl.ItemsPanel>
+													<ItemsPanelTemplate>
+														<StackPanel Orientation="Horizontal" Spacing="15"/>
+													</ItemsPanelTemplate>
+												</ItemsControl.ItemsPanel>
+												<ItemsControl.ItemTemplate>
+													<DataTemplate x:DataType="models:LoggedSet">
+														<StackPanel Orientation="Horizontal" Spacing="8">
+															<TextBlock Text="{x:Bind ActualReps}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+															<TextBlock Text="×" Foreground="Gray" VerticalAlignment="Center" FontSize="10"/>
+															<TextBlock Text="{x:Bind ActualWeight}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
+
+															<TextBlock Text="|" Foreground="#20FFFFFF" VerticalAlignment="Center" Margin="5,0,0,0"/>
+														</StackPanel>
+													</DataTemplate>
+												</ItemsControl.ItemTemplate>
+											</ItemsControl>
+										</Grid>
+									</DataTemplate>
+								</ListView.ItemTemplate>
+							</ListView>
+
+
+							<Grid Grid.Row="1" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" Padding="16" CornerRadius="8" ColumnSpacing="24">
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="Auto"/>
+									<ColumnDefinition Width="*"/>
+								</Grid.ColumnDefinitions>
+
+								<StackPanel Grid.Column="0" Spacing="8" VerticalAlignment="Top">
+									<TextBlock Text="Trainer Feedback" FontSize="14" FontWeight="SemiBold"/>
+									<RatingControl Value="{x:Bind ViewModel.SelectedWorkoutLog.Rating, Mode=TwoWay, FallbackValue=-1}"/>
+								</StackPanel>
+
+								<Grid Grid.Column="1">
+									<Grid.RowDefinitions>
+										<RowDefinition Height="*"/>
+										<RowDefinition Height="Auto"/>
+									</Grid.RowDefinitions>
+
+									<TextBox Grid.Row="0"
+											 Text="{x:Bind ViewModel.SelectedWorkoutLog.TrainerNotes, Mode=TwoWay, FallbackValue=''}"
+											 PlaceholderText="Leave feedback or adjust the routine for next time..."
+											 TextWrapping="Wrap" AcceptsReturn="True" MinHeight="80"/>
+
+									<Button Grid.Row="1" Click="{x:Bind ViewModel.SaveCurrentFeedback}" Content="Save Feedback" Style="{ThemeResource AccentButtonStyle}" HorizontalAlignment="Right" Margin="0,8,0,0"/>
+								</Grid>
+							</Grid>
+						</Grid>
 						
 					</Grid>
 					
