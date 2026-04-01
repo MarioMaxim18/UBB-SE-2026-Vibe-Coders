@@ -239,7 +239,7 @@ namespace VibeCoders.ViewModels
             return _trainerService.SaveTrainerWorkout(template);
         }
 
-        public void AddExerciseToRoutine()
+        private void AddExerciseToRoutineCore()
         {
             if (string.IsNullOrWhiteSpace(SelectedNewExercise)) return;
 
@@ -258,7 +258,7 @@ namespace VibeCoders.ViewModels
 
         public void AddExerciseToRoutine(object sender, RoutedEventArgs e)
         {
-            AddExerciseToRoutine();
+            AddExerciseToRoutineCore();
         }
 
         public void RemoveExerciseFromRoutine(TemplateExercise exercise)
@@ -269,7 +269,7 @@ namespace VibeCoders.ViewModels
             }
         }
 
-        public void SaveCurrentFeedback()
+        private void SaveCurrentFeedbackCore()
         {
             if (SelectedWorkoutLog == null) return;
             _trainerService.SaveWorkoutFeedback(SelectedWorkoutLog);
@@ -277,10 +277,10 @@ namespace VibeCoders.ViewModels
 
         public void SaveCurrentFeedback(object sender, RoutedEventArgs e)
         {
-            SaveCurrentFeedback();
+            SaveCurrentFeedbackCore();
         }
 
-        public void AssignNutritionPlan()
+        private void AssignNutritionPlanCore()
         {
             if (!CanAssignPlan || _selectedClient == null) return;
 
@@ -299,7 +299,7 @@ namespace VibeCoders.ViewModels
 
         public void AssignNutritionPlan(object sender, RoutedEventArgs e)
         {
-            AssignNutritionPlan();
+            AssignNutritionPlanCore();
         }
 
         private void LoadClientsAndWorkouts()

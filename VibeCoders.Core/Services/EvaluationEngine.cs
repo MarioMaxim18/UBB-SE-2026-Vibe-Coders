@@ -41,15 +41,15 @@ public sealed class EvaluationEngine
         // Drive workout-count checks directly from the canonical milestone table so
         // the titles here always match what SeedWorkoutMilestoneAchievements seeds.
         var checks = TotalWorkoutsMilestoneEvaluator.DefaultMilestones
-            .Select(m => (VibeCoders.Domain.IMilestoneCheck)new WorkoutCountCheck(m.Title, m.Threshold))
+            .Select(m => (VibeCoders.Domain.IMilestoneCheck)new VibeCoders.Domain.WorkoutCountCheck(m.Title, m.Threshold))
             .ToList();
 
         // Consecutive-day streak milestones
-        checks.Add(new StreakCheck("3-Day Streak", requiredConsecutiveDays: 3));
-        checks.Add(new StreakCheck("Week Warrior",  requiredConsecutiveDays: 7));
+        checks.Add(new VibeCoders.Domain.StreakCheck("3-Day Streak", requiredConsecutiveDays: 3));
+        checks.Add(new VibeCoders.Domain.StreakCheck("Week Warrior",  requiredConsecutiveDays: 7));
 
         // Weekly volume milestone
-        checks.Add(new WeeklyVolumeCheck("Week Champion", requiredWorkoutsPerWeek: 6));
+        checks.Add(new VibeCoders.Domain.WeeklyVolumeCheck("Week Champion", requiredWorkoutsPerWeek: 6));
 
         return checks;
     }
