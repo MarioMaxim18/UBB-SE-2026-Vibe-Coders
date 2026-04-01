@@ -1,4 +1,4 @@
-﻿using System.Net.Http;
+using System.Net.Http;
 using System.Net.Http.Json;
 using VibeCoders.Models;
 using VibeCoders.Models.Integration;
@@ -51,6 +51,13 @@ namespace VibeCoders.Services
 
                 if (isSaved)
                     EvaluateAndPublishAchievements(log.ClientId);
+
+                if (isSaved)
+                {
+                    // #186 — check whether any "Total Workouts" milestone has been
+                    // crossed and unlock the corresponding achievements.
+                    _storage.EvaluateAndUnlockWorkoutMilestones(log.ClientId);
+                }
 
                 return isSaved;
             }

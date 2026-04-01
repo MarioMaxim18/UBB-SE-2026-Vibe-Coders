@@ -48,22 +48,31 @@ namespace VibeCoders.Services
         /// <param name="clientId">Client whose <c>CLIENT_ACHIEVEMENT</c> rows join the catalog.</param>
         List<AchievementShowcaseItem> GetAchievementShowcaseForClient(int clientId);
 
-        
+        /// <summary>
+        /// Returns the total number of completed workout sessions logged by
+        /// <paramref name="clientId"/> (lifetime count, all time).
+        /// </summary>
         int GetWorkoutCount(int clientId);
 
-        
+        /// <summary>Returns the number of distinct calendar days on which the client logged a workout.</summary>
         int GetDistinctWorkoutDayCount(int clientId);
 
-       
+        /// <summary>Returns a single achievement with the client's unlock state, or null if not found.</summary>
         AchievementShowcaseItem? GetAchievementForClient(int achievementId, int clientId);
 
-        
-        ///<summary>
-        ///Updates the workout's log feedback values when called
-        ///</summary>
+        /// <summary>Updates the workout log's feedback values (rating and notes).</summary>
         bool UpdateWorkoutLogFeedback(int workoutLogId, double rating, string notes);
 
-
+        /// <summary>Marks a specific achievement as unlocked for the client. Returns false if already unlocked.</summary>
         bool AwardAchievement(int clientId, int achievementId);
+
+        /// <summary>
+        /// Checks every milestone achievement whose <c>threshold_workouts</c> the
+        /// client has now reached and marks it as unlocked in <c>CLIENT_ACHIEVEMENT</c>.
+        /// Idempotent: already-unlocked rows are not touched.
+        /// Call this immediately after persisting a new <see cref="WorkoutLog"/>.
+        /// </summary>
+        /// <param name="clientId">Client to evaluate milestones for.</param>
+        void EvaluateAndUnlockWorkoutMilestones(int clientId);
     }
 }

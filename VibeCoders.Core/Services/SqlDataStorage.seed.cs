@@ -1,4 +1,5 @@
 using Microsoft.Data.SqlClient;
+using VibeCoders.Domain;
 
 namespace VibeCoders.Services
 {
@@ -130,8 +131,34 @@ namespace VibeCoders.Services
             Insert("Dedicated",    "Demonstrate your long-term commitment.",        "Reach 50 hours of total active time.");
         }
 
+        /// <summary>
+        /// Upserts the "Total Workouts" milestone achievements defined by
+        /// <see cref="TotalWorkoutsMilestoneEvaluator.DefaultMilestones"/> (#186).
+        /// Safe to call on every startup.
+        /// </summary>
+        public void SeedWorkoutMilestoneAchievements()
+        {
+            using var conn = new SqlConnection(_connectionString);
+            conn.Open();
 
+            foreach (var milestone in TotalWorkoutsMilestoneEvaluator.DefaultMilestones)
+            {
+                const string upsertSql = @"
+                    IF NOT EXISTS (SELECT 1 FROM ACHIEVEMENT WHERE title = @Title)
+                        INSERT INTO ACHIEVEMENT (title, description, threshold_workouts)
+                        VALUES (@Title, @Description, @Threshold);
+                    ELSE
+                        UPDATE ACHIEVEMENT
+                        SET threshold_workouts = @Threshold
+                        WHERE title = @Title AND threshold_workouts IS NULL;";
 
+                using var cmd = new SqlCommand(upsertSql, conn);
+                cmd.Parameters.AddWithValue("@Title", milestone.Title);
+                cmd.Parameters.AddWithValue("@Description", milestone.Description);
+                cmd.Parameters.AddWithValue("@Threshold", milestone.Threshold);
+                cmd.ExecuteNonQuery();
+            }
+        }
 
         /// <summary>
         /// Seeds dummy users, clients, trainers, and workout logs for testing purposes.
@@ -247,7 +274,5 @@ namespace VibeCoders.Services
             AddSet(log3, "Barbell Row", 2, 10, 60.0);
             AddSet(log3, "Barbell Row", 3, 8, 65.0);
         }
-
-
     }
 }
