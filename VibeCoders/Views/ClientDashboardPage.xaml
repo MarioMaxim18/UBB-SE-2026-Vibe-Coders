@@ -71,7 +71,7 @@
         VerticalScrollBarVisibility="Disabled"
         HorizontalScrollMode="Enabled"
         VerticalScrollMode="Disabled">
-        <ItemsRepeater ItemsSource="{x:Bind DashboardViewModel.RecentAchievements, Mode=OneWay}">
+        <ItemsRepeater ItemsSource="{x:Bind ViewModel.RecentAchievements, Mode=OneWay}">
             <ItemsRepeater.Layout>
                 <StackLayout Orientation="Horizontal" Spacing="12" />
             </ItemsRepeater.Layout>
