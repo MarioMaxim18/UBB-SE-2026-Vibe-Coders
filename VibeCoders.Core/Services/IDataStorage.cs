@@ -45,7 +45,6 @@ namespace VibeCoders.Services
         /// including whether the client has unlocked it. Locked rows are included so the
         /// rank showcase can keep future goals visible (product requirement).
         /// </summary>
-        /// <param name="clientId">Client whose <c>CLIENT_ACHIEVEMENT</c> rows join the catalog.</param>
         List<AchievementShowcaseItem> GetAchievementShowcaseForClient(int clientId);
 
         /// <summary>
@@ -70,16 +69,13 @@ namespace VibeCoders.Services
         /// Checks every milestone achievement whose <c>threshold_workouts</c> the
         /// client has now reached and marks it as unlocked in <c>CLIENT_ACHIEVEMENT</c>.
         /// Idempotent: already-unlocked rows are not touched.
-        /// Call this immediately after persisting a new <see cref="WorkoutLog"/>.
         /// </summary>
-        /// <param name="clientId">Client to evaluate milestones for.</param>
         void EvaluateAndUnlockWorkoutMilestones(int clientId);
 
         // ── Streak / weekly helpers used by EvaluationEngine (#191) ──────────
 
         /// <summary>
         /// Returns the client's longest consecutive-day workout streak (ever).
-        /// A streak breaks when a calendar day with no workout separates two logged days.
         /// </summary>
         int GetConsecutiveWorkoutDayStreak(int clientId);
 
@@ -88,14 +84,49 @@ namespace VibeCoders.Services
         /// (rolling window: today inclusive, going back 6 days).
         /// </summary>
         int GetWorkoutsInLastSevenDays(int clientId);
-        
 
-
+        // ── Trainer Workout ──────────────────────────────────────────────────
         bool SaveTrainerWorkout(WorkoutTemplate template);
-
         bool DeleteWorkoutTemplate(int templateId);
-
         List<string> GetAllExerciseNames();
 
+        // ── Nutrition Plan (#112 / #113 / #114) ──────────────────────────────
+
+        /// <summary>
+        /// Inserts a new <see cref="NutritionPlan"/> row and returns its generated ID.
+        /// Does NOT persist the <see cref="NutritionPlan.Meals"/> collection; call
+        /// <see cref="InsertMeal"/> for each meal afterwards. (Issue #112)
+        /// </summary>
+        int InsertNutritionPlan(NutritionPlan plan);
+
+        /// <summary>
+        /// Inserts a <see cref="Meal"/> row linked to <paramref name="nutritionPlanId"/>.
+        /// <see cref="Meal.Ingredients"/> is serialized to JSON before storage. (Issue #113)
+        /// </summary>
+        void InsertMeal(Meal meal, int nutritionPlanId);
+
+        /// <summary>
+        /// Inserts a row into <c>CLIENT_NUTRITION_PLAN</c> linking the plan to a client.
+        /// (Issue #114)
+        /// </summary>
+        void AssignNutritionPlanToClient(int clientId, int nutritionPlanId);
+
+        /// <summary>
+        /// Convenience wrapper: inserts the plan, all its meals, and the client assignment
+        /// in the correct order.
+        /// </summary>
+        void SaveNutritionPlanForClient(NutritionPlan plan, int clientId);
+
+        /// <summary>
+        /// Returns all <see cref="NutritionPlan"/>s assigned to <paramref name="clientId"/>,
+        /// each with its <see cref="NutritionPlan.Meals"/> collection populated.
+        /// </summary>
+        List<NutritionPlan> GetNutritionPlansForClient(int clientId);
+
+        /// <summary>
+        /// Returns all <see cref="Meal"/>s belonging to <paramref name="nutritionPlanId"/>.
+        /// <see cref="Meal.Ingredients"/> is deserialized from JSON.
+        /// </summary>
+        List<Meal> GetMealsForPlan(int nutritionPlanId);
     }
 }
