@@ -22,6 +22,14 @@ namespace VibeCoders.ViewModels
         public ObservableCollection<Client> AssignedClients { get; set; } = new ObservableCollection<Client>();
         public ObservableCollection<WorkoutLog> SelectedClientLogs { get; set; } = new ObservableCollection<WorkoutLog>();
         public ObservableCollection<ExerciseDisplayRow> CurrentWorkoutDetails { get; set; } = new();
+        public ObservableCollection<TemplateExercise> BuilderExercises { get; set; } = new();
+
+        private string _newRoutineName = string.Empty;
+        public string NewRoutineName
+        {
+            get => _newRoutineName;
+            set { _newRoutineName = value; OnPropertyChanged(); }
+        }
 
         private Client? _selectedClient;
         public Client? SelectedClient
