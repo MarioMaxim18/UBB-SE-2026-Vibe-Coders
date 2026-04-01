@@ -168,8 +168,6 @@ namespace VibeCoders.Services
             cmd.ExecuteNonQuery();
 
             // ── CLIENT_ACHIEVEMENT migration: ensure PK exists on older databases ──
-            // The PRIMARY KEY on (client_id, achievement_id) is the DB-level uniqueness
-            // enforcer that prevents duplicate awards even under concurrent operations.
             cmd.CommandText = @"
                 IF NOT EXISTS (
                     SELECT 1 FROM sys.key_constraints
@@ -179,6 +177,16 @@ namespace VibeCoders.Services
                     ALTER TABLE CLIENT_ACHIEVEMENT
                         ADD CONSTRAINT PK_CLIENT_ACHIEVEMENT
                         PRIMARY KEY (client_id, achievement_id);";
+            cmd.ExecuteNonQuery();
+
+            // ── ACHIEVEMENT.threshold_workouts (additive migration) ───────────
+            // Added for the "Total Workouts" milestone feature (#186).
+            // NULL means the achievement is not a workout-count milestone.
+            cmd.CommandText = @"
+                IF NOT EXISTS (
+                    SELECT 1 FROM sys.columns
+                    WHERE object_id = OBJECT_ID('ACHIEVEMENT') AND name = 'threshold_workouts')
+                ALTER TABLE ACHIEVEMENT ADD threshold_workouts INT NULL;";
             cmd.ExecuteNonQuery();
         }
     }

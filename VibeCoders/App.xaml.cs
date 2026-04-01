@@ -44,12 +44,8 @@ public partial class App : Application
                         sql.EnsureSchemaCreated();
                         sql.SeedPrebuiltWorkouts();
                         sql.SeedAchievementCatalog();
-
-
-                        //TEST DATA
+                        sql.SeedWorkoutMilestoneAchievements(); // #186
                         sql.SeedTestData();
-
-
                     }).ConfigureAwait(true);
                 }
             }

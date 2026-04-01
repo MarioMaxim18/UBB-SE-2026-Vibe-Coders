@@ -6,6 +6,55 @@ namespace VibeCoders.Services;
 public partial class SqlDataStorage
 {
     /// <inheritdoc />
+    public int GetWorkoutCount(int clientId)
+    {
+        using var conn = new SqlConnection(_connectionString);
+        conn.Open();
+
+        using var cmd = new SqlCommand(
+            "SELECT COUNT(*) FROM WORKOUT_LOG WHERE client_id = @ClientId;",
+            conn);
+        cmd.Parameters.AddWithValue("@ClientId", clientId);
+
+        return (int)cmd.ExecuteScalar();
+    }
+
+    /// <inheritdoc />
+    public void EvaluateAndUnlockWorkoutMilestones(int clientId)
+    {
+        using var conn = new SqlConnection(_connectionString);
+        conn.Open();
+
+        // Single statement: insert unlock rows for every milestone achievement
+        // whose threshold the client has now reached and that is not already unlocked.
+        const string sql = @"
+            INSERT INTO CLIENT_ACHIEVEMENT (client_id, achievement_id, unlocked)
+            SELECT
+                @ClientId,
+                a.achievement_id,
+                1
+            FROM ACHIEVEMENT a
+            CROSS JOIN (
+                SELECT COUNT(*) AS workout_count
+                FROM WORKOUT_LOG
+                WHERE client_id = @ClientId
+            ) stats
+            WHERE a.threshold_workouts IS NOT NULL
+              AND stats.workout_count >= a.threshold_workouts
+              AND NOT EXISTS (
+                    SELECT 1
+                    FROM CLIENT_ACHIEVEMENT ca
+                    WHERE ca.client_id     = @ClientId
+                      AND ca.achievement_id = a.achievement_id
+                      AND ca.unlocked       = 1
+              );";
+
+        using var cmd = new SqlCommand(sql, conn);
+        cmd.Parameters.AddWithValue("@ClientId", clientId);
+        cmd.ExecuteNonQuery();
+    }
+
+    /// <inheritdoc />
     public List<AchievementShowcaseItem> GetAchievementShowcaseForClient(int clientId)
     {
         var list = new List<AchievementShowcaseItem>();
