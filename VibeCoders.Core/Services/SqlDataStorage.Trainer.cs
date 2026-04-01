@@ -159,6 +159,42 @@ namespace VibeCoders.Services
         }
 
 
+        public bool DeleteWorkoutTemplate(int templateId)
+        {
+            const string deleteExercisesSql = "DELETE FROM TEMPLATE_EXERCISE WHERE workout_template_id = @Id;";
+            const string deleteTemplateSql = "DELETE FROM WORKOUT_TEMPLATE WHERE workout_template_id = @Id;";
+
+            using var conn = new SqlConnection(_connectionString);
+            conn.Open();
+            using var transaction = conn.BeginTransaction();
+
+            try
+            {
+                // 1. Delete child exercises first (Foreign Key constraint)
+                using (var cmd = new SqlCommand(deleteExercisesSql, conn, transaction))
+                {
+                    cmd.Parameters.AddWithValue("@Id", templateId);
+                    cmd.ExecuteNonQuery();
+                }
+
+                // 2. Delete the template itself
+                using (var cmd = new SqlCommand(deleteTemplateSql, conn, transaction))
+                {
+                    cmd.Parameters.AddWithValue("@Id", templateId);
+                    cmd.ExecuteNonQuery();
+                }
+
+                transaction.Commit();
+                return true;
+            }
+            catch
+            {
+                transaction.Rollback();
+                return false;
+            }
+        }
+
+
         public bool SaveUser(User u)
         {
             //TODO
@@ -176,12 +212,6 @@ namespace VibeCoders.Services
             //TODO
             return false;
         }
-
-
-        //public bool saveNutritionPlan(NutritionPlan plan)
-        //{
-        //    throw new NotImplementedException("Nutrition team is working on this!");
-        //}
 
 
 

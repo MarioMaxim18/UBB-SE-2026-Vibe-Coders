@@ -43,5 +43,18 @@ namespace VibeCoders.Services
         {
             throw new NotImplementedException("Workout assignment coming in Slice 2!");
         }
+
+        public bool SaveTrainerWorkout(WorkoutTemplate template)
+        {
+            if (template == null) return false;
+
+            return DataStorage.SaveTrainerWorkout(template);
+        }
+
+        public List<string> GetPredefinedExercises()
+        {
+            return DataStorage.GetAllExerciseNames();
+        }
+
     }
 }

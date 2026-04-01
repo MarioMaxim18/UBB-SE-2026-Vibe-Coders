@@ -56,6 +56,32 @@ namespace VibeCoders.Services
             cmd.ExecuteNonQuery();
 
 
+            // ── EXERCISE LIBRARY ─────────────────────────────────────────────
+            cmd.CommandText = @"
+                IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='EXERCISE' AND xtype='U')
+                BEGIN
+                    CREATE TABLE EXERCISE (
+                        exercise_id INT PRIMARY KEY IDENTITY(1,1),
+                        name VARCHAR(100) NOT NULL UNIQUE,
+                        muscle_group VARCHAR(30) NOT NULL
+                    );
+
+                    /* SEED DATA: Add some basics if the table was just created */
+                    INSERT INTO EXERCISE (name, muscle_group) VALUES 
+                    ('Bench Press', 'CHEST'),
+                    ('Incline Dumbbell Press', 'CHEST'),
+                    ('Barbell Squat', 'LEGS'),
+                    ('Leg Press', 'LEGS'),
+                    ('Deadlift', 'BACK'),
+                    ('Pull-Ups', 'BACK'),
+                    ('Overhead Press', 'SHOULDERS'),
+                    ('Side Laterals', 'SHOULDERS'),
+                    ('Bicep Curls', 'ARMS'),
+                    ('Tricep Pushdowns', 'ARMS');
+                END;";
+            cmd.ExecuteNonQuery();
+
+
 
             // ── WORKOUT_TEMPLATE ─────────────────────────────────────────────
             cmd.CommandText = @"

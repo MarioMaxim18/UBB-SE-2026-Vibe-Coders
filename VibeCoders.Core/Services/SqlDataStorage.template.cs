@@ -127,6 +127,27 @@ namespace VibeCoders.Services
             return rowsAffected > 0;
         }
 
+
+        public List<string> GetAllExerciseNames()
+        {
+            const string sql = "SELECT name FROM EXERCISE ORDER BY name ASC;";
+            var list = new List<string>();
+
+            using var conn = new SqlConnection(_connectionString);
+            conn.Open();
+
+            using var cmd = new SqlCommand(sql, conn);
+            using var reader = cmd.ExecuteReader();
+
+            while (reader.Read())
+            {
+                list.Add(reader.GetString(0));
+            }
+
+            return list;
+        }
+
+
         // ── Private helper ───────────────────────────────────────────────────
 
         /// <summary>
