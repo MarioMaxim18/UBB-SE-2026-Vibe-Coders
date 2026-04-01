@@ -90,6 +90,7 @@ namespace VibeCoders.Services
         int GetWorkoutsInLastSevenDays(int clientId);
         
 
+
         bool SaveTrainerWorkout(WorkoutTemplate template);
 
         bool DeleteWorkoutTemplate(int templateId);
