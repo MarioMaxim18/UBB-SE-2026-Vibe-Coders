@@ -134,63 +134,95 @@ namespace VibeCoders.Services
 
 
         /// <summary>
-        /// Seeds dummy users, clients, trainers, and workout logs for testing purposes.
-        /// Safe to call on every startup.
+        /// Seeds a demo roster: one trainer, <c>DemoClient</c> (primary app persona), and two extra clients
+        /// for the trainer dashboard. Workout history is created for <c>DemoClient</c>; ClientAlpha gets one log.
+        /// Idempotent: skips when user <c>DemoClient</c> already exists.
         /// </summary>
         public void SeedTestData()
         {
             using var conn = new SqlConnection(_connectionString);
             conn.Open();
 
-            // 1. Check if our test trainer already exists. If yes, bail out.
-            using (var check = new SqlCommand("SELECT COUNT(1) FROM [USER] WHERE username = 'TestTrainer';", conn))
+            using (var check = new SqlCommand(
+                "SELECT COUNT(1) FROM [USER] WHERE username = 'DemoClient';", conn))
             {
                 if ((int)check.ExecuteScalar() > 0) return;
             }
 
-            // 2. Insert Trainer User
             int trainerUserId;
-            using (var cmd = new SqlCommand("INSERT INTO [USER] (username) VALUES ('TestTrainer'); SELECT SCOPE_IDENTITY();", conn))
+            using (var cmd = new SqlCommand(
+                "INSERT INTO [USER] (username) VALUES ('TestTrainer'); SELECT SCOPE_IDENTITY();", conn))
             {
                 trainerUserId = Convert.ToInt32(cmd.ExecuteScalar());
             }
 
-            // 3. Insert Trainer Record
             int trainerId;
-            using (var cmd = new SqlCommand("INSERT INTO TRAINER (user_id) VALUES (@UserId); SELECT SCOPE_IDENTITY();", conn))
+            using (var cmd = new SqlCommand(
+                "INSERT INTO TRAINER (user_id) VALUES (@UserId); SELECT SCOPE_IDENTITY();", conn))
             {
                 cmd.Parameters.AddWithValue("@UserId", trainerUserId);
                 trainerId = Convert.ToInt32(cmd.ExecuteScalar());
             }
 
-            // 4. Insert Client User
-            int clientUserId;
-            using (var cmd = new SqlCommand("INSERT INTO [USER] (username) VALUES ('TestClient'); SELECT SCOPE_IDENTITY();", conn))
+            int demoUserId;
+            using (var cmd = new SqlCommand(
+                "INSERT INTO [USER] (username) VALUES ('DemoClient'); SELECT SCOPE_IDENTITY();", conn))
             {
-                clientUserId = Convert.ToInt32(cmd.ExecuteScalar());
+                demoUserId = Convert.ToInt32(cmd.ExecuteScalar());
             }
 
-            // 5. Insert Client Record (linked to the Trainer!)
-            int clientId;
+            int demoClientId;
             using (var cmd = new SqlCommand(@"
-                INSERT INTO CLIENT (user_id, trainer_id, weight, height) 
-                VALUES (@UserId, @TrainerId, 85.5, 180.0); 
+                INSERT INTO CLIENT (user_id, trainer_id, weight, height)
+                VALUES (@UserId, @TrainerId, 85.5, 180.0);
                 SELECT SCOPE_IDENTITY();", conn))
             {
-                cmd.Parameters.AddWithValue("@UserId", clientUserId);
+                cmd.Parameters.AddWithValue("@UserId", demoUserId);
                 cmd.Parameters.AddWithValue("@TrainerId", trainerId);
-                clientId = Convert.ToInt32(cmd.ExecuteScalar());
+                demoClientId = Convert.ToInt32(cmd.ExecuteScalar());
             }
 
-            // ─── LOCAL HELPERS FOR CLEAN DATA SEEDING ────────────────────────────
+            int alphaUserId;
+            using (var cmd = new SqlCommand(
+                "INSERT INTO [USER] (username) VALUES ('ClientAlpha'); SELECT SCOPE_IDENTITY();", conn))
+            {
+                alphaUserId = Convert.ToInt32(cmd.ExecuteScalar());
+            }
 
-            int CreateLog(DateTime date, string duration, int cals)
+            int alphaClientId;
+            using (var cmd = new SqlCommand(@"
+                INSERT INTO CLIENT (user_id, trainer_id, weight, height)
+                VALUES (@UserId, @TrainerId, 72, 175);
+                SELECT SCOPE_IDENTITY();", conn))
+            {
+                cmd.Parameters.AddWithValue("@UserId", alphaUserId);
+                cmd.Parameters.AddWithValue("@TrainerId", trainerId);
+                alphaClientId = Convert.ToInt32(cmd.ExecuteScalar());
+            }
+
+            int betaUserId;
+            using (var cmd = new SqlCommand(
+                "INSERT INTO [USER] (username) VALUES ('ClientBeta'); SELECT SCOPE_IDENTITY();", conn))
+            {
+                betaUserId = Convert.ToInt32(cmd.ExecuteScalar());
+            }
+
+            using (var cmd = new SqlCommand(@"
+                INSERT INTO CLIENT (user_id, trainer_id, weight, height)
+                VALUES (@UserId, @TrainerId, 68, 165);", conn))
+            {
+                cmd.Parameters.AddWithValue("@UserId", betaUserId);
+                cmd.Parameters.AddWithValue("@TrainerId", trainerId);
+                cmd.ExecuteNonQuery();
+            }
+
+            int CreateLog(int forClientId, DateTime date, string duration, int cals)
             {
                 using var cmd = new SqlCommand(@"
-                    INSERT INTO WORKOUT_LOG (client_id, date, total_duration, calories_burned, rating) 
+                    INSERT INTO WORKOUT_LOG (client_id, date, total_duration, calories_burned, rating)
                     VALUES (@ClientId, @Date, @Duration, @Cals, 5);
                     SELECT SCOPE_IDENTITY();", conn);
-                cmd.Parameters.AddWithValue("@ClientId", clientId);
+                cmd.Parameters.AddWithValue("@ClientId", forClientId);
                 cmd.Parameters.AddWithValue("@Date", date);
                 cmd.Parameters.AddWithValue("@Duration", duration);
                 cmd.Parameters.AddWithValue("@Cals", cals);
@@ -210,42 +242,78 @@ namespace VibeCoders.Services
                 cmd.ExecuteNonQuery();
             }
 
-            // ─── GENERATE WORKOUT HISTORY ─────────────────────────────────────────
-
-            // WORKOUT 1: Heavy Leg Day (Today)
-            int log1 = CreateLog(DateTime.Now, "01:15:00", 450);
+            // DemoClient — workout history (WORKOUT_LOG)
+            int log1 = CreateLog(demoClientId, DateTime.Now, "01:15:00", 450);
             AddSet(log1, "Barbell Squat", 1, 10, 100.0);
             AddSet(log1, "Barbell Squat", 2, 8, 105.0);
             AddSet(log1, "Barbell Squat", 3, 6, 110.0);
-
             AddSet(log1, "Romanian Deadlift", 1, 12, 80.0);
             AddSet(log1, "Romanian Deadlift", 2, 12, 80.0);
             AddSet(log1, "Romanian Deadlift", 3, 10, 85.0);
-            AddSet(log1, "Romanian Deadlift", 4, 8, 90.0); // 4 sets to test dynamic layout!
-
+            AddSet(log1, "Romanian Deadlift", 4, 8, 90.0);
             AddSet(log1, "Calf Raises", 1, 15, 60.0);
             AddSet(log1, "Calf Raises", 2, 15, 60.0);
 
-
-            // WORKOUT 2: Push Day (3 days ago)
-            int log2 = CreateLog(DateTime.Now.AddDays(-3), "00:55:00", 320);
+            int log2 = CreateLog(demoClientId, DateTime.Now.AddDays(-3), "00:55:00", 320);
             AddSet(log2, "Bench Press", 1, 10, 80.0);
             AddSet(log2, "Bench Press", 2, 8, 85.0);
             AddSet(log2, "Bench Press", 3, 8, 85.0);
-
             AddSet(log2, "Overhead Press", 1, 10, 40.0);
             AddSet(log2, "Overhead Press", 2, 10, 40.0);
 
-
-            // WORKOUT 3: Pull Day (1 week ago)
-            int log3 = CreateLog(DateTime.Now.AddDays(-7), "01:05:00", 400);
-            AddSet(log3, "Pull-ups", 1, 12, 0.0); // Bodyweight
+            int log3 = CreateLog(demoClientId, DateTime.Now.AddDays(-7), "01:05:00", 400);
+            AddSet(log3, "Pull-ups", 1, 12, 0.0);
             AddSet(log3, "Pull-ups", 2, 10, 0.0);
             AddSet(log3, "Pull-ups", 3, 8, 0.0);
-
             AddSet(log3, "Barbell Row", 1, 10, 60.0);
             AddSet(log3, "Barbell Row", 2, 10, 60.0);
             AddSet(log3, "Barbell Row", 3, 8, 65.0);
+
+            // Extra client — one log for trainer dashboard variety
+            int logAlpha = CreateLog(alphaClientId, DateTime.Now.AddDays(-2), "00:40:00", 210);
+            AddSet(logAlpha, "Bench Press", 1, 8, 70.0);
+            AddSet(logAlpha, "Bench Press", 2, 8, 70.0);
+
+            // Unlock "First Steps" for DemoClient (achievement_id = first row in catalog)
+            int achievementId;
+            using (var cmd = new SqlCommand(
+                "SELECT TOP 1 achievement_id FROM ACHIEVEMENT ORDER BY achievement_id;", conn))
+            {
+                achievementId = Convert.ToInt32(cmd.ExecuteScalar());
+            }
+
+            using (var cmd = new SqlCommand(@"
+                IF NOT EXISTS (
+                    SELECT 1 FROM CLIENT_ACHIEVEMENT
+                    WHERE client_id = @Cid AND achievement_id = @Aid)
+                INSERT INTO CLIENT_ACHIEVEMENT (client_id, achievement_id, unlocked)
+                VALUES (@Cid, @Aid, 1);", conn))
+            {
+                cmd.Parameters.AddWithValue("@Cid", demoClientId);
+                cmd.Parameters.AddWithValue("@Aid", achievementId);
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        /// <summary>
+        /// Resolves the seeded <c>DemoClient</c> row. Falls back to the lowest <c>client_id</c> if missing.
+        /// </summary>
+        public int GetDemoClientId()
+        {
+            using var conn = new SqlConnection(_connectionString);
+            conn.Open();
+            using var cmd = new SqlCommand(@"
+                SELECT c.client_id
+                FROM CLIENT c
+                INNER JOIN [USER] u ON u.id = c.user_id
+                WHERE u.username = 'DemoClient';", conn);
+            var o = cmd.ExecuteScalar();
+            if (o != null) return Convert.ToInt32(o);
+
+            using var cmd2 = new SqlCommand(
+                "SELECT TOP 1 client_id FROM CLIENT ORDER BY client_id;", conn);
+            var o2 = cmd2.ExecuteScalar();
+            return o2 != null ? Convert.ToInt32(o2) : 1;
         }
 
 

@@ -13,8 +13,8 @@ namespace VibeCoders.ViewModels;
 /// Presents the client's level and rank derived from lifetime active time and
 /// lists all catalog achievements via <see cref="IDataStorage.GetAchievementShowcaseForClient"/>,
 /// including locked rows for visibility in the showcase.
-/// Until login maps users to clients, <see cref="IUserSession.CurrentUserId"/> is
-/// treated as the client id for the achievements query.
+/// Uses <see cref="IUserSession.CurrentClientId"/> for achievements and
+/// <see cref="IUserSession.CurrentUserId"/> for analytics (same value after startup seed).
 /// </summary>
 public sealed partial class RankShowcaseViewModel : ObservableObject
 {
@@ -65,7 +65,7 @@ public sealed partial class RankShowcaseViewModel : ObservableObject
             TotalActiveTimeDisplay = ActiveTimeFormatter.ToHourMinuteSecond(total);
 
             ShowcaseAchievements.Clear();
-            var clientId = (int)userId;
+            var clientId = (int)_session.CurrentClientId;
             foreach (var row in _data.GetAchievementShowcaseForClient(clientId))
             {
                 ShowcaseAchievements.Add(row);

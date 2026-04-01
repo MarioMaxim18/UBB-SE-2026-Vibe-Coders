@@ -32,7 +32,7 @@ public sealed partial class WorkoutLogsPage : Page
     {
         var clientId = ClientId != 0
             ? ClientId
-            : (int)App.GetService<IUserSession>().CurrentUserId;
+            : (int)App.GetService<IUserSession>().CurrentClientId;
         ViewModel.LoadLogsCommand.Execute(clientId);
     }
 }

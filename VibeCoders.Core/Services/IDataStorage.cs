@@ -10,6 +10,11 @@ namespace VibeCoders.Services
         /// </summary>
         void EnsureSchemaCreated();
 
+        /// <summary>
+        /// Returns the seeded demo client id (<c>DemoClient</c>), or the first client in <c>CLIENT</c>.
+        /// </summary>
+        int GetDemoClientId();
+
         // ── User ────────────────────────────────────────────────────────────
         bool SaveUser(User u);
         User? LoadUser(string username);
