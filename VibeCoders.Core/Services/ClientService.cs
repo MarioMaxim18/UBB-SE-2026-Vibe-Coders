@@ -19,11 +19,13 @@ namespace VibeCoders.Services
             IDataStorage storage,
             ProgressionService progressionService,
             IHttpClientFactory httpClientFactory,
+            EvaluationEngine evaluationEngine,
             IAchievementUnlockedBus achievementBus)
         {
             _storage = storage;
             _progressionService = progressionService;
             _httpClientFactory = httpClientFactory;
+            _evaluationEngine = evaluationEngine;
             _achievementBus = achievementBus;
         }
 
@@ -46,17 +48,20 @@ namespace VibeCoders.Services
                 _progressionService.EvaluateWorkout(log);
 
                 bool isSaved = _storage.SaveWorkoutLog(log);
-                // Fire milestone checks after every completed workout
-                var unlocked = _evaluationEngine.Evaluate(log.ClientId);
-
-                if (isSaved)
-                    EvaluateAndPublishAchievements(log.ClientId);
 
                 if (isSaved)
                 {
-                    // #186 — check whether any "Total Workouts" milestone has been
-                    // crossed and unlock the corresponding achievements.
-                    _storage.EvaluateAndUnlockWorkoutMilestones(log.ClientId);
+                    // Fire all milestone checks through the engine and push
+                    // each newly unlocked badge to the UI bus.
+                    var unlocked = _evaluationEngine.Evaluate(log.ClientId);
+                    foreach (var title in unlocked)
+                    {
+                        var catalog = _storage.GetAchievementShowcaseForClient(log.ClientId);
+                        var item = catalog.FirstOrDefault(
+                            a => string.Equals(a.Title, title, StringComparison.OrdinalIgnoreCase));
+                        if (item != null)
+                            _achievementBus.NotifyUnlocked(item);
+                    }
                 }
 
                 return isSaved;

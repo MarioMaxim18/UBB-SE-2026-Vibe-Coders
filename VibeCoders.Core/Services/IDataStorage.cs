@@ -85,5 +85,21 @@ namespace VibeCoders.Services
         /// </summary>
         /// <param name="clientId">Client to evaluate milestones for.</param>
         void EvaluateAndUnlockWorkoutMilestones(int clientId);
+
+        // ── Streak / weekly helpers (used by EvaluationEngine checks) ────────
+
+        /// <summary>
+        /// Returns the client's longest consecutive-day workout streak (ever).
+        /// A streak breaks when a calendar day with no workout separates two logged days.
+        /// Used by <see cref="Domain.StreakCheck"/>.
+        /// </summary>
+        int GetConsecutiveWorkoutDayStreak(int clientId);
+
+        /// <summary>
+        /// Returns how many workouts the client completed in the last 7 calendar days
+        /// (rolling window: today inclusive, going back 6 days).
+        /// Used by <see cref="Domain.WeeklyVolumeCheck"/>.
+        /// </summary>
+        int GetWorkoutsInLastSevenDays(int clientId);
     }
 }

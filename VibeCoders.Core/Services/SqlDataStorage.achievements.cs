@@ -94,6 +94,57 @@ public partial class SqlDataStorage
     }
 
     /// <inheritdoc />
+    public int GetConsecutiveWorkoutDayStreak(int clientId)
+    {
+        using var conn = new SqlConnection(_connectionString);
+        conn.Open();
+
+        // Uses the "island" technique: subtracting a sequential row number from the
+        // date groups consecutive days into the same "island". MAX island size = streak.
+        const string sql = @"
+            WITH WorkoutDays AS (
+                SELECT DISTINCT CAST(date AS DATE) AS workout_date
+                FROM   WORKOUT_LOG
+                WHERE  client_id = @ClientId
+            ),
+            Islands AS (
+                SELECT workout_date,
+                       DATEADD(DAY,
+                           -CAST(ROW_NUMBER() OVER (ORDER BY workout_date) AS INT),
+                           workout_date) AS grp
+                FROM WorkoutDays
+            )
+            SELECT ISNULL(MAX(cnt), 0)
+            FROM (
+                SELECT COUNT(*) AS cnt
+                FROM   Islands
+                GROUP BY grp
+            ) t;";
+
+        using var cmd = new SqlCommand(sql, conn);
+        cmd.Parameters.AddWithValue("@ClientId", clientId);
+        return (int)cmd.ExecuteScalar();
+    }
+
+    /// <inheritdoc />
+    public int GetWorkoutsInLastSevenDays(int clientId)
+    {
+        using var conn = new SqlConnection(_connectionString);
+        conn.Open();
+
+        const string sql = @"
+            SELECT COUNT(*)
+            FROM   WORKOUT_LOG
+            WHERE  client_id = @ClientId
+              AND  date >= DATEADD(DAY, -6, CAST(GETDATE() AS DATE))
+              AND  date <  DATEADD(DAY,  1, CAST(GETDATE() AS DATE));";
+
+        using var cmd = new SqlCommand(sql, conn);
+        cmd.Parameters.AddWithValue("@ClientId", clientId);
+        return (int)cmd.ExecuteScalar();
+    }
+
+    /// <inheritdoc />
     public List<AchievementShowcaseItem> GetAchievementShowcaseForClient(int clientId)
     {
         var list = new List<AchievementShowcaseItem>();
