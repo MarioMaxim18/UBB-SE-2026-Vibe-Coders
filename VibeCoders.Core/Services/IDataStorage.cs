@@ -40,17 +40,6 @@ namespace VibeCoders.Services
         List<Notification> GetNotifications(int clientId);
 
         // ── Achievements ─────────────────────────────────────────────────────
-
-        /// <summary>
-        /// Returns every row in the <c>ACHIEVEMENT</c> catalog table —
-        /// title, description, criteria, and optional workout threshold —
-        /// with no client-specific state (<see cref="Achievement.IsUnlocked"/> is always
-        /// <see langword="false"/>). Use this to display the full badge catalog
-        /// without requiring a logged-in client. Ordered by <c>achievement_id</c>.
-        /// Closes issue #182.
-        /// </summary>
-        List<Achievement> GetAllAchievements();
-
         /// <summary>
         /// Returns the full achievement catalog for <paramref name="clientId"/>, each row
         /// including whether the client has unlocked it. Locked rows are included so the
@@ -86,19 +75,17 @@ namespace VibeCoders.Services
         /// <param name="clientId">Client to evaluate milestones for.</param>
         void EvaluateAndUnlockWorkoutMilestones(int clientId);
 
-        // ── Streak / weekly helpers (used by EvaluationEngine checks) ────────
+        // ── Streak / weekly helpers used by EvaluationEngine (#191) ──────────
 
         /// <summary>
         /// Returns the client's longest consecutive-day workout streak (ever).
         /// A streak breaks when a calendar day with no workout separates two logged days.
-        /// Used by <see cref="Domain.StreakCheck"/>.
         /// </summary>
         int GetConsecutiveWorkoutDayStreak(int clientId);
 
         /// <summary>
         /// Returns how many workouts the client completed in the last 7 calendar days
         /// (rolling window: today inclusive, going back 6 days).
-        /// Used by <see cref="Domain.WeeklyVolumeCheck"/>.
         /// </summary>
         int GetWorkoutsInLastSevenDays(int clientId);
     }
