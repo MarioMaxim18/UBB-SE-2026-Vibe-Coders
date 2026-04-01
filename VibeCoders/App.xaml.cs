@@ -59,7 +59,7 @@ public partial class App : Application
 
             navService.NavigateToClientDashboard(requestRefresh: true);
 
-            
+
         }
     );
     }
@@ -99,6 +99,7 @@ public partial class App : Application
 
         services.AddSingleton<ProgressionService>();
         services.AddSingleton<ClientService>();
+        services.AddSingleton<EvaluationEngine>(); // added right now
         services.AddSingleton<TrainerService>();
 
         services.AddTransient<ClientDashboardViewModel>();
