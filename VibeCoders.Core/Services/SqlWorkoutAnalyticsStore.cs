@@ -33,12 +33,13 @@ public sealed class SqlWorkoutAnalyticsStore : IWorkoutAnalyticsStore
             await using var conn = new SqlConnection(_connectionString);
             await conn.OpenAsync(cancellationToken).ConfigureAwait(false);
 
-            //This overrites the schema tables and the app won't work
+            // Table names are prefixed with analytics_ so they never collide with
+            // dbo.WORKOUT_LOG / dbo.WORKOUT_LOG_SETS (SQL Server identifiers are case-insensitive).
 
-            // workout_log table
+            // analytics_workout_log table
             await using (var cmd = new SqlCommand(@"
-                IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='workout_log' AND xtype='U')
-                CREATE TABLE workout_log (
+                IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='analytics_workout_log' AND xtype='U')
+                CREATE TABLE analytics_workout_log (
                     id                    INT PRIMARY KEY IDENTITY(1,1),
                     user_id               BIGINT NOT NULL,
                     workout_name          VARCHAR(100) NOT NULL,
@@ -52,43 +53,43 @@ public sealed class SqlWorkoutAnalyticsStore : IWorkoutAnalyticsStore
                 await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
             }
 
-            // index on workout_log
+            // index on analytics_workout_log
             await using (var cmd = new SqlCommand(@"
-                IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name='ix_workout_log_user_date_id')
-                CREATE INDEX ix_workout_log_user_date_id
-                    ON workout_log (user_id, log_date DESC, id DESC);", conn))
+                IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name='ix_analytics_workout_log_user_date_id')
+                CREATE INDEX ix_analytics_workout_log_user_date_id
+                    ON analytics_workout_log (user_id, log_date DESC, id DESC);", conn))
             {
                 await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
             }
 
-            // workout_log_exercises table
+            // analytics_workout_log_exercises table
             await using (var cmd = new SqlCommand(@"
-                IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='workout_log_exercises' AND xtype='U')
-                CREATE TABLE workout_log_exercises (
+                IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='analytics_workout_log_exercises' AND xtype='U')
+                CREATE TABLE analytics_workout_log_exercises (
                     id              INT PRIMARY KEY IDENTITY(1,1),
                     workout_log_id  INT NOT NULL,
                     exercise_name   VARCHAR(100) NOT NULL,
                     calories_burned INT NOT NULL DEFAULT 0,
                     FOREIGN KEY (workout_log_id)
-                        REFERENCES workout_log(id) ON DELETE CASCADE
+                        REFERENCES analytics_workout_log(id) ON DELETE CASCADE
                 );", conn))
             {
                 await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
             }
 
-            // index on workout_log_exercises
+            // index on analytics_workout_log_exercises
             await using (var cmd = new SqlCommand(@"
-                IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name='ix_workout_log_exercises_log')
-                CREATE INDEX ix_workout_log_exercises_log
-                    ON workout_log_exercises (workout_log_id);", conn))
+                IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name='ix_analytics_workout_log_exercises_log')
+                CREATE INDEX ix_analytics_workout_log_exercises_log
+                    ON analytics_workout_log_exercises (workout_log_id);", conn))
             {
                 await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
             }
 
-            // workout_log_sets table
+            // analytics_workout_log_sets table
             await using (var cmd = new SqlCommand(@"
-                IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='workout_log_sets' AND xtype='U')
-                CREATE TABLE workout_log_sets (
+                IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='analytics_workout_log_sets' AND xtype='U')
+                CREATE TABLE analytics_workout_log_sets (
                     id              INT PRIMARY KEY IDENTITY(1,1),
                     workout_log_id  INT NOT NULL,
                     exercise_name   VARCHAR(100) NOT NULL,
@@ -98,28 +99,28 @@ public sealed class SqlWorkoutAnalyticsStore : IWorkoutAnalyticsStore
                     target_weight   FLOAT,
                     actual_weight   FLOAT,
                     FOREIGN KEY (workout_log_id)
-                        REFERENCES workout_log(id) ON DELETE CASCADE
+                        REFERENCES analytics_workout_log(id) ON DELETE CASCADE
                 );", conn))
             {
                 await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
             }
 
-            // index on workout_log_sets
+            // index on analytics_workout_log_sets
             await using (var cmd = new SqlCommand(@"
-                IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name='ix_workout_log_sets_log')
-                CREATE INDEX ix_workout_log_sets_log
-                    ON workout_log_sets (workout_log_id, set_index);", conn))
+                IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name='ix_analytics_workout_log_sets_log')
+                CREATE INDEX ix_analytics_workout_log_sets_log
+                    ON analytics_workout_log_sets (workout_log_id, set_index);", conn))
             {
                 await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
             }
 
             await AddColumnIfMissingAsync(conn,
-                "workout_log", "total_calories_burned",
+                "analytics_workout_log", "total_calories_burned",
                 "total_calories_burned INT NOT NULL DEFAULT 0",
                 cancellationToken).ConfigureAwait(false);
 
             await AddColumnIfMissingAsync(conn,
-                "workout_log", "intensity_tag",
+                "analytics_workout_log", "intensity_tag",
                 "intensity_tag VARCHAR(20) NOT NULL DEFAULT ''",
                 cancellationToken).ConfigureAwait(false);
 
@@ -148,7 +149,7 @@ public sealed class SqlWorkoutAnalyticsStore : IWorkoutAnalyticsStore
         {
             int logId;
             await using (var insertLog = new SqlCommand(@"
-                INSERT INTO workout_log
+                INSERT INTO analytics_workout_log
                     (user_id, workout_name, log_date, duration_seconds, source_template_id, total_calories_burned, intensity_tag)
                 VALUES
                     (@uid, @name, @date, @dur, @tmpl, @cal, @intensity);
@@ -171,7 +172,7 @@ public sealed class SqlWorkoutAnalyticsStore : IWorkoutAnalyticsStore
             foreach (var exercise in log.Exercises)
             {
                 await using (var insertExercise = new SqlCommand(@"
-                    INSERT INTO workout_log_exercises (workout_log_id, exercise_name, calories_burned)
+                    INSERT INTO analytics_workout_log_exercises (workout_log_id, exercise_name, calories_burned)
                     VALUES (@lid, @ex, @cal);", conn, tx))
                 {
                     insertExercise.Parameters.AddWithValue("@lid", logId);
@@ -183,7 +184,7 @@ public sealed class SqlWorkoutAnalyticsStore : IWorkoutAnalyticsStore
                 foreach (var set in exercise.Sets)
                 {
                     await using var insertSet = new SqlCommand(@"
-                        INSERT INTO workout_log_sets
+                        INSERT INTO analytics_workout_log_sets
                             (workout_log_id, exercise_name, set_index,
                              target_reps, actual_reps, target_weight, actual_weight)
                         VALUES
@@ -223,7 +224,7 @@ public sealed class SqlWorkoutAnalyticsStore : IWorkoutAnalyticsStore
         await conn.OpenAsync(cancellationToken).ConfigureAwait(false);
 
         var total = await ScalarLongAsync(conn,
-            "SELECT COUNT(*) FROM workout_log WHERE user_id = @uid;",
+            "SELECT COUNT(*) FROM analytics_workout_log WHERE user_id = @uid;",
             "@uid", userId, cancellationToken).ConfigureAwait(false);
 
         var today = DateOnly.FromDateTime(DateTime.Today);
@@ -231,7 +232,7 @@ public sealed class SqlWorkoutAnalyticsStore : IWorkoutAnalyticsStore
 
         var activeSeconds = await ScalarLongAsync(conn, @"
             SELECT ISNULL(SUM(duration_seconds), 0)
-            FROM workout_log
+            FROM analytics_workout_log
             WHERE user_id = @uid
               AND log_date >= @start
               AND log_date <= @end;",
@@ -244,7 +245,7 @@ public sealed class SqlWorkoutAnalyticsStore : IWorkoutAnalyticsStore
         string? preferred = null;
         await using (var prefCmd = new SqlCommand(@"
             SELECT TOP 1 workout_name
-            FROM workout_log
+            FROM analytics_workout_log
             WHERE user_id = @uid
             GROUP BY workout_name
             ORDER BY COUNT(*) DESC, workout_name ASC;", conn))
@@ -276,7 +277,7 @@ public sealed class SqlWorkoutAnalyticsStore : IWorkoutAnalyticsStore
 
         var totalSeconds = await ScalarLongAsync(conn, @"
             SELECT ISNULL(SUM(CAST(duration_seconds AS BIGINT)), 0)
-            FROM workout_log
+            FROM analytics_workout_log
             WHERE user_id = @uid;",
             "@uid", userId, cancellationToken).ConfigureAwait(false);
 
@@ -305,7 +306,7 @@ public sealed class SqlWorkoutAnalyticsStore : IWorkoutAnalyticsStore
 
             var count = await ScalarLongAsync(conn, @"
                 SELECT COUNT(*)
-                FROM workout_log
+                FROM analytics_workout_log
                 WHERE user_id  = @uid
                   AND log_date >= @start
                   AND log_date <  @end;",
@@ -339,13 +340,13 @@ public sealed class SqlWorkoutAnalyticsStore : IWorkoutAnalyticsStore
         await conn.OpenAsync(cancellationToken).ConfigureAwait(false);
 
         var total = await ScalarLongAsync(conn,
-            "SELECT COUNT(*) FROM workout_log WHERE user_id = @uid;",
+            "SELECT COUNT(*) FROM analytics_workout_log WHERE user_id = @uid;",
             "@uid", userId, cancellationToken).ConfigureAwait(false);
 
         // SQL Server paging: OFFSET/FETCH.
         await using var cmd = new SqlCommand(@"
             SELECT id, workout_name, log_date, duration_seconds, total_calories_burned, intensity_tag
-            FROM workout_log
+            FROM analytics_workout_log
             WHERE user_id = @uid
             ORDER BY log_date DESC, id DESC
             OFFSET @skip ROWS FETCH NEXT @take ROWS ONLY;", conn);
@@ -395,7 +396,7 @@ public sealed class SqlWorkoutAnalyticsStore : IWorkoutAnalyticsStore
 
         await using (var head = new SqlCommand(@"
             SELECT workout_name, log_date, duration_seconds, total_calories_burned, intensity_tag
-            FROM workout_log
+            FROM analytics_workout_log
             WHERE id = @id AND user_id = @uid;", conn))
         {
             head.Parameters.AddWithValue("@id", workoutLogId);
@@ -414,7 +415,7 @@ public sealed class SqlWorkoutAnalyticsStore : IWorkoutAnalyticsStore
         var exerciseCalories = new List<ExerciseCalorieInfo>();
         await using (var exercisesCmd = new SqlCommand(@"
             SELECT exercise_name, calories_burned
-            FROM workout_log_exercises
+            FROM analytics_workout_log_exercises
             WHERE workout_log_id = @lid
             ORDER BY exercise_name ASC;", conn))
         {
@@ -433,7 +434,7 @@ public sealed class SqlWorkoutAnalyticsStore : IWorkoutAnalyticsStore
         var sets = new List<WorkoutSetRow>();
         await using (var setsCmd = new SqlCommand(@"
             SELECT exercise_name, set_index, actual_reps, actual_weight
-            FROM workout_log_sets
+            FROM analytics_workout_log_sets
             WHERE workout_log_id = @lid
             ORDER BY exercise_name ASC, set_index ASC;", conn))
         {
