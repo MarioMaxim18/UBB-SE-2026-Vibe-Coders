@@ -41,9 +41,90 @@
                     <RowDefinition Height="2*"/>
                 </Grid.RowDefinitions>
 
+                <!-- ── Nutrition Plan Assignment (#119) ──────────────────────
+                     Two DatePicker controls capture start_date / end_date.
+                     Section is placed in Row 1 of the right panel so it sits
+                     below the workout history / feedback area.              -->
+                <Border
+                    Grid.Row="1"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="20"
+                    Margin="0,12,0,0">
+                    <StackPanel Spacing="16">
+
+                        <!-- Section header -->
+                        <StackPanel Spacing="2">
+                            <TextBlock
+                                Text="Assign Nutrition Plan"
+                                FontSize="16"
+                                FontWeight="SemiBold" />
+                            <TextBlock
+                                Text="Set the active date range for the client's diet plan."
+                                FontSize="12"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        </StackPanel>
+
+                        <!-- Date pickers row -->
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="24">
+
+                            <!-- start_date -->
+                            <StackPanel Grid.Column="0" Spacing="6">
+                                <TextBlock
+                                    Text="Start Date"
+                                    FontSize="12"
+                                    FontWeight="SemiBold"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                <DatePicker
+                                    Date="{x:Bind ViewModel.PlanStartDate, Mode=TwoWay}"
+                                    HorizontalAlignment="Stretch" />
+                            </StackPanel>
+
+                            <!-- end_date -->
+                            <StackPanel Grid.Column="1" Spacing="6">
+                                <TextBlock
+                                    Text="End Date"
+                                    FontSize="12"
+                                    FontWeight="SemiBold"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                <DatePicker
+                                    Date="{x:Bind ViewModel.PlanEndDate, Mode=TwoWay}"
+                                    HorizontalAlignment="Stretch" />
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Validation error (only visible when end ≤ start) -->
+                        <TextBlock
+                            Text="{x:Bind ViewModel.DateRangeError, Mode=OneWay}"
+                            FontSize="12"
+                            Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                            Visibility="{x:Bind ViewModel.HasDateRangeError, Mode=OneWay, Converter={StaticResource BoolToVisibility}}" />
+
+                        <!-- Assign button + status feedback -->
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="16">
+                            <Button
+                                Grid.Column="0"
+                                Content="Assign Plan"
+                                Style="{StaticResource AccentButtonStyle}"
+                                IsEnabled="{x:Bind ViewModel.CanAssignPlan, Mode=OneWay}"
+                                Click="{x:Bind ViewModel.AssignNutritionPlan}" />
+                            <TextBlock
+                                Grid.Column="1"
+                                Text="{x:Bind ViewModel.AssignmentStatus, Mode=OneWay}"
+                                FontSize="12"
+                                Foreground="{ThemeResource SystemFillColorSuccessBrush}"
+                                VerticalAlignment="Center"
+                                TextWrapping="Wrap" />
+                        </Grid>
+
+                    </StackPanel>
+                </Border>
+
                 <Grid Grid.Row="0">
 
-					<Grid.ColumnDefinitions>
+				<Grid.ColumnDefinitions>
 						<ColumnDefinition Width="1.5*"/>
 						<ColumnDefinition Width="4*"/>
 					</Grid.ColumnDefinitions>

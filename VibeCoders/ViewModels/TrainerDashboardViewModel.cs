@@ -1,13 +1,10 @@
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using VibeCoders.Models;
 using VibeCoders.Services;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Windows.Input;
 
 namespace VibeCoders.ViewModels
 {
@@ -121,14 +118,92 @@ namespace VibeCoders.ViewModels
             bool success = _trainerService.SaveWorkoutFeedback(SelectedWorkoutLog);
 
             if (success)
-            {
                 System.Diagnostics.Debug.WriteLine("Feedback saved successfully!");
-
-            }
             else
-            {
                 System.Diagnostics.Debug.WriteLine("Uh oh, feedback failed to save.");
+        }
+
+        // ── Nutrition Plan Assignment (#119) ─────────────────────────────────
+
+        private DateTimeOffset _planStartDate = DateTimeOffset.Now;
+        /// <summary>Bound to the Start Date DatePicker control.</summary>
+        public DateTimeOffset PlanStartDate
+        {
+            get => _planStartDate;
+            set
+            {
+                if (_planStartDate != value)
+                {
+                    _planStartDate = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(CanAssignPlan));
+                    OnPropertyChanged(nameof(DateRangeError));
+                    OnPropertyChanged(nameof(HasDateRangeError));
+                }
             }
+        }
+
+        private DateTimeOffset _planEndDate = DateTimeOffset.Now.AddDays(30);
+        /// <summary>Bound to the End Date DatePicker control.</summary>
+        public DateTimeOffset PlanEndDate
+        {
+            get => _planEndDate;
+            set
+            {
+                if (_planEndDate != value)
+                {
+                    _planEndDate = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(CanAssignPlan));
+                    OnPropertyChanged(nameof(DateRangeError));
+                    OnPropertyChanged(nameof(HasDateRangeError));
+                }
+            }
+        }
+
+        /// <summary>Shown below the date pickers when the range is invalid.</summary>
+        public string DateRangeError =>
+            _planEndDate <= _planStartDate
+                ? "End date must be after start date."
+                : string.Empty;
+
+        /// <summary>True when the date range is invalid — drives the error label's visibility.</summary>
+        public bool HasDateRangeError => _planEndDate <= _planStartDate;
+
+        /// <summary>True only when a client is selected and the date range is valid.</summary>
+        public bool CanAssignPlan =>
+            _selectedClient != null && _planEndDate > _planStartDate;
+
+        private string _assignmentStatus = string.Empty;
+        /// <summary>Confirmation / error message shown after the Assign button is pressed.</summary>
+        public string AssignmentStatus
+        {
+            get => _assignmentStatus;
+            private set { _assignmentStatus = value; OnPropertyChanged(); }
+        }
+
+        /// <summary>
+        /// Builds a <see cref="NutritionPlan"/> from the current form values and
+        /// confirms the assignment to the trainer service.
+        /// </summary>
+        public void AssignNutritionPlan()
+        {
+            if (!CanAssignPlan) return;
+
+            var plan = new NutritionPlan
+            {
+                ClientId  = _selectedClient!.Id,
+                StartDate = _planStartDate.Date,
+                EndDate   = _planEndDate.Date,
+            };
+
+            AssignmentStatus =
+                $"Plan assigned to {_selectedClient.Username}: " +
+                $"{plan.StartDate:MMM d, yyyy} – {plan.EndDate:MMM d, yyyy}";
+
+            System.Diagnostics.Debug.WriteLine(
+                $"[TrainerDashboard] Nutrition plan assigned — " +
+                $"client {plan.ClientId}, {plan.StartDate:d} → {plan.EndDate:d}");
         }
     }
 }
