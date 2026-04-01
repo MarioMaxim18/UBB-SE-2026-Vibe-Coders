@@ -55,5 +55,12 @@ namespace VibeCoders.Services
 
 
         bool AwardAchievement(int clientId, int achievementId);
+
+        bool SaveTrainerWorkout(WorkoutTemplate template);
+
+        bool DeleteWorkoutTemplate(int templateId);
+
+        List<string> GetAllExerciseNames();
+
     }
 }

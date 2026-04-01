@@ -50,5 +50,11 @@ namespace VibeCoders.Services
 
             return DataStorage.SaveTrainerWorkout(template);
         }
+
+        public List<string> GetPredefinedExercises()
+        {
+            return DataStorage.GetAllExerciseNames();
+        }
+
     }
 }
