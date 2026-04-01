@@ -5,26 +5,28 @@ using VibeCoders.Models;
 namespace VibeCoders.Services;
 
 /// <summary>
-/// Core background evaluation engine for achievements.
-/// After every finalized workout call <see cref="Evaluate"/> with the client ID;
-/// the engine iterates all registered <see cref="IMilestoneCheck"/> rules, looks up
-/// each matching achievement by title, and awards it exactly once per user account.
+/// Core background evaluation engine for achievements (#191).
+///
+/// After every finalized workout call <see cref="Evaluate"/> with the client ID.
+/// The engine iterates all registered <see cref="IMilestoneCheck"/> rules, looks up
+/// each matching achievement by title in the DB catalog, and awards it exactly once
+/// per user account (idempotent — <see cref="IDataStorage.AwardAchievement"/> is a no-op
+/// when the badge is already unlocked).
 ///
 /// Adding a new achievement type:
-///   1. Seed a row in <c>ACHIEVEMENT</c> (via <c>SeedWorkoutMilestoneAchievements</c> or a new seed method).
-///   2. Implement <see cref="IMilestoneCheck"/> (e.g. <see cref="WorkoutCountCheck"/>, <see cref="StreakCheck"/>).
-///   3. Register it in the <c>_checks</c> list below — no other changes needed.
+///   1. Seed a row in <c>ACHIEVEMENT</c>.
+///   2. Implement <see cref="IMilestoneCheck"/>.
+///   3. Register it in <see cref="BuildDefaultChecks"/> — no other changes needed.
 /// </summary>
 public sealed class EvaluationEngine
 {
     private readonly IDataStorage _storage;
     private readonly IReadOnlyList<IMilestoneCheck> _checks;
 
+    /// <summary>Production constructor — uses the full default check registry.</summary>
     public EvaluationEngine(IDataStorage storage) : this(storage, BuildDefaultChecks()) { }
 
-    /// <summary>
-    /// Allows injecting a custom check list (used in unit tests).
-    /// </summary>
+    /// <summary>Test constructor — accepts a custom check list for unit testing.</summary>
     public EvaluationEngine(IDataStorage storage, IReadOnlyList<IMilestoneCheck> checks)
     {
         _storage = storage;
@@ -32,22 +34,22 @@ public sealed class EvaluationEngine
     }
 
     // ── Default milestone registry ───────────────────────────────────────────
+    // Titles must match ACHIEVEMENT.title values seeded at startup.
 
     private static IReadOnlyList<IMilestoneCheck> BuildDefaultChecks() =>
     [
-        // ── Total-workout volume milestones ──────────────────────────────────
-        // Titles must match ACHIEVEMENT.title rows seeded by SeedWorkoutMilestoneAchievements.
+        // Total-workout milestones
         new WorkoutCountCheck("First Steps",     threshold: 1),
         new WorkoutCountCheck("Deca Athlete",    threshold: 10),
         new WorkoutCountCheck("Quarter Century", threshold: 25),
         new WorkoutCountCheck("Half Century",    threshold: 50),
         new WorkoutCountCheck("Centurion",       threshold: 100),
 
-        // ── Consecutive-day streak milestones ────────────────────────────────
-        new StreakCheck("3-Day Streak",  requiredConsecutiveDays: 3),
-        new StreakCheck("Week Warrior",  requiredConsecutiveDays: 7),
+        // Consecutive-day streak milestones
+        new StreakCheck("3-Day Streak", requiredConsecutiveDays: 3),
+        new StreakCheck("Week Warrior", requiredConsecutiveDays: 7),
 
-        // ── Weekly-volume milestone ──────────────────────────────────────────
+        // Weekly volume milestone
         new WeeklyVolumeCheck("Week Champion", requiredWorkoutsPerWeek: 6),
     ];
 
@@ -55,27 +57,30 @@ public sealed class EvaluationEngine
 
     /// <summary>
     /// Runs every registered milestone check for <paramref name="clientId"/>.
-    /// For each check that passes and whose achievement is not yet unlocked,
-    /// the achievement is awarded and its title added to the returned list.
-    /// The list is empty when nothing new was earned.
+    /// Loads the achievement catalog once, then for each check that passes and
+    /// whose achievement is not yet unlocked, awards it via
+    /// <see cref="IDataStorage.AwardAchievement"/>.
     /// </summary>
     /// <param name="clientId">The client to evaluate.</param>
-    /// <returns>Titles of achievements newly unlocked in this call.</returns>
+    /// <returns>
+    /// Titles of achievements newly unlocked in this call.
+    /// Empty when nothing new was earned or on error.
+    /// </returns>
     public IReadOnlyList<string> Evaluate(int clientId)
     {
         var newlyUnlocked = new List<string>();
 
         try
         {
-            // Load the full catalog once — avoids N+1 DB hits inside the loop.
+            // Load the full catalog once to avoid N+1 hits inside the loop.
             var catalog = _storage
                 .GetAchievementShowcaseForClient(clientId)
                 .ToDictionary(a => a.Title, StringComparer.OrdinalIgnoreCase);
 
             foreach (var check in _checks)
             {
-                // Skip if the achievement doesn't exist in the catalog yet
-                // (e.g. seed hasn't run) or is already unlocked.
+                // Skip if the achievement is missing from the catalog (not seeded yet)
+                // or is already unlocked for this client.
                 if (!catalog.TryGetValue(check.AchievementTitle, out var item)) continue;
                 if (item.IsUnlocked) continue;
 
@@ -91,7 +96,8 @@ public sealed class EvaluationEngine
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"[EvaluationEngine] Evaluation error for client {clientId}: {ex.Message}");
+            Debug.WriteLine(
+                $"[EvaluationEngine] Evaluation error for client {clientId}: {ex.Message}");
         }
 
         return newlyUnlocked;

@@ -22,20 +22,24 @@ namespace VibeCoders.Services
             EvaluationEngine evaluationEngine,
             IAchievementUnlockedBus achievementBus)
         {
-            _storage = storage;
+            _storage            = storage;
             _progressionService = progressionService;
-            _httpClientFactory = httpClientFactory;
-            _evaluationEngine = evaluationEngine;
-            _achievementBus = achievementBus;
+            _httpClientFactory  = httpClientFactory;
+            _evaluationEngine   = evaluationEngine;
+            _achievementBus     = achievementBus;
         }
 
         // ── Workout ──────────────────────────────────────────────────────────
 
         /// <summary>
-        /// Finalizes a completed workout session:
-        ///   1. Stamps the date.
+        /// Finalizes a completed workout session (#191):
+        ///   1. Stamps the current date/time on the log.
         ///   2. Runs progression evaluation (overload / plateau detection).
         ///   3. Persists the log with all its sets.
+        ///   4. Triggers the <see cref="EvaluationEngine"/> in the background —
+        ///      every registered milestone check runs, newly earned badges are
+        ///      awarded exactly once, and each unlock is published to the
+        ///      <see cref="IAchievementUnlockedBus"/> so the UI can react.
         /// </summary>
         public bool FinalizeWorkout(WorkoutLog log)
         {
@@ -44,27 +48,15 @@ namespace VibeCoders.Services
             try
             {
                 log.Date = DateTime.Now;
-
                 _progressionService.EvaluateWorkout(log);
 
                 bool isSaved = _storage.SaveWorkoutLog(log);
+                if (!isSaved) return false;
 
-                if (isSaved)
-                {
-                    // Fire all milestone checks through the engine and push
-                    // each newly unlocked badge to the UI bus.
-                    var unlocked = _evaluationEngine.Evaluate(log.ClientId);
-                    foreach (var title in unlocked)
-                    {
-                        var catalog = _storage.GetAchievementShowcaseForClient(log.ClientId);
-                        var item = catalog.FirstOrDefault(
-                            a => string.Equals(a.Title, title, StringComparison.OrdinalIgnoreCase));
-                        if (item != null)
-                            _achievementBus.NotifyUnlocked(item);
-                    }
-                }
+                // Run all milestone checks and notify the UI for each new badge.
+                RunAchievementEvaluation(log.ClientId);
 
-                return isSaved;
+                return true;
             }
             catch (Exception ex)
             {
@@ -163,35 +155,36 @@ namespace VibeCoders.Services
         // ── Achievement Evaluation ───────────────────────────────────────────
 
         /// <summary>
-        /// Evaluates seeded achievement criteria for <paramref name="clientId"/> after
-        /// a workout is saved. For each badge newly granted, publishes on the bus so
-        /// the UI can trigger the unlock popup.
+        /// Delegates to <see cref="EvaluationEngine.Evaluate"/> which runs every
+        /// registered <see cref="Domain.IMilestoneCheck"/> rule. For each badge
+        /// newly unlocked, fetches the full <see cref="AchievementShowcaseItem"/>
+        /// and publishes it on <see cref="IAchievementUnlockedBus"/> so the UI can
+        /// display an unlock toast / popup.
+        /// Errors are swallowed so a badge evaluation failure never rolls back a
+        /// successfully saved workout.
         /// </summary>
-        private void EvaluateAndPublishAchievements(int clientId)
+        private void RunAchievementEvaluation(int clientId)
         {
             try
             {
-                // "First Steps" (id 1): complete at least one workout.
-                if (_storage.GetWorkoutCount(clientId) == 1)
-                    TryAwardAndPublish(clientId, achievementId: 1);
+                var newlyUnlocked = _evaluationEngine.Evaluate(clientId);
 
-                // "Week Warrior" (id 2): log workouts on 5 distinct calendar days.
-                if (_storage.GetDistinctWorkoutDayCount(clientId) >= 5)
-                    TryAwardAndPublish(clientId, achievementId: 2);
+                foreach (var title in newlyUnlocked)
+                {
+                    // Reload catalog to get the freshly-awarded item's full data.
+                    var catalog = _storage.GetAchievementShowcaseForClient(clientId);
+                    var item    = catalog.FirstOrDefault(
+                        a => string.Equals(a.Title, title, StringComparison.OrdinalIgnoreCase));
+
+                    if (item != null)
+                        _achievementBus.NotifyUnlocked(item);
+                }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Achievement evaluation error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine(
+                    $"[ClientService] Achievement evaluation error for client {clientId}: {ex.Message}");
             }
-        }
-
-        private void TryAwardAndPublish(int clientId, int achievementId)
-        {
-            if (!_storage.AwardAchievement(clientId, achievementId)) return;
-
-            var item = _storage.GetAchievementForClient(achievementId, clientId);
-            if (item != null)
-                _achievementBus.NotifyUnlocked(item);
         }
 
         // ── Notifications ────────────────────────────────────────────────────
