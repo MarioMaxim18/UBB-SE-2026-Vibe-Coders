@@ -113,19 +113,22 @@ namespace VibeCoders.Services
 
         /// <summary>
         /// Convenience wrapper: inserts the plan, all its meals, and the client assignment
-        /// in the correct order.
+        /// in the correct order. Rolls back nothing on partial failure — keep transactions
+        /// in mind if the plan can have many meals.
         /// </summary>
         void SaveNutritionPlanForClient(NutritionPlan plan, int clientId);
 
         /// <summary>
         /// Returns all <see cref="NutritionPlan"/>s assigned to <paramref name="clientId"/>,
         /// each with its <see cref="NutritionPlan.Meals"/> collection populated.
+        /// Returns an empty list when none are found.
         /// </summary>
         List<NutritionPlan> GetNutritionPlansForClient(int clientId);
 
         /// <summary>
         /// Returns all <see cref="Meal"/>s belonging to <paramref name="nutritionPlanId"/>.
         /// <see cref="Meal.Ingredients"/> is deserialized from JSON.
+        /// Returns an empty list when none are found.
         /// </summary>
         List<Meal> GetMealsForPlan(int nutritionPlanId);
     }

@@ -219,7 +219,6 @@ namespace VibeCoders.Services
 
 
             // ── NUTRITION_PLAN ───────────────────────────────────────────────
-            [cite_start]
             cmd.CommandText = @"
                 IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='NUTRITION_PLAN' AND xtype='U')
                 CREATE TABLE NUTRITION_PLAN (
@@ -230,7 +229,6 @@ namespace VibeCoders.Services
             cmd.ExecuteNonQuery();
 
             // ── MEAL ─────────────────────────────────────────────────────────
-            [cite_start]
             cmd.CommandText = @"
                 IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='MEAL' AND xtype='U')
                 CREATE TABLE MEAL (
@@ -244,7 +242,6 @@ namespace VibeCoders.Services
             cmd.ExecuteNonQuery();
 
             // ── CLIENT_NUTRITION_PLAN ────────────────────────────────────────
-            [cite_start]
             cmd.CommandText = @"
                 IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='CLIENT_NUTRITION_PLAN' AND xtype='U')
                 CREATE TABLE CLIENT_NUTRITION_PLAN (
