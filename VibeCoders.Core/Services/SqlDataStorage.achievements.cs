@@ -20,6 +20,45 @@ public partial class SqlDataStorage
     }
 
     /// <inheritdoc />
+    public List<Achievement> GetAllAchievements()
+    {
+        var list = new List<Achievement>();
+
+        using var conn = new SqlConnection(_connectionString);
+        conn.Open();
+
+        // Pulls the master catalog without joining CLIENT_ACHIEVEMENT —
+        // IsUnlocked is left as false because this query is client-agnostic.
+        const string sql = @"
+            SELECT
+                achievement_id,
+                title,
+                description,
+                ISNULL(criteria, '')   AS criteria,
+                threshold_workouts
+            FROM ACHIEVEMENT
+            ORDER BY achievement_id;";
+
+        using var cmd    = new SqlCommand(sql, conn);
+        using var reader = cmd.ExecuteReader();
+
+        while (reader.Read())
+        {
+            list.Add(new Achievement
+            {
+                AchievementId     = reader.GetInt32(0),
+                Name              = reader.GetString(1),
+                Description       = reader.GetString(2),
+                Criteria          = reader.GetString(3),
+                ThresholdWorkouts = reader.IsDBNull(4) ? null : reader.GetInt32(4),
+                IsUnlocked        = false,
+            });
+        }
+
+        return list;
+    }
+
+    /// <inheritdoc />
     public void EvaluateAndUnlockWorkoutMilestones(int clientId)
     {
         using var conn = new SqlConnection(_connectionString);

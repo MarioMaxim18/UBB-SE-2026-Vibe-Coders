@@ -40,6 +40,17 @@ namespace VibeCoders.Services
         List<Notification> GetNotifications(int clientId);
 
         // ── Achievements ─────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Returns every row in the <c>ACHIEVEMENT</c> catalog table —
+        /// title, description, criteria, and optional workout threshold —
+        /// with no client-specific state (<see cref="Achievement.IsUnlocked"/> is always
+        /// <see langword="false"/>). Use this to display the full badge catalog
+        /// without requiring a logged-in client. Ordered by <c>achievement_id</c>.
+        /// Closes issue #182.
+        /// </summary>
+        List<Achievement> GetAllAchievements();
+
         /// <summary>
         /// Returns the full achievement catalog for <paramref name="clientId"/>, each row
         /// including whether the client has unlocked it. Locked rows are included so the
