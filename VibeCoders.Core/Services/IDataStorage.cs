@@ -58,6 +58,12 @@ namespace VibeCoders.Services
         AchievementShowcaseItem? GetAchievementForClient(int achievementId, int clientId);
 
         
+        ///<summary>
+        ///Updates the workout's log feedback values when called
+        ///</summary>
+        bool UpdateWorkoutLogFeedback(int workoutLogId, double rating, string notes);
+
+
         bool AwardAchievement(int clientId, int achievementId);
     }
 }

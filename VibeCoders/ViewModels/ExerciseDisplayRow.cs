@@ -9,7 +9,7 @@ using VibeCoders.Services;
 
 namespace VibeCoders.ViewModels
 {
-    // Ensure this is public!
+    
     public class ExerciseDisplayRow
     {
         public string Name { get; set; }
