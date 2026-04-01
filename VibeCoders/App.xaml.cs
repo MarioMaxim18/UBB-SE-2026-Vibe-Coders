@@ -44,7 +44,8 @@ public partial class App : Application
                         sql.EnsureSchemaCreated();
                         sql.SeedPrebuiltWorkouts();
                         sql.SeedAchievementCatalog();
-                        sql.SeedWorkoutMilestoneAchievements(); // #186
+                        sql.SeedWorkoutMilestoneAchievements();       // #186 – total workout count badges
+                        sql.SeedEvaluationEngineAchievements();      // streak + weekly-volume badges
                         sql.SeedTestData();
                     }).ConfigureAwait(true);
                 }

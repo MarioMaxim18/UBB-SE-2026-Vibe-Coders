@@ -161,6 +161,54 @@ namespace VibeCoders.Services
         }
 
         /// <summary>
+        /// Upserts the streak and weekly-volume achievements evaluated by
+        /// <see cref="EvaluationEngine"/>. Also corrects the "Week Warrior" description
+        /// to match the StreakCheck(7) rule registered in the engine.
+        /// Safe to call on every startup.
+        /// </summary>
+        public void SeedEvaluationEngineAchievements()
+        {
+            using var conn = new SqlConnection(_connectionString);
+            conn.Open();
+
+            void Upsert(string title, string description, string criteria)
+            {
+                const string sql = @"
+                    IF NOT EXISTS (SELECT 1 FROM ACHIEVEMENT WHERE title = @Title)
+                        INSERT INTO ACHIEVEMENT (title, description, criteria)
+                        VALUES (@Title, @Description, @Criteria);
+                    ELSE
+                        UPDATE ACHIEVEMENT
+                        SET description = @Description, criteria = @Criteria
+                        WHERE title = @Title;";
+
+                using var cmd = new SqlCommand(sql, conn);
+                cmd.Parameters.AddWithValue("@Title",       title);
+                cmd.Parameters.AddWithValue("@Description", description);
+                cmd.Parameters.AddWithValue("@Criteria",    criteria);
+                cmd.ExecuteNonQuery();
+            }
+
+            // Align existing "Week Warrior" with StreakCheck(7) registered in EvaluationEngine.
+            Upsert(
+                "Week Warrior",
+                "Prove you can train every day for a full week.",
+                "Log a workout on 7 consecutive calendar days.");
+
+            // New: 3-day streak badge.
+            Upsert(
+                "3-Day Streak",
+                "Keep the momentum — three days in a row.",
+                "Log a workout on 3 consecutive calendar days.");
+
+            // New: weekly-volume badge.
+            Upsert(
+                "Week Champion",
+                "Push your weekly limits to the top.",
+                "Complete 6 workouts within any rolling 7-day window.");
+        }
+
+        /// <summary>
         /// Seeds dummy users, clients, trainers, and workout logs for testing purposes.
         /// Safe to call on every startup.
         /// </summary>
