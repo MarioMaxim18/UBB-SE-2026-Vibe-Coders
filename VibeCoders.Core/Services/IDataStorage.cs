@@ -49,6 +49,15 @@ namespace VibeCoders.Services
         List<AchievementShowcaseItem> GetAchievementShowcaseForClient(int clientId);
 
         
+        int GetWorkoutCount(int clientId);
+
+        
+        int GetDistinctWorkoutDayCount(int clientId);
+
+       
+        AchievementShowcaseItem? GetAchievementForClient(int achievementId, int clientId);
+
+        
         bool AwardAchievement(int clientId, int achievementId);
     }
 }
