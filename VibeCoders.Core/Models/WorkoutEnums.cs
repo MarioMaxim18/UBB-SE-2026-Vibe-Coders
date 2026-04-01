@@ -10,7 +10,8 @@
         LEGS,
         SHOULDERS,
         ARMS,
-        CORE
+        CORE,
+        OTHER // Add this to handle nulls
     }
 
     /// <summary>

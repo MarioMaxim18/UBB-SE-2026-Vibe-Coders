@@ -58,7 +58,7 @@ namespace VibeCoders.ViewModels
                 CurrentWorkoutDetails.Add(new ExerciseDisplayRow
                 {
                     Name = exercise.ExerciseName,
-                    MuscleGroup = "Hams", // Ideally pull this from your TemplateExercise data
+                    MuscleGroup = exercise.TargetMuscles.ToString(),
                     Sets = exercise.Sets
                 });
             }

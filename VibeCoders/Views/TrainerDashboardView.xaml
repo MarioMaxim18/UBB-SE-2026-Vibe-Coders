@@ -27,7 +27,7 @@
                         <StackPanel Margin="0,8,0,16" Padding="16" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8">
                             <TextBlock Text="{x:Bind Username}" FontSize="30" FontWeight="SemiBold"/>
                             <TextBlock Text="Active Trainee" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Margin="0,4,0,0"/>
-                            <TextBlock Text="Last Workout: N/A" FontSize="12" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Margin="0,8,0,0"/>
+                            <TextBlock Text="{x:Bind views:TrainerDashboardView.FormatLastWorkoutDate(WorkoutLog)}" FontSize="12" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Margin="0,8,0,0"/>
                         </StackPanel>
                     </DataTemplate>
                 </ListView.ItemTemplate>
@@ -37,34 +37,41 @@
         <Border Grid.Column="1" Margin="16,0,0,0" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="10">
             <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="1.5*"/>
+                    <RowDefinition Height="1*"/>
                     <RowDefinition Height="2*"/>
                 </Grid.RowDefinitions>
 
                 <Grid Grid.Row="0">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
-					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="Auto"/>
-						<ColumnDefinition Width="*"/>
-					</Grid.ColumnDefinitions>
-					
-                    <TextBlock Grid.Row="0" Grid.Column="0" Text="History" FontSize="24" FontWeight="SemiBold" Padding="12" Margin="10"/>
-                    <ListView Grid.Row="1" Grid.Column="0" ItemsSource="{x:Bind ViewModel.SelectedClientLogs, Mode=OneWay}" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Margin="10"
-							  >
-                        <ListView.ItemTemplate>
-                            <DataTemplate x:DataType="models:WorkoutLog">
-                                <StackPanel Orientation="Horizontal" Spacing="16">
-                                    <TextBlock Text="{x:Bind views:TrainerDashboardView.FormatWorkoutDate(Date)}" FontWeight="Bold"/>
-                                </StackPanel>
-                            </DataTemplate>
-                        </ListView.ItemTemplate>
-                    </ListView>
 
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="1.5*"/>
+						<ColumnDefinition Width="4*"/>
+					</Grid.ColumnDefinitions>
+
+					<Grid Grid.Column="0">
+
+						<Grid.RowDefinitions>
+							<RowDefinition Height="Auto"/>
+							<RowDefinition Height="*"/>
+						</Grid.RowDefinitions>
+					
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="History" FontSize="24" FontWeight="SemiBold" Padding="5" Margin="10"/>
+                        <ListView Grid.Row="1" Grid.Column="0" ItemsSource="{x:Bind ViewModel.SelectedClientLogs, Mode=OneWay}" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Margin="10"
+							     SelectedItem="{x:Bind ViewModel.SelectedWorkoutLog, Mode=TwoWay}" >
+                            <ListView.ItemTemplate>
+                                <DataTemplate x:DataType="models:WorkoutLog">
+                                    <StackPanel Orientation="Horizontal" Spacing="16">
+                                        <TextBlock Text="{x:Bind views:TrainerDashboardView.FormatWorkoutDate(Date)}" FontWeight="Bold"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+
+					</Grid>
+					
+					
 					<Grid Grid.Column="1">
-						<ListView Grid.Row="1"
+						<ListView
                               ItemsSource="{x:Bind ViewModel.CurrentWorkoutDetails, Mode=OneWay}"
                               SelectionMode="None">
 

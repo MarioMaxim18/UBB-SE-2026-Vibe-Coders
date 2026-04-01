@@ -195,19 +195,21 @@ namespace VibeCoders.Services
         {
             const string sql = @"
                 SELECT
-                    workout_log_sets_id,
-                    exercise_name,
-                    sets,
-                    reps,
-                    weight,
-                    target_reps,
-                    target_weight,
-                    performance_ratio,
-                    is_system_adjusted,
-                    adjustment_note
-                FROM WORKOUT_LOG_SETS
-                WHERE workout_log_id = @WorkoutLogId
-                ORDER BY exercise_name, sets;";
+                    wls.workout_log_sets_id,
+                    wls.exercise_name,
+                    wls.sets,
+                    wls.reps,
+                    wls.weight,
+                    wls.target_reps,
+                    wls.target_weight,
+                    wls.performance_ratio,
+                    wls.is_system_adjusted,
+                    wls.adjustment_note,
+                    te.muscle_group
+                FROM WORKOUT_LOG_SETS wls
+                LEFT JOIN TEMPLATE_EXERCISE te ON wls.exercise_name = te.name
+                WHERE wls.workout_log_id = @WorkoutLogId
+                ORDER BY wls.exercise_name, wls.sets;";
 
             var exerciseMap = new Dictionary<string, LoggedExercise>();
 
@@ -215,9 +217,13 @@ namespace VibeCoders.Services
             cmd.Parameters.AddWithValue("@WorkoutLogId", workoutLogId);
 
             using var reader = cmd.ExecuteReader();
+            
             while (reader.Read())
             {
+                string dbMuscleString = reader.IsDBNull(10) ? "OTHER" : reader.GetString(10);
                 string exerciseName = reader.GetString(1);
+
+                Enum.TryParse<MuscleGroup>(dbMuscleString, true, out var parsedMuscleGroup);
 
                 if (!exerciseMap.TryGetValue(exerciseName, out var exercise))
                 {
@@ -227,7 +233,8 @@ namespace VibeCoders.Services
                         ExerciseName = exerciseName,
                         PerformanceRatio = reader.IsDBNull(7) ? 0 : reader.GetDouble(7),
                         IsSystemAdjusted = !reader.IsDBNull(8) && reader.GetBoolean(8),
-                        AdjustmentNote = reader.IsDBNull(9) ? string.Empty : reader.GetString(9)
+                        AdjustmentNote = reader.IsDBNull(9) ? string.Empty : reader.GetString(9),
+                        TargetMuscles = parsedMuscleGroup
                     };
                     exerciseMap[exerciseName] = exercise;
                 }

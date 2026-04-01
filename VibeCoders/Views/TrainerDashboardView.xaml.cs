@@ -2,6 +2,7 @@ using Microsoft.UI.Xaml.Controls;
 using System;
 using VibeCoders.Services;
 using VibeCoders.ViewModels;
+using System.Collections.Generic;
 
 namespace VibeCoders.Views
 {
@@ -13,6 +14,17 @@ namespace VibeCoders.Views
         {
 
             return Date.ToString("MMM dd, yyyy");
+        }
+
+        public static string FormatLastWorkoutDate(List<VibeCoders.Models.WorkoutLog> logs)
+        {
+            
+            if (logs != null && logs.Count > 0)
+            {
+                return $"Last Workout: {logs[0].Date.ToString("MMM dd, yyyy")}";
+            }
+
+            return "Last Workout: N/A";
         }
 
         public TrainerDashboardView()
