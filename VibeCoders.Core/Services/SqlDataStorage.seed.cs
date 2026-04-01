@@ -207,22 +207,42 @@ namespace VibeCoders.Services
                 betaUserId = Convert.ToInt32(cmd.ExecuteScalar());
             }
 
+            int betaClientId;
             using (var cmd = new SqlCommand(@"
                 INSERT INTO CLIENT (user_id, trainer_id, weight, height)
-                VALUES (@UserId, @TrainerId, 68, 165);", conn))
+                VALUES (@UserId, @TrainerId, 68, 165);
+                SELECT SCOPE_IDENTITY();", conn))
             {
                 cmd.Parameters.AddWithValue("@UserId", betaUserId);
                 cmd.Parameters.AddWithValue("@TrainerId", trainerId);
-                cmd.ExecuteNonQuery();
+                betaClientId = Convert.ToInt32(cmd.ExecuteScalar());
             }
 
-            int CreateLog(int forClientId, DateTime date, string duration, int cals)
+            int GetPrebuiltTemplateId(string templateName)
             {
                 using var cmd = new SqlCommand(@"
-                    INSERT INTO WORKOUT_LOG (client_id, date, total_duration, calories_burned, rating)
-                    VALUES (@ClientId, @Date, @Duration, @Cals, 5);
+                    SELECT TOP 1 workout_template_id
+                    FROM WORKOUT_TEMPLATE
+                    WHERE name = @Name AND type = 'PREBUILT';", conn);
+                cmd.Parameters.AddWithValue("@Name", templateName);
+                var o = cmd.ExecuteScalar();
+                return o != null ? Convert.ToInt32(o) : 0;
+            }
+
+            int tplMass = GetPrebuiltTemplateId("Full Body Mass");
+            int tplHiit = GetPrebuiltTemplateId("HIIT Fat Burner");
+            int tplPower = GetPrebuiltTemplateId("Full Body Power");
+            int tplEndurance = GetPrebuiltTemplateId("Endurance Circuit");
+
+            int CreateLog(int forClientId, DateTime date, string duration, int cals, int workoutTemplateId)
+            {
+                using var cmd = new SqlCommand(@"
+                    INSERT INTO WORKOUT_LOG (client_id, workout_id, date, total_duration, calories_burned, rating)
+                    VALUES (@ClientId, @WorkoutId, @Date, @Duration, @Cals, 5);
                     SELECT SCOPE_IDENTITY();", conn);
                 cmd.Parameters.AddWithValue("@ClientId", forClientId);
+                cmd.Parameters.AddWithValue("@WorkoutId",
+                    workoutTemplateId > 0 ? workoutTemplateId : (object)DBNull.Value);
                 cmd.Parameters.AddWithValue("@Date", date);
                 cmd.Parameters.AddWithValue("@Duration", duration);
                 cmd.Parameters.AddWithValue("@Cals", cals);
@@ -242,57 +262,85 @@ namespace VibeCoders.Services
                 cmd.ExecuteNonQuery();
             }
 
-            // DemoClient — workout history (WORKOUT_LOG)
-            int log1 = CreateLog(demoClientId, DateTime.Now, "01:15:00", 450);
-            AddSet(log1, "Barbell Squat", 1, 10, 100.0);
-            AddSet(log1, "Barbell Squat", 2, 8, 105.0);
-            AddSet(log1, "Barbell Squat", 3, 6, 110.0);
+            var today = DateTime.Today;
+
+            // DemoClient — rich WORKOUT_LOG history (names come from workout_id → WORKOUT_TEMPLATE join).
+            // Matches the variety users see on the analytics dashboard (separate table).
+            int log1 = CreateLog(demoClientId, today, "01:15:00", 450, tplMass);
+            AddSet(log1, "Back Squat", 1, 10, 100.0);
+            AddSet(log1, "Back Squat", 2, 8, 105.0);
+            AddSet(log1, "Back Squat", 3, 6, 110.0);
             AddSet(log1, "Romanian Deadlift", 1, 12, 80.0);
             AddSet(log1, "Romanian Deadlift", 2, 12, 80.0);
             AddSet(log1, "Romanian Deadlift", 3, 10, 85.0);
             AddSet(log1, "Romanian Deadlift", 4, 8, 90.0);
-            AddSet(log1, "Calf Raises", 1, 15, 60.0);
-            AddSet(log1, "Calf Raises", 2, 15, 60.0);
+            AddSet(log1, "Barbell Rows", 1, 10, 60.0);
+            AddSet(log1, "Barbell Rows", 2, 10, 60.0);
 
-            int log2 = CreateLog(demoClientId, DateTime.Now.AddDays(-3), "00:55:00", 320);
+            int log2 = CreateLog(demoClientId, today.AddDays(-3), "00:55:00", 320, tplMass);
             AddSet(log2, "Bench Press", 1, 10, 80.0);
             AddSet(log2, "Bench Press", 2, 8, 85.0);
             AddSet(log2, "Bench Press", 3, 8, 85.0);
-            AddSet(log2, "Overhead Press", 1, 10, 40.0);
-            AddSet(log2, "Overhead Press", 2, 10, 40.0);
+            AddSet(log2, "Barbell Rows", 1, 10, 60.0);
+            AddSet(log2, "Barbell Rows", 2, 10, 60.0);
 
-            int log3 = CreateLog(demoClientId, DateTime.Now.AddDays(-7), "01:05:00", 400);
-            AddSet(log3, "Pull-ups", 1, 12, 0.0);
-            AddSet(log3, "Pull-ups", 2, 10, 0.0);
-            AddSet(log3, "Pull-ups", 3, 8, 0.0);
-            AddSet(log3, "Barbell Row", 1, 10, 60.0);
-            AddSet(log3, "Barbell Row", 2, 10, 60.0);
-            AddSet(log3, "Barbell Row", 3, 8, 65.0);
+            int log3 = CreateLog(demoClientId, today.AddDays(-7), "01:05:00", 400, tplPower);
+            AddSet(log3, "Deadlift", 1, 5, 100.0);
+            AddSet(log3, "Overhead Press", 1, 5, 40.0);
+            AddSet(log3, "Weighted Pull-Ups", 1, 5, 10.0);
 
-            // Extra client — one log for trainer dashboard variety
-            int logAlpha = CreateLog(alphaClientId, DateTime.Now.AddDays(-2), "00:40:00", 210);
+            // Additional sessions on distinct days (trainer list + Week Warrior criteria)
+            int log4 = CreateLog(demoClientId, today.AddDays(-1), "00:40:00", 280, tplHiit);
+            AddSet(log4, "Jumping Jacks", 1, 20, 0.0);
+            AddSet(log4, "Burpees", 1, 15, 0.0);
+
+            int log5 = CreateLog(demoClientId, today.AddDays(-5), "00:50:00", 300, tplEndurance);
+            AddSet(log5, "Push-Ups", 1, 20, 0.0);
+            AddSet(log5, "Bodyweight Squats", 1, 25, 0.0);
+
+            int log6 = CreateLog(demoClientId, today.AddDays(-10), "01:00:00", 360, tplMass);
+            AddSet(log6, "Back Squat", 1, 8, 95.0);
+            AddSet(log6, "Bench Press", 1, 8, 75.0);
+
+            int log7 = CreateLog(demoClientId, today.AddDays(-14), "00:45:00", 260, tplHiit);
+            AddSet(log7, "Mountain Climbers", 1, 20, 0.0);
+
+            int log8 = CreateLog(demoClientId, today.AddDays(-21), "00:55:00", 310, tplPower);
+            AddSet(log8, "Deadlift", 1, 5, 95.0);
+
+            // Extra client — two logs for trainer dashboard
+            int logAlpha = CreateLog(alphaClientId, today.AddDays(-2), "00:40:00", 210, tplMass);
             AddSet(logAlpha, "Bench Press", 1, 8, 70.0);
             AddSet(logAlpha, "Bench Press", 2, 8, 70.0);
 
-            // Unlock "First Steps" for DemoClient (achievement_id = first row in catalog)
-            int achievementId;
-            using (var cmd = new SqlCommand(
-                "SELECT TOP 1 achievement_id FROM ACHIEVEMENT ORDER BY achievement_id;", conn))
+            int logAlpha2 = CreateLog(alphaClientId, today.AddDays(-9), "00:35:00", 180, tplEndurance);
+            AddSet(logAlpha2, "Plank", 1, 60, 0.0);
+
+            int logBeta = CreateLog(betaClientId, today.AddDays(-4), "00:30:00", 150, tplHiit);
+            AddSet(logBeta, "Burpees", 1, 12, 0.0);
+            AddSet(logBeta, "Jumping Jacks", 1, 20, 0.0);
+
+            void UnlockAchievementIfExists(int clientId, string title)
             {
-                achievementId = Convert.ToInt32(cmd.ExecuteScalar());
+                using var find = new SqlCommand(
+                    "SELECT achievement_id FROM ACHIEVEMENT WHERE title = @T;", conn);
+                find.Parameters.AddWithValue("@T", title);
+                var o = find.ExecuteScalar();
+                if (o == null) return;
+                int aid = Convert.ToInt32(o);
+                using var ins = new SqlCommand(@"
+                    IF NOT EXISTS (
+                        SELECT 1 FROM CLIENT_ACHIEVEMENT
+                        WHERE client_id = @Cid AND achievement_id = @Aid)
+                    INSERT INTO CLIENT_ACHIEVEMENT (client_id, achievement_id, unlocked)
+                    VALUES (@Cid, @Aid, 1);", conn);
+                ins.Parameters.AddWithValue("@Cid", clientId);
+                ins.Parameters.AddWithValue("@Aid", aid);
+                ins.ExecuteNonQuery();
             }
 
-            using (var cmd = new SqlCommand(@"
-                IF NOT EXISTS (
-                    SELECT 1 FROM CLIENT_ACHIEVEMENT
-                    WHERE client_id = @Cid AND achievement_id = @Aid)
-                INSERT INTO CLIENT_ACHIEVEMENT (client_id, achievement_id, unlocked)
-                VALUES (@Cid, @Aid, 1);", conn))
-            {
-                cmd.Parameters.AddWithValue("@Cid", demoClientId);
-                cmd.Parameters.AddWithValue("@Aid", achievementId);
-                cmd.ExecuteNonQuery();
-            }
+            UnlockAchievementIfExists(demoClientId, "First Steps");
+            UnlockAchievementIfExists(demoClientId, "Week Warrior");
         }
 
         /// <summary>
