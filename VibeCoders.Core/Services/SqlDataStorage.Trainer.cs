@@ -68,6 +68,97 @@ namespace VibeCoders.Services
         }
 
 
+        /// <summary>
+        /// Saves a WorkoutTemplate and its associated exercises.
+        /// If the template's Id is 0, it creates a new one. 
+        /// If the Id > 0, it updates the existing template and replaces its exercises.
+        /// Uses a transaction to ensure database integrity.
+        /// </summary>
+        public bool SaveTrainerWorkout(WorkoutTemplate template)
+        {
+            const string insertTemplateSql = @"
+                INSERT INTO WORKOUT_TEMPLATE (client_id, name, type)
+                VALUES (@ClientId, @Name, @Type);
+                SELECT SCOPE_IDENTITY();";
+
+            const string updateTemplateSql = @"
+                UPDATE WORKOUT_TEMPLATE
+                SET name = @Name, type = @Type
+                WHERE workout_template_id = @TemplateId;";
+
+            const string deleteOldExercisesSql = @"
+                DELETE FROM TEMPLATE_EXERCISE 
+                WHERE workout_template_id = @TemplateId;";
+
+            const string insertExerciseSql = @"
+                INSERT INTO TEMPLATE_EXERCISE 
+                    (workout_template_id, name, muscle_group, target_sets, target_reps, target_weight)
+                VALUES 
+                    (@TemplateId, @Name, @MuscleGroup, @TargetSets, @TargetReps, @TargetWeight);";
+
+            using var conn = new SqlConnection(_connectionString);
+            conn.Open();
+
+            using var transaction = conn.BeginTransaction();
+
+            try
+            {
+                int templateId = template.Id;
+
+                
+                if (templateId == 0)
+                {
+                    using var cmd = new SqlCommand(insertTemplateSql, conn, transaction);
+                    cmd.Parameters.AddWithValue("@ClientId", template.ClientId);
+                    cmd.Parameters.AddWithValue("@Name", template.Name);
+                    // Ensure the enum is saved as text (e.g., 'TRAINER_ASSIGNED')
+                    cmd.Parameters.AddWithValue("@Type", template.Type.ToString());
+
+                    templateId = Convert.ToInt32(cmd.ExecuteScalar());
+                    template.Id = templateId;
+                }
+                else // Existing Template (Update)
+                {
+                    using var cmd = new SqlCommand(updateTemplateSql, conn, transaction);
+                    cmd.Parameters.AddWithValue("@TemplateId", templateId);
+                    cmd.Parameters.AddWithValue("@Name", template.Name);
+                    cmd.Parameters.AddWithValue("@Type", template.Type.ToString());
+
+                    cmd.ExecuteNonQuery();
+
+                    // Since we are updating, wipe the old exercises to prepare for the new list
+                    using var deleteCmd = new SqlCommand(deleteOldExercisesSql, conn, transaction);
+                    deleteCmd.Parameters.AddWithValue("@TemplateId", templateId);
+                    deleteCmd.ExecuteNonQuery();
+                }
+
+
+                foreach (var exercise in template.GetExercises())
+                {
+                    using var cmd = new SqlCommand(insertExerciseSql, conn, transaction);
+                    cmd.Parameters.AddWithValue("@TemplateId", templateId);
+                    cmd.Parameters.AddWithValue("@Name", exercise.Name);
+                    cmd.Parameters.AddWithValue("@MuscleGroup", exercise.MuscleGroup.ToString());
+                    cmd.Parameters.AddWithValue("@TargetSets", exercise.TargetSets);
+                    cmd.Parameters.AddWithValue("@TargetReps", exercise.TargetReps);
+                    cmd.Parameters.AddWithValue("@TargetWeight", exercise.TargetWeight);
+
+                    cmd.ExecuteNonQuery();
+                }
+
+                // 3. COMMIT EVERYTHING
+                transaction.Commit();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                transaction.Rollback();
+                System.Diagnostics.Debug.WriteLine($"Failed to save trainer workout: {ex.Message}");
+                return false;
+            }
+        }
+
+
         public bool SaveUser(User u)
         {
             //TODO
