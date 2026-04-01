@@ -93,6 +93,7 @@ namespace VibeCoders.Services
                     total_duration      VARCHAR(20),
                     calories_burned     INT,
                     rating              INT,
+                    trainer_notes       VARCHAR(1000),
                     FOREIGN KEY (client_id) REFERENCES CLIENT(client_id),
                     FOREIGN KEY (workout_id) REFERENCES WORKOUT_TEMPLATE(workout_template_id)
                 );";
