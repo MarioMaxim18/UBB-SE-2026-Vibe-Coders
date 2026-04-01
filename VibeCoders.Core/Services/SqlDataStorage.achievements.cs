@@ -10,9 +10,12 @@ public partial class SqlDataStorage
     {
         using var conn = new SqlConnection(_connectionString);
         conn.Open();
+
         using var cmd = new SqlCommand(
-            "SELECT COUNT(*) FROM WORKOUT_LOG WHERE client_id = @ClientId;", conn);
+            "SELECT COUNT(*) FROM WORKOUT_LOG WHERE client_id = @ClientId;",
+            conn);
         cmd.Parameters.AddWithValue("@ClientId", clientId);
+
         return (int)cmd.ExecuteScalar();
     }
 
@@ -147,39 +150,14 @@ public partial class SqlDataStorage
     }
 
     /// <inheritdoc />
-    public List<AchievementDefinition> GetAllAchievements()
+    public int GetWorkoutCount(int clientId)
     {
-        var list = new List<AchievementDefinition>();
-
         using var conn = new SqlConnection(_connectionString);
         conn.Open();
-
-        const string sql = @"
-            SELECT
-                achievement_id,
-                title,
-                description,
-                criteria,
-                threshold_workouts
-            FROM ACHIEVEMENT
-            ORDER BY achievement_id;";
-
-        using var cmd    = new SqlCommand(sql, conn);
-        using var reader = cmd.ExecuteReader();
-
-        while (reader.Read())
-        {
-            list.Add(new AchievementDefinition
-            {
-                AchievementId      = reader.GetInt32(0),
-                Title              = reader.GetString(1),
-                Description        = reader.GetString(2),
-                Criteria           = reader.GetString(3),
-                ThresholdWorkouts  = reader.IsDBNull(4) ? null : reader.GetInt32(4),
-            });
-        }
-
-        return list;
+        using var cmd = new SqlCommand(
+            "SELECT COUNT(1) FROM WORKOUT_LOG WHERE client_id = @ClientId;", conn);
+        cmd.Parameters.AddWithValue("@ClientId", clientId);
+        return (int)cmd.ExecuteScalar();
     }
 
     /// <inheritdoc />
