@@ -216,6 +216,42 @@ namespace VibeCoders.Services
                     WHERE object_id = OBJECT_ID('ACHIEVEMENT') AND name = 'threshold_workouts')
                 ALTER TABLE ACHIEVEMENT ADD threshold_workouts INT NULL;";
             cmd.ExecuteNonQuery();
+
+
+            // ── NUTRITION_PLAN ───────────────────────────────────────────────
+            cmd.CommandText = @"
+                IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='NUTRITION_PLAN' AND xtype='U')
+                CREATE TABLE NUTRITION_PLAN (
+                    nutrition_plan_id INT IDENTITY(1,1) PRIMARY KEY,
+                    start_date DATE NOT NULL,
+                    end_date DATE NOT NULL
+                );";
+            cmd.ExecuteNonQuery();
+
+            // ── MEAL ─────────────────────────────────────────────────────────
+            cmd.CommandText = @"
+                IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='MEAL' AND xtype='U')
+                CREATE TABLE MEAL (
+                    meal_id INT IDENTITY(1,1) PRIMARY KEY,
+                    nutrition_plan_id INT NOT NULL,
+                    name VARCHAR(100) NOT NULL,
+                    ingredients VARCHAR(MAX) NOT NULL,
+                    instructions VARCHAR(MAX) NOT NULL,
+                    FOREIGN KEY (nutrition_plan_id) REFERENCES NUTRITION_PLAN(nutrition_plan_id)
+                );";
+            cmd.ExecuteNonQuery();
+
+            // ── CLIENT_NUTRITION_PLAN ────────────────────────────────────────
+            cmd.CommandText = @"
+                IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='CLIENT_NUTRITION_PLAN' AND xtype='U')
+                CREATE TABLE CLIENT_NUTRITION_PLAN (
+                    client_id INT NOT NULL,
+                    nutrition_plan_id INT NOT NULL,
+                    CONSTRAINT PK_CLIENT_NUTRITION_PLAN PRIMARY KEY (client_id, nutrition_plan_id),
+                    FOREIGN KEY (client_id) REFERENCES CLIENT(client_id),
+                    FOREIGN KEY (nutrition_plan_id) REFERENCES NUTRITION_PLAN(nutrition_plan_id)
+                );";
+            cmd.ExecuteNonQuery();
         }
     }
 }
