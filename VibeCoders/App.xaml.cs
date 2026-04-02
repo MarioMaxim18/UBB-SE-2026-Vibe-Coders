@@ -27,14 +27,15 @@ public partial class App : Application
         _services = services.BuildServiceProvider();
 
         var navService = (NavigationService)_services.GetRequiredService<INavigationService>();
-        _window = new MainWindow(navService);
+        var achievementBus = _services.GetRequiredService<IAchievementUnlockedBus>();
+        _window = new MainWindow(navService, achievementBus);
         _window.Activate();
 
         // Show the shell first; schema/seed can block on first LocalDB connection.
         var dispatcher = _window.DispatcherQueue ?? DispatcherQueue.GetForCurrentThread();
         dispatcher.TryEnqueue(async () =>
         {
-            try
+        try
             {
                 var storage = _services.GetRequiredService<IDataStorage>();
                 if (storage is SqlDataStorage sql)
@@ -44,20 +45,10 @@ public partial class App : Application
                         sql.EnsureSchemaCreated();
                         sql.SeedPrebuiltWorkouts();
                         sql.SeedAchievementCatalog();
+                        sql.SeedWorkoutMilestoneAchievements();       // #186 – total workout count badges
+                        sql.SeedEvaluationEngineAchievements();      // streak + weekly-volume badges
                         sql.SeedTestData();
                     }).ConfigureAwait(true);
-
-                    var analytics = _services.GetRequiredService<IWorkoutAnalyticsStore>();
-                    await analytics.EnsureCreatedAsync().ConfigureAwait(true);
-
-                    var demoClientId = (long)sql.GetDemoClientId();
-                    if (_services.GetRequiredService<IUserSession>() is UserSession session)
-                    {
-                        session.CurrentUserId = demoClientId;
-                        session.CurrentClientId = demoClientId;
-                    }
-
-                    sql.SeedAnalyticsDemoDataIfEmpty(demoClientId);
                 }
             }
             catch (Exception ex)
@@ -66,7 +57,10 @@ public partial class App : Application
             }
 
             navService.NavigateToClientDashboard(requestRefresh: true);
-        });
+
+
+        }
+    );
     }
 
     /// <summary>
@@ -97,21 +91,22 @@ public partial class App : Application
             new SqlWorkoutAnalyticsStore(connectionString));
 
         services.AddSingleton<IAnalyticsDashboardRefreshBus, AnalyticsDashboardRefreshBus>();
+        services.AddSingleton<IAchievementUnlockedBus, AchievementUnlockedBus>();
         services.AddSingleton<IWorkoutDataForwarder, WorkoutDataForwarder>();
+        services.AddSingleton<ICalendarExportService, CalendarExportService>();
         services.AddSingleton<INavigationService, NavigationService>();
 
         services.AddHttpClient();
 
         services.AddSingleton<ProgressionService>();
         services.AddSingleton<ClientService>();
+        services.AddSingleton<EvaluationEngine>(); // added right now
         services.AddSingleton<TrainerService>();
 
-        services.AddSingleton<ICalendarExportService, CalendarExportService>();
-
         services.AddTransient<ClientDashboardViewModel>();
+        services.AddTransient<CalendarIntegrationViewModel>();
         services.AddTransient<RankShowcaseViewModel>();
         services.AddTransient<ActiveWorkoutViewModel>();
         services.AddTransient<WorkoutLogsViewModel>();
-        services.AddTransient<CalendarIntegrationViewModel>();
     }
 }

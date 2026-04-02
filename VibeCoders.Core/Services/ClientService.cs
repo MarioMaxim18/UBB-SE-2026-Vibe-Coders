@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Net.Http;
 using System.Net.Http.Json;
 using VibeCoders.Models;
@@ -11,7 +10,8 @@ namespace VibeCoders.Services
         private readonly IDataStorage _storage;
         private readonly ProgressionService _progressionService;
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly IWorkoutDataForwarder _workoutAnalyticsForwarder;
+        private readonly EvaluationEngine _evaluationEngine;
+        private readonly IAchievementUnlockedBus _achievementBus;
 
         private const string NutritionApiEndpoint = "https://nutrition-app.vibecoders.internal/api/nutrition/sync";
 
@@ -19,21 +19,27 @@ namespace VibeCoders.Services
             IDataStorage storage,
             ProgressionService progressionService,
             IHttpClientFactory httpClientFactory,
-            IWorkoutDataForwarder workoutAnalyticsForwarder)
+            EvaluationEngine evaluationEngine,
+            IAchievementUnlockedBus achievementBus)
         {
-            _storage = storage;
+            _storage            = storage;
             _progressionService = progressionService;
-            _httpClientFactory = httpClientFactory;
-            _workoutAnalyticsForwarder = workoutAnalyticsForwarder;
+            _httpClientFactory  = httpClientFactory;
+            _evaluationEngine   = evaluationEngine;
+            _achievementBus     = achievementBus;
         }
 
         // ── Workout ──────────────────────────────────────────────────────────
 
         /// <summary>
-        /// Finalizes a completed workout session:
-        ///   1. Stamps the date.
+        /// Finalizes a completed workout session (#191):
+        ///   1. Stamps the current date/time on the log.
         ///   2. Runs progression evaluation (overload / plateau detection).
         ///   3. Persists the log with all its sets.
+        ///   4. Triggers the <see cref="EvaluationEngine"/> in the background —
+        ///      every registered milestone check runs, newly earned badges are
+        ///      awarded exactly once, and each unlock is published to the
+        ///      <see cref="IAchievementUnlockedBus"/> so the UI can react.
         /// </summary>
         public bool FinalizeWorkout(WorkoutLog log)
         {
@@ -42,27 +48,15 @@ namespace VibeCoders.Services
             try
             {
                 log.Date = DateTime.Now;
-
                 _progressionService.EvaluateWorkout(log);
 
                 bool isSaved = _storage.SaveWorkoutLog(log);
+                if (!isSaved) return false;
 
-                if (isSaved)
-                {
-                    try
-                    {
-                        _workoutAnalyticsForwarder
-                            .ForwardCompletedWorkoutAsync(log.ClientId, log)
-                            .GetAwaiter()
-                            .GetResult();
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.WriteLine($"Analytics copy failed after workout save: {ex.Message}");
-                    }
-                }
+                // Run all milestone checks and notify the UI for each new badge.
+                RunAchievementEvaluation(log.ClientId);
 
-                return isSaved;
+                return true;
             }
             catch (Exception ex)
             {
@@ -155,6 +149,41 @@ namespace VibeCoders.Services
             {
                 System.Diagnostics.Debug.WriteLine($"Error syncing nutrition: {ex.Message}");
                 return false;
+            }
+        }
+
+        // ── Achievement Evaluation ───────────────────────────────────────────
+
+        /// <summary>
+        /// Delegates to <see cref="EvaluationEngine.Evaluate"/> which runs every
+        /// registered <see cref="Domain.IMilestoneCheck"/> rule. For each badge
+        /// newly unlocked, fetches the full <see cref="AchievementShowcaseItem"/>
+        /// and publishes it on <see cref="IAchievementUnlockedBus"/> so the UI can
+        /// display an unlock toast / popup.
+        /// Errors are swallowed so a badge evaluation failure never rolls back a
+        /// successfully saved workout.
+        /// </summary>
+        private void RunAchievementEvaluation(int clientId)
+        {
+            try
+            {
+                var newlyUnlocked = _evaluationEngine.Evaluate(clientId);
+
+                foreach (var title in newlyUnlocked)
+                {
+                    // Reload catalog to get the freshly-awarded item's full data.
+                    var catalog = _storage.GetAchievementShowcaseForClient(clientId);
+                    var item    = catalog.FirstOrDefault(
+                        a => string.Equals(a.Title, title, StringComparison.OrdinalIgnoreCase));
+
+                    if (item != null)
+                        _achievementBus.NotifyUnlocked(item);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(
+                    $"[ClientService] Achievement evaluation error for client {clientId}: {ex.Message}");
             }
         }
 

@@ -1,4 +1,5 @@
 using Microsoft.Data.SqlClient;
+using VibeCoders.Domain;
 
 namespace VibeCoders.Services
 {
@@ -130,8 +131,82 @@ namespace VibeCoders.Services
             Insert("Dedicated",    "Demonstrate your long-term commitment.",        "Reach 50 hours of total active time.");
         }
 
+        /// <summary>
+        /// Upserts the "Total Workouts" milestone achievements defined by
+        /// <see cref="TotalWorkoutsMilestoneEvaluator.DefaultMilestones"/> (#186).
+        /// Safe to call on every startup.
+        /// </summary>
+        public void SeedWorkoutMilestoneAchievements()
+        {
+            using var conn = new SqlConnection(_connectionString);
+            conn.Open();
 
+            foreach (var milestone in TotalWorkoutsMilestoneEvaluator.DefaultMilestones)
+            {
+                const string upsertSql = @"
+                    IF NOT EXISTS (SELECT 1 FROM ACHIEVEMENT WHERE title = @Title)
+                        INSERT INTO ACHIEVEMENT (title, description, threshold_workouts)
+                        VALUES (@Title, @Description, @Threshold);
+                    ELSE
+                        UPDATE ACHIEVEMENT
+                        SET threshold_workouts = @Threshold
+                        WHERE title = @Title AND threshold_workouts IS NULL;";
 
+                using var cmd = new SqlCommand(upsertSql, conn);
+                cmd.Parameters.AddWithValue("@Title", milestone.Title);
+                cmd.Parameters.AddWithValue("@Description", milestone.Description);
+                cmd.Parameters.AddWithValue("@Threshold", milestone.Threshold);
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        /// <summary>
+        /// Upserts the streak and weekly-volume achievements evaluated by
+        /// <see cref="EvaluationEngine"/>. Also corrects the "Week Warrior" description
+        /// to match the StreakCheck(7) rule registered in the engine.
+        /// Safe to call on every startup.
+        /// </summary>
+        public void SeedEvaluationEngineAchievements()
+        {
+            using var conn = new SqlConnection(_connectionString);
+            conn.Open();
+
+            void Upsert(string title, string description, string criteria)
+            {
+                const string sql = @"
+                    IF NOT EXISTS (SELECT 1 FROM ACHIEVEMENT WHERE title = @Title)
+                        INSERT INTO ACHIEVEMENT (title, description, criteria)
+                        VALUES (@Title, @Description, @Criteria);
+                    ELSE
+                        UPDATE ACHIEVEMENT
+                        SET description = @Description, criteria = @Criteria
+                        WHERE title = @Title;";
+
+                using var cmd = new SqlCommand(sql, conn);
+                cmd.Parameters.AddWithValue("@Title",       title);
+                cmd.Parameters.AddWithValue("@Description", description);
+                cmd.Parameters.AddWithValue("@Criteria",    criteria);
+                cmd.ExecuteNonQuery();
+            }
+
+            // Align existing "Week Warrior" with StreakCheck(7) registered in EvaluationEngine.
+            Upsert(
+                "Week Warrior",
+                "Prove you can train every day for a full week.",
+                "Log a workout on 7 consecutive calendar days.");
+
+            // New: 3-day streak badge.
+            Upsert(
+                "3-Day Streak",
+                "Keep the momentum — three days in a row.",
+                "Log a workout on 3 consecutive calendar days.");
+
+            // New: weekly-volume badge.
+            Upsert(
+                "Week Champion",
+                "Push your weekly limits to the top.",
+                "Complete 6 workouts within any rolling 7-day window.");
+        }
 
         /// <summary>
         /// Seeds a demo roster: one trainer, <c>DemoClient</c> (primary app persona), and two extra clients
@@ -363,7 +438,5 @@ namespace VibeCoders.Services
             var o2 = cmd2.ExecuteScalar();
             return o2 != null ? Convert.ToInt32(o2) : 1;
         }
-
-
     }
 }

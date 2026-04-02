@@ -24,9 +24,10 @@ namespace VibeCoders.Services
             cmd.CommandText = @"
                 IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='USER' AND xtype='U')
                 CREATE TABLE [USER] (
-                    id INT PRIMARY KEY IDENTITY(1,1),
-                    username VARCHAR(100) NOT NULL
-                    
+                    id            INT PRIMARY KEY IDENTITY(1,1),
+                    username      VARCHAR(100) NOT NULL,
+                    password_hash VARCHAR(100) NOT NULL DEFAULT '',
+                    role          VARCHAR(30)  NOT NULL DEFAULT 'CLIENT'
                 );";
             cmd.ExecuteNonQuery();
 
@@ -120,6 +121,7 @@ namespace VibeCoders.Services
                     calories_burned     INT,
                     rating              INT,
                     trainer_notes       VARCHAR(1000),
+                    intensity_tag       VARCHAR(20) NOT NULL DEFAULT '',
                     FOREIGN KEY (client_id) REFERENCES CLIENT(client_id),
                     FOREIGN KEY (workout_id) REFERENCES WORKOUT_TEMPLATE(workout_template_id)
                 );";
@@ -194,8 +196,6 @@ namespace VibeCoders.Services
             cmd.ExecuteNonQuery();
 
             // ── CLIENT_ACHIEVEMENT migration: ensure PK exists on older databases ──
-            // The PRIMARY KEY on (client_id, achievement_id) is the DB-level uniqueness
-            // enforcer that prevents duplicate awards even under concurrent operations.
             cmd.CommandText = @"
                 IF NOT EXISTS (
                     SELECT 1 FROM sys.key_constraints
@@ -205,6 +205,52 @@ namespace VibeCoders.Services
                     ALTER TABLE CLIENT_ACHIEVEMENT
                         ADD CONSTRAINT PK_CLIENT_ACHIEVEMENT
                         PRIMARY KEY (client_id, achievement_id);";
+            cmd.ExecuteNonQuery();
+
+            // ── ACHIEVEMENT.threshold_workouts (additive migration) ───────────
+            // Added for the "Total Workouts" milestone feature (#186).
+            // NULL means the achievement is not a workout-count milestone.
+            cmd.CommandText = @"
+                IF NOT EXISTS (
+                    SELECT 1 FROM sys.columns
+                    WHERE object_id = OBJECT_ID('ACHIEVEMENT') AND name = 'threshold_workouts')
+                ALTER TABLE ACHIEVEMENT ADD threshold_workouts INT NULL;";
+            cmd.ExecuteNonQuery();
+
+
+            // ── NUTRITION_PLAN ───────────────────────────────────────────────
+            cmd.CommandText = @"
+                IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='NUTRITION_PLAN' AND xtype='U')
+                CREATE TABLE NUTRITION_PLAN (
+                    nutrition_plan_id INT IDENTITY(1,1) PRIMARY KEY,
+                    start_date DATE NOT NULL,
+                    end_date DATE NOT NULL
+                );";
+            cmd.ExecuteNonQuery();
+
+            // ── MEAL ─────────────────────────────────────────────────────────
+            cmd.CommandText = @"
+                IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='MEAL' AND xtype='U')
+                CREATE TABLE MEAL (
+                    meal_id INT IDENTITY(1,1) PRIMARY KEY,
+                    nutrition_plan_id INT NOT NULL,
+                    name VARCHAR(100) NOT NULL,
+                    ingredients VARCHAR(MAX) NOT NULL,
+                    instructions VARCHAR(MAX) NOT NULL,
+                    FOREIGN KEY (nutrition_plan_id) REFERENCES NUTRITION_PLAN(nutrition_plan_id)
+                );";
+            cmd.ExecuteNonQuery();
+
+            // ── CLIENT_NUTRITION_PLAN ────────────────────────────────────────
+            cmd.CommandText = @"
+                IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='CLIENT_NUTRITION_PLAN' AND xtype='U')
+                CREATE TABLE CLIENT_NUTRITION_PLAN (
+                    client_id INT NOT NULL,
+                    nutrition_plan_id INT NOT NULL,
+                    CONSTRAINT PK_CLIENT_NUTRITION_PLAN PRIMARY KEY (client_id, nutrition_plan_id),
+                    FOREIGN KEY (client_id) REFERENCES CLIENT(client_id),
+                    FOREIGN KEY (nutrition_plan_id) REFERENCES NUTRITION_PLAN(nutrition_plan_id)
+                );";
             cmd.ExecuteNonQuery();
         }
     }
