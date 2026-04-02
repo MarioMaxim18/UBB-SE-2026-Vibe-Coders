@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using VibeCoders.Models;
 using VibeCoders.Services;
 using User = VibeCoders.Models.User;
-using Microsoft.Data.SqlClient;
+using Microsoft.Data.Sqlite;
 
 namespace VibeCoders.Services
 {
@@ -14,13 +14,12 @@ namespace VibeCoders.Services
     public partial class SqlDataStorage : IDataStorage
     {
 
-
        
         public List<Client> GetTrainerClient(int trainerId)
         {
             var roster = new List<Client>();
 
-            using (SqlConnection conn = new SqlConnection(_connectionString))
+            using (SqliteConnection conn = new SqliteConnection(_connectionString))
             {
                 conn.Open();
 
@@ -35,11 +34,11 @@ namespace VibeCoders.Services
                     JOIN [USER] u ON c.user_id = u.id
                     WHERE c.trainer_id = @TrainerId;";
 
-                using (SqlCommand cmd = new SqlCommand(sql, conn))
+                using (SqliteCommand cmd = new SqliteCommand(sql, conn))
                 {
                     cmd.Parameters.AddWithValue("@TrainerId", trainerId);
 
-                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    using (SqliteDataReader reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
                         {
@@ -55,7 +54,7 @@ namespace VibeCoders.Services
                             // Attaching the last workout date to satisfy the UI requirement
                             if (!reader.IsDBNull(4))
                             {
-                                client.WorkoutLog.Add(new WorkoutLog { Date = reader.GetDateTime(4) });
+                                client.WorkoutLog.Add(new WorkoutLog { Date = DateTime.Parse(reader.GetString(4)) });
 
                             }
 
@@ -79,7 +78,7 @@ namespace VibeCoders.Services
             const string insertTemplateSql = @"
                 INSERT INTO WORKOUT_TEMPLATE (client_id, name, type)
                 VALUES (@ClientId, @Name, @Type);
-                SELECT SCOPE_IDENTITY();";
+                SELECT last_insert_rowid();";
 
             const string updateTemplateSql = @"
                 UPDATE WORKOUT_TEMPLATE
@@ -96,7 +95,7 @@ namespace VibeCoders.Services
                 VALUES 
                     (@TemplateId, @Name, @MuscleGroup, @TargetSets, @TargetReps, @TargetWeight);";
 
-            using var conn = new SqlConnection(_connectionString);
+            using var conn = new SqliteConnection(_connectionString);
             conn.Open();
 
             using var transaction = conn.BeginTransaction();
@@ -108,7 +107,7 @@ namespace VibeCoders.Services
                 
                 if (templateId == 0)
                 {
-                    using var cmd = new SqlCommand(insertTemplateSql, conn, transaction);
+                    using var cmd = new SqliteCommand(insertTemplateSql, conn, transaction);
                     cmd.Parameters.AddWithValue("@ClientId", template.ClientId);
                     cmd.Parameters.AddWithValue("@Name", template.Name);
                     // Ensure the enum is saved as text (e.g., 'TRAINER_ASSIGNED')
@@ -119,7 +118,7 @@ namespace VibeCoders.Services
                 }
                 else // Existing Template (Update)
                 {
-                    using var cmd = new SqlCommand(updateTemplateSql, conn, transaction);
+                    using var cmd = new SqliteCommand(updateTemplateSql, conn, transaction);
                     cmd.Parameters.AddWithValue("@TemplateId", templateId);
                     cmd.Parameters.AddWithValue("@Name", template.Name);
                     cmd.Parameters.AddWithValue("@Type", template.Type.ToString());
@@ -127,7 +126,7 @@ namespace VibeCoders.Services
                     cmd.ExecuteNonQuery();
 
                     // Since we are updating, wipe the old exercises to prepare for the new list
-                    using var deleteCmd = new SqlCommand(deleteOldExercisesSql, conn, transaction);
+                    using var deleteCmd = new SqliteCommand(deleteOldExercisesSql, conn, transaction);
                     deleteCmd.Parameters.AddWithValue("@TemplateId", templateId);
                     deleteCmd.ExecuteNonQuery();
                 }
@@ -135,7 +134,7 @@ namespace VibeCoders.Services
 
                 foreach (var exercise in template.GetExercises())
                 {
-                    using var cmd = new SqlCommand(insertExerciseSql, conn, transaction);
+                    using var cmd = new SqliteCommand(insertExerciseSql, conn, transaction);
                     cmd.Parameters.AddWithValue("@TemplateId", templateId);
                     cmd.Parameters.AddWithValue("@Name", exercise.Name);
                     cmd.Parameters.AddWithValue("@MuscleGroup", exercise.MuscleGroup.ToString());
@@ -164,21 +163,21 @@ namespace VibeCoders.Services
             const string deleteExercisesSql = "DELETE FROM TEMPLATE_EXERCISE WHERE workout_template_id = @Id;";
             const string deleteTemplateSql = "DELETE FROM WORKOUT_TEMPLATE WHERE workout_template_id = @Id;";
 
-            using var conn = new SqlConnection(_connectionString);
+            using var conn = new SqliteConnection(_connectionString);
             conn.Open();
             using var transaction = conn.BeginTransaction();
 
             try
             {
                 // 1. Delete child exercises first (Foreign Key constraint)
-                using (var cmd = new SqlCommand(deleteExercisesSql, conn, transaction))
+                using (var cmd = new SqliteCommand(deleteExercisesSql, conn, transaction))
                 {
                     cmd.Parameters.AddWithValue("@Id", templateId);
                     cmd.ExecuteNonQuery();
                 }
 
                 // 2. Delete the template itself
-                using (var cmd = new SqlCommand(deleteTemplateSql, conn, transaction))
+                using (var cmd = new SqliteCommand(deleteTemplateSql, conn, transaction))
                 {
                     cmd.Parameters.AddWithValue("@Id", templateId);
                     cmd.ExecuteNonQuery();

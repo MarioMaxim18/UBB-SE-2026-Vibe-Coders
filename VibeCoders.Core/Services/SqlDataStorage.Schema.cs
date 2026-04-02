@@ -1,11 +1,11 @@
-using Microsoft.Data.SqlClient;
+using Microsoft.Data.Sqlite;
 
 namespace VibeCoders.Services
 {
     public partial class SqlDataStorage : IDataStorage
     {
 
-        private readonly string _connectionString = DatabasePaths.GetSqlServerConnectionString();
+        private readonly string _connectionString = DatabasePaths.GetConnectionString();
 
         /// <summary>
         /// Creates all tables required by the workout tracking and progression
@@ -14,243 +14,224 @@ namespace VibeCoders.Services
         /// </summary>
         public void EnsureSchemaCreated()
         {
-            using var conn = new SqlConnection(_connectionString);
+            using var conn = new SqliteConnection(_connectionString);
             conn.Open();
 
-            using var cmd = new SqlCommand();
+            using var cmd = new SqliteCommand();
             cmd.Connection = conn;
+
+            // Enable foreign keys (SQLite requires explicit activation)
+            cmd.CommandText = "PRAGMA foreign_keys = ON;";
+            cmd.ExecuteNonQuery();
 
             // ── USER ─────────────────────────────────────────────
             cmd.CommandText = @"
-                IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='USER' AND xtype='U')
-                CREATE TABLE [USER] (
-                    id            INT PRIMARY KEY IDENTITY(1,1),
-                    username      VARCHAR(100) NOT NULL,
-                    password_hash VARCHAR(100) NOT NULL DEFAULT '',
-                    role          VARCHAR(30)  NOT NULL DEFAULT 'CLIENT'
+                CREATE TABLE IF NOT EXISTS [USER] (
+                    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+                    username      TEXT NOT NULL,
+                    password_hash TEXT NOT NULL DEFAULT '',
+                    role          TEXT NOT NULL DEFAULT 'CLIENT'
                 );";
             cmd.ExecuteNonQuery();
 
             // ── TRAINER ─────────────────────────────────────────────
             cmd.CommandText = @"
-                IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='TRAINER' AND xtype='U')
-                CREATE TABLE TRAINER (
-                    trainer_id INT PRIMARY KEY IDENTITY(1,1),
-                    user_id INT NOT NULL,
+                CREATE TABLE IF NOT EXISTS TRAINER (
+                    trainer_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id    INTEGER NOT NULL,
                     FOREIGN KEY (user_id) REFERENCES [USER](id)
                 );";
             cmd.ExecuteNonQuery();
 
             // ── CLIENT ─────────────────────────────────────────────
             cmd.CommandText = @"
-                IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='CLIENT' AND xtype='U')
-                CREATE TABLE CLIENT (
-                    client_id INT PRIMARY KEY IDENTITY(1,1),
-                    user_id INT NOT NULL,
-                    trainer_id INT NOT NULL,
-                    weight FLOAT,
-                    height FLOAT,
-                    FOREIGN KEY (user_id) REFERENCES [USER](id),
+                CREATE TABLE IF NOT EXISTS CLIENT (
+                    client_id  INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id    INTEGER NOT NULL,
+                    trainer_id INTEGER NOT NULL,
+                    weight     REAL,
+                    height     REAL,
+                    FOREIGN KEY (user_id)    REFERENCES [USER](id),
                     FOREIGN KEY (trainer_id) REFERENCES TRAINER(trainer_id)
                 );";
             cmd.ExecuteNonQuery();
 
-
             // ── EXERCISE LIBRARY ─────────────────────────────────────────────
             cmd.CommandText = @"
-                IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='EXERCISE' AND xtype='U')
-                BEGIN
-                    CREATE TABLE EXERCISE (
-                        exercise_id INT PRIMARY KEY IDENTITY(1,1),
-                        name VARCHAR(100) NOT NULL UNIQUE,
-                        muscle_group VARCHAR(30) NOT NULL
-                    );
-
-                    /* SEED DATA: Add some basics if the table was just created */
-                    INSERT INTO EXERCISE (name, muscle_group) VALUES 
-                    ('Bench Press', 'CHEST'),
-                    ('Incline Dumbbell Press', 'CHEST'),
-                    ('Barbell Squat', 'LEGS'),
-                    ('Leg Press', 'LEGS'),
-                    ('Deadlift', 'BACK'),
-                    ('Pull-Ups', 'BACK'),
-                    ('Overhead Press', 'SHOULDERS'),
-                    ('Side Laterals', 'SHOULDERS'),
-                    ('Bicep Curls', 'ARMS'),
-                    ('Tricep Pushdowns', 'ARMS');
-                END;";
+                CREATE TABLE IF NOT EXISTS EXERCISE (
+                    exercise_id  INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name         TEXT NOT NULL UNIQUE,
+                    muscle_group TEXT NOT NULL
+                );";
             cmd.ExecuteNonQuery();
 
-
+            // Seed exercises only if table was just created (empty)
+            cmd.CommandText = @"
+                INSERT OR IGNORE INTO EXERCISE (name, muscle_group) VALUES
+                    ('Bench Press',           'CHEST'),
+                    ('Incline Dumbbell Press','CHEST'),
+                    ('Barbell Squat',         'LEGS'),
+                    ('Leg Press',             'LEGS'),
+                    ('Deadlift',              'BACK'),
+                    ('Pull-Ups',              'BACK'),
+                    ('Overhead Press',        'SHOULDERS'),
+                    ('Side Laterals',         'SHOULDERS'),
+                    ('Bicep Curls',           'ARMS'),
+                    ('Tricep Pushdowns',      'ARMS');";
+            cmd.ExecuteNonQuery();
 
             // ── WORKOUT_TEMPLATE ─────────────────────────────────────────────
             cmd.CommandText = @"
-                IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='WORKOUT_TEMPLATE' AND xtype='U')
-                CREATE TABLE WORKOUT_TEMPLATE (
-                    workout_template_id INT PRIMARY KEY IDENTITY(1,1),
-                    client_id           INT NOT NULL,
-                    name                VARCHAR(100) NOT NULL,
-                    type                VARCHAR(30) NOT NULL
+                CREATE TABLE IF NOT EXISTS WORKOUT_TEMPLATE (
+                    workout_template_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    client_id           INTEGER NOT NULL,
+                    name                TEXT NOT NULL,
+                    type                TEXT NOT NULL
                 );";
             cmd.ExecuteNonQuery();
 
             // ── TEMPLATE_EXERCISE ────────────────────────────────────────────
             cmd.CommandText = @"
-                IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='TEMPLATE_EXERCISE' AND xtype='U')
-                CREATE TABLE TEMPLATE_EXERCISE (
-                    id                  INT PRIMARY KEY IDENTITY(1,1),
-                    workout_template_id INT NOT NULL,
-                    name                VARCHAR(100) NOT NULL,
-                    muscle_group        VARCHAR(30) NOT NULL,
-                    target_sets         INT NOT NULL DEFAULT 3,
-                    target_reps         INT NOT NULL DEFAULT 10,
-                    target_weight       FLOAT NOT NULL DEFAULT 0,
+                CREATE TABLE IF NOT EXISTS TEMPLATE_EXERCISE (
+                    id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+                    workout_template_id INTEGER NOT NULL,
+                    name                TEXT NOT NULL,
+                    muscle_group        TEXT NOT NULL,
+                    target_sets         INTEGER NOT NULL DEFAULT 3,
+                    target_reps         INTEGER NOT NULL DEFAULT 10,
+                    target_weight       REAL NOT NULL DEFAULT 0,
                     FOREIGN KEY (workout_template_id) REFERENCES WORKOUT_TEMPLATE(workout_template_id)
                 );";
             cmd.ExecuteNonQuery();
 
             // ── WORKOUT_LOG ──────────────────────────────────────────────────
             cmd.CommandText = @"
-                IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='WORKOUT_LOG' AND xtype='U')
-                CREATE TABLE WORKOUT_LOG (
-                    workout_log_id      INT PRIMARY KEY IDENTITY(1,1),
-                    client_id           INT NOT NULL,
-                    workout_id          INT,
-                    date                DATETIME NOT NULL,
-                    total_duration      VARCHAR(20),
-                    calories_burned     INT,
-                    rating              INT,
-                    trainer_notes       VARCHAR(1000),
-                    intensity_tag       VARCHAR(20) NOT NULL DEFAULT '',
-                    FOREIGN KEY (client_id) REFERENCES CLIENT(client_id),
+                CREATE TABLE IF NOT EXISTS WORKOUT_LOG (
+                    workout_log_id  INTEGER PRIMARY KEY AUTOINCREMENT,
+                    client_id       INTEGER NOT NULL,
+                    workout_id      INTEGER,
+                    date            TEXT NOT NULL,
+                    total_duration  TEXT,
+                    calories_burned INTEGER,
+                    rating          INTEGER,
+                    trainer_notes   TEXT,
+                    intensity_tag   TEXT NOT NULL DEFAULT '',
+                    FOREIGN KEY (client_id)  REFERENCES CLIENT(client_id),
                     FOREIGN KEY (workout_id) REFERENCES WORKOUT_TEMPLATE(workout_template_id)
                 );";
             cmd.ExecuteNonQuery();
 
             // ── WORKOUT_LOG_SETS ─────────────────────────────────────────────
             cmd.CommandText = @"
-                IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='WORKOUT_LOG_SETS' AND xtype='U')
-                CREATE TABLE WORKOUT_LOG_SETS (
-                    workout_log_sets_id INT PRIMARY KEY IDENTITY(1,1),
-                    workout_log_id      INT NOT NULL,
-                    exercise_name       VARCHAR(100) NOT NULL,
-                    sets                INT NOT NULL,
-                    reps                INT,
-                    weight              FLOAT,
-                    target_reps         INT,
-                    target_weight       FLOAT,
-                    performance_ratio   FLOAT,
-                    is_system_adjusted  BIT NOT NULL DEFAULT 0,
-                    adjustment_note     VARCHAR(500),
+                CREATE TABLE IF NOT EXISTS WORKOUT_LOG_SETS (
+                    workout_log_sets_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    workout_log_id      INTEGER NOT NULL,
+                    exercise_name       TEXT NOT NULL,
+                    sets                INTEGER NOT NULL,
+                    reps                INTEGER,
+                    weight              REAL,
+                    target_reps         INTEGER,
+                    target_weight       REAL,
+                    performance_ratio   REAL,
+                    is_system_adjusted  INTEGER NOT NULL DEFAULT 0,
+                    adjustment_note     TEXT,
                     FOREIGN KEY (workout_log_id) REFERENCES WORKOUT_LOG(workout_log_id)
                 );";
             cmd.ExecuteNonQuery();
 
             // ── NOTIFICATION ─────────────────────────────────────────────────
             cmd.CommandText = @"
-                IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='NOTIFICATION' AND xtype='U')
-                CREATE TABLE NOTIFICATION (
-                    id              INT PRIMARY KEY IDENTITY(1,1),
-                    client_id       INT NOT NULL,
-                    title           VARCHAR(100) NOT NULL,
-                    message         VARCHAR(1000) NOT NULL,
-                    type            VARCHAR(30) NOT NULL,
-                    related_id      INT NOT NULL,
-                    date_created    DATETIME NOT NULL,
-                    is_read         BIT NOT NULL DEFAULT 0,
+                CREATE TABLE IF NOT EXISTS NOTIFICATION (
+                    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+                    client_id    INTEGER NOT NULL,
+                    title        TEXT NOT NULL,
+                    message      TEXT NOT NULL,
+                    type         TEXT NOT NULL,
+                    related_id   INTEGER NOT NULL,
+                    date_created TEXT NOT NULL,
+                    is_read      INTEGER NOT NULL DEFAULT 0,
                     FOREIGN KEY (client_id) REFERENCES CLIENT(client_id)
                 );";
             cmd.ExecuteNonQuery();
 
             // ── ACHIEVEMENT ───────────────────────────────────────────────────
             cmd.CommandText = @"
-                IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='ACHIEVEMENT' AND xtype='U')
-                CREATE TABLE ACHIEVEMENT (
-                    achievement_id  INT PRIMARY KEY IDENTITY(1,1),
-                    title           VARCHAR(100) NOT NULL,
-                    description     VARCHAR(250) NOT NULL,
-                    criteria        VARCHAR(500) NOT NULL DEFAULT ''
+                CREATE TABLE IF NOT EXISTS ACHIEVEMENT (
+                    achievement_id      INTEGER PRIMARY KEY AUTOINCREMENT,
+                    title               TEXT NOT NULL,
+                    description         TEXT NOT NULL,
+                    criteria            TEXT NOT NULL DEFAULT '',
+                    threshold_workouts  INTEGER
                 );";
-            cmd.ExecuteNonQuery();
-
-            // ── ACHIEVEMENT migration: add criteria column if it was created without it ──
-            cmd.CommandText = @"
-                IF NOT EXISTS (
-                    SELECT 1 FROM sys.columns
-                    WHERE object_id = OBJECT_ID('ACHIEVEMENT') AND name = 'criteria'
-                )
-                    ALTER TABLE ACHIEVEMENT ADD criteria VARCHAR(500) NOT NULL DEFAULT '';";
             cmd.ExecuteNonQuery();
 
             // ── CLIENT_ACHIEVEMENT ────────────────────────────────────────────
             cmd.CommandText = @"
-                IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='CLIENT_ACHIEVEMENT' AND xtype='U')
-                CREATE TABLE CLIENT_ACHIEVEMENT (
-                    client_id       INT NOT NULL,
-                    achievement_id  INT NOT NULL,
-                    unlocked        BIT NOT NULL DEFAULT 0,
-                    CONSTRAINT PK_CLIENT_ACHIEVEMENT PRIMARY KEY (client_id, achievement_id),
-                    FOREIGN KEY (client_id) REFERENCES CLIENT(client_id),
+                CREATE TABLE IF NOT EXISTS CLIENT_ACHIEVEMENT (
+                    client_id       INTEGER NOT NULL,
+                    achievement_id  INTEGER NOT NULL,
+                    unlocked        INTEGER NOT NULL DEFAULT 0,
+                    PRIMARY KEY (client_id, achievement_id),
+                    FOREIGN KEY (client_id)      REFERENCES CLIENT(client_id),
                     FOREIGN KEY (achievement_id) REFERENCES ACHIEVEMENT(achievement_id)
                 );";
             cmd.ExecuteNonQuery();
 
-            // ── CLIENT_ACHIEVEMENT migration: ensure PK exists on older databases ──
-            cmd.CommandText = @"
-                IF NOT EXISTS (
-                    SELECT 1 FROM sys.key_constraints
-                    WHERE name = 'PK_CLIENT_ACHIEVEMENT'
-                      AND parent_object_id = OBJECT_ID('CLIENT_ACHIEVEMENT')
-                )
-                    ALTER TABLE CLIENT_ACHIEVEMENT
-                        ADD CONSTRAINT PK_CLIENT_ACHIEVEMENT
-                        PRIMARY KEY (client_id, achievement_id);";
-            cmd.ExecuteNonQuery();
-
-            // ── ACHIEVEMENT.threshold_workouts (additive migration) ───────────
-            // Added for the "Total Workouts" milestone feature (#186).
-            // NULL means the achievement is not a workout-count milestone.
-            cmd.CommandText = @"
-                IF NOT EXISTS (
-                    SELECT 1 FROM sys.columns
-                    WHERE object_id = OBJECT_ID('ACHIEVEMENT') AND name = 'threshold_workouts')
-                ALTER TABLE ACHIEVEMENT ADD threshold_workouts INT NULL;";
-            cmd.ExecuteNonQuery();
-
-
             // ── NUTRITION_PLAN ───────────────────────────────────────────────
             cmd.CommandText = @"
-                IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='NUTRITION_PLAN' AND xtype='U')
-                CREATE TABLE NUTRITION_PLAN (
-                    nutrition_plan_id INT IDENTITY(1,1) PRIMARY KEY,
-                    start_date DATE NOT NULL,
-                    end_date DATE NOT NULL
+                CREATE TABLE IF NOT EXISTS NUTRITION_PLAN (
+                    nutrition_plan_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    start_date        TEXT NOT NULL,
+                    end_date          TEXT NOT NULL
                 );";
             cmd.ExecuteNonQuery();
 
             // ── MEAL ─────────────────────────────────────────────────────────
             cmd.CommandText = @"
-                IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='MEAL' AND xtype='U')
-                CREATE TABLE MEAL (
-                    meal_id INT IDENTITY(1,1) PRIMARY KEY,
-                    nutrition_plan_id INT NOT NULL,
-                    name VARCHAR(100) NOT NULL,
-                    ingredients VARCHAR(MAX) NOT NULL,
-                    instructions VARCHAR(MAX) NOT NULL,
+                CREATE TABLE IF NOT EXISTS MEAL (
+                    meal_id           INTEGER PRIMARY KEY AUTOINCREMENT,
+                    nutrition_plan_id INTEGER NOT NULL,
+                    name              TEXT NOT NULL,
+                    ingredients       TEXT NOT NULL,
+                    instructions      TEXT NOT NULL,
                     FOREIGN KEY (nutrition_plan_id) REFERENCES NUTRITION_PLAN(nutrition_plan_id)
                 );";
             cmd.ExecuteNonQuery();
 
             // ── CLIENT_NUTRITION_PLAN ────────────────────────────────────────
             cmd.CommandText = @"
-                IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='CLIENT_NUTRITION_PLAN' AND xtype='U')
-                CREATE TABLE CLIENT_NUTRITION_PLAN (
-                    client_id INT NOT NULL,
-                    nutrition_plan_id INT NOT NULL,
-                    CONSTRAINT PK_CLIENT_NUTRITION_PLAN PRIMARY KEY (client_id, nutrition_plan_id),
-                    FOREIGN KEY (client_id) REFERENCES CLIENT(client_id),
+                CREATE TABLE IF NOT EXISTS CLIENT_NUTRITION_PLAN (
+                    client_id         INTEGER NOT NULL,
+                    nutrition_plan_id INTEGER NOT NULL,
+                    PRIMARY KEY (client_id, nutrition_plan_id),
+                    FOREIGN KEY (client_id)         REFERENCES CLIENT(client_id),
                     FOREIGN KEY (nutrition_plan_id) REFERENCES NUTRITION_PLAN(nutrition_plan_id)
                 );";
+            cmd.ExecuteNonQuery();
+
+            // ── analytics_workout_log ─────────────────────────────────────────
+            cmd.CommandText = @"
+                CREATE TABLE IF NOT EXISTS analytics_workout_log (
+                    id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id             INTEGER NOT NULL,
+                    workout_name        TEXT NOT NULL,
+                    log_date            TEXT NOT NULL,
+                    duration_seconds    INTEGER NOT NULL DEFAULT 0,
+                    source_template_id  INTEGER NOT NULL DEFAULT 0,
+                    total_calories_burned INTEGER NOT NULL DEFAULT 0,
+                    intensity_tag       TEXT NOT NULL DEFAULT ''
+                );";
+            cmd.ExecuteNonQuery();
+
+            // ── Indexes ──────────────────────────────────────────────────────
+            cmd.CommandText = @"
+                CREATE INDEX IF NOT EXISTS ix_workout_log_client_date
+                    ON WORKOUT_LOG (client_id, date DESC, workout_log_id DESC);";
+            cmd.ExecuteNonQuery();
+
+            cmd.CommandText = @"
+                CREATE INDEX IF NOT EXISTS ix_workout_log_sets_log_idx
+                    ON WORKOUT_LOG_SETS (workout_log_id, sets);";
             cmd.ExecuteNonQuery();
         }
     }

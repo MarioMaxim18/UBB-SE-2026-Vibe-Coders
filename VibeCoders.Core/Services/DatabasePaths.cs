@@ -6,9 +6,8 @@ namespace VibeCoders.Services;
 public static class DatabasePaths
 {
     /// <summary>
-    /// SQL Server connection string for LocalDB (same database as <see cref="SqlDataStorage"/>).
-    /// Analytics tables (<c>workout_log</c>, etc.) live in this database.
+    /// SQLite connection string. The database file is created next to the executable.
     /// </summary>
-    public static string GetSqlServerConnectionString() =>
-        @"Server=(localdb)\MSSQLLocalDB;Database=VibeCodersDB;Trusted_Connection=True;";
+    public static string GetConnectionString() =>
+        "Data Source=VibeCoders.db";
 }

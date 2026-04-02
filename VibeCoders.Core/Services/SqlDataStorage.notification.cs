@@ -1,4 +1,4 @@
-﻿using Microsoft.Data.SqlClient;
+using Microsoft.Data.Sqlite;
 using VibeCoders.Models;
 
 namespace VibeCoders.Services
@@ -16,16 +16,16 @@ namespace VibeCoders.Services
                 VALUES 
                     (@Title, @Message, @Type, @RelatedId, @DateCreated, @IsRead, @ClientId);";
 
-            using var conn = new SqlConnection(_connectionString);
+            using var conn = new SqliteConnection(_connectionString);
             conn.Open();
 
-            using var cmd = new SqlCommand(sql, conn);
+            using var cmd = new SqliteCommand(sql, conn);
             cmd.Parameters.AddWithValue("@Title", notification.Title);
             cmd.Parameters.AddWithValue("@Message", notification.Message);
             cmd.Parameters.AddWithValue("@Type", notification.Type.ToString());
             cmd.Parameters.AddWithValue("@RelatedId", notification.RelatedId);
-            cmd.Parameters.AddWithValue("@DateCreated", notification.DateCreated);
-            cmd.Parameters.AddWithValue("@IsRead", notification.IsRead);
+            cmd.Parameters.AddWithValue("@DateCreated", notification.DateCreated.ToString("yyyy-MM-dd HH:mm:ss"));
+            cmd.Parameters.AddWithValue("@IsRead", notification.IsRead ? 1 : 0);
             cmd.Parameters.AddWithValue("@ClientId", notification.ClientId);
 
             int rowsAffected = cmd.ExecuteNonQuery();
@@ -52,10 +52,10 @@ namespace VibeCoders.Services
 
             var notifications = new List<Notification>();
 
-            using var conn = new SqlConnection(_connectionString);
+            using var conn = new SqliteConnection(_connectionString);
             conn.Open();
 
-            using var cmd = new SqlCommand(sql, conn);
+            using var cmd = new SqliteCommand(sql, conn);
             cmd.Parameters.AddWithValue("@ClientId", clientId);
 
             using var reader = cmd.ExecuteReader();
@@ -69,8 +69,8 @@ namespace VibeCoders.Services
                     Message = reader.GetString(2),
                     Type = Enum.Parse<NotificationType>(reader.GetString(3)),
                     RelatedId = reader.GetInt32(4),
-                    DateCreated = reader.GetDateTime(5),
-                    IsRead = reader.GetBoolean(6),
+                    DateCreated = DateTime.Parse(reader.GetString(5)),
+                    IsRead = reader.GetInt32(6) != 0,
                     ClientId = clientId
                 });
             }

@@ -1,4 +1,4 @@
-using Microsoft.Data.SqlClient;
+using Microsoft.Data.Sqlite;
 using VibeCoders.Models;
 
 namespace VibeCoders.Services
@@ -29,10 +29,10 @@ namespace VibeCoders.Services
 
             var templates = new List<WorkoutTemplate>();
 
-            using var conn = new SqlConnection(_connectionString);
+            using var conn = new SqliteConnection(_connectionString);
             conn.Open();
 
-            using (var cmd = new SqlCommand(sql, conn))
+            using (var cmd = new SqliteCommand(sql, conn))
             {
                 cmd.Parameters.AddWithValue("@ClientId", clientId);
 
@@ -83,10 +83,10 @@ namespace VibeCoders.Services
                 FROM TEMPLATE_EXERCISE
                 WHERE id = @Id;";
 
-            using var conn = new SqlConnection(_connectionString);
+            using var conn = new SqliteConnection(_connectionString);
             conn.Open();
 
-            using var cmd = new SqlCommand(sql, conn);
+            using var cmd = new SqliteCommand(sql, conn);
             cmd.Parameters.AddWithValue("@Id", templateExerciseId);
 
             using var reader = cmd.ExecuteReader();
@@ -116,10 +116,10 @@ namespace VibeCoders.Services
                 SET target_weight = @NewWeight
                 WHERE id = @Id;";
 
-            using var conn = new SqlConnection(_connectionString);
+            using var conn = new SqliteConnection(_connectionString);
             conn.Open();
 
-            using var cmd = new SqlCommand(sql, conn);
+            using var cmd = new SqliteCommand(sql, conn);
             cmd.Parameters.AddWithValue("@NewWeight", newWeight);
             cmd.Parameters.AddWithValue("@Id", templateExerciseId);
 
@@ -133,10 +133,10 @@ namespace VibeCoders.Services
             const string sql = "SELECT name FROM EXERCISE ORDER BY name ASC;";
             var list = new List<string>();
 
-            using var conn = new SqlConnection(_connectionString);
+            using var conn = new SqliteConnection(_connectionString);
             conn.Open();
 
-            using var cmd = new SqlCommand(sql, conn);
+            using var cmd = new SqliteCommand(sql, conn);
             using var reader = cmd.ExecuteReader();
 
             while (reader.Read())
@@ -154,7 +154,7 @@ namespace VibeCoders.Services
         /// Loads all exercises for a given workout template.
         /// Reuses an open connection to avoid re-opening inside a loop.
         /// </summary>
-        private List<TemplateExercise> LoadExercisesForTemplate(int templateId, SqlConnection conn)
+        private List<TemplateExercise> LoadExercisesForTemplate(int templateId, SqliteConnection conn)
         {
             const string sql = @"
                 SELECT
@@ -171,7 +171,7 @@ namespace VibeCoders.Services
 
             var exercises = new List<TemplateExercise>();
 
-            using var cmd = new SqlCommand(sql, conn);
+            using var cmd = new SqliteCommand(sql, conn);
             cmd.Parameters.AddWithValue("@TemplateId", templateId);
 
             using var reader = cmd.ExecuteReader();

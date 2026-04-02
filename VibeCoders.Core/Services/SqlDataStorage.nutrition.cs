@@ -1,5 +1,5 @@
 using System.Text.Json;
-using Microsoft.Data.SqlClient;
+using Microsoft.Data.Sqlite;
 using VibeCoders.Models;
 
 namespace VibeCoders.Services
@@ -11,17 +11,18 @@ namespace VibeCoders.Services
         /// <inheritdoc/>
         public int InsertNutritionPlan(NutritionPlan plan)
         {
+            
             const string sql = @"
                 INSERT INTO NUTRITION_PLAN (start_date, end_date)
-                OUTPUT INSERTED.nutrition_plan_id
-                VALUES (@StartDate, @EndDate);";
+                VALUES (@StartDate, @EndDate);
+                SELECT last_insert_rowid();";
 
-            using var conn = new SqlConnection(_connectionString);
-            using var cmd  = new SqlCommand(sql, conn);
-            cmd.Parameters.AddWithValue("@StartDate", plan.StartDate.Date);
-            cmd.Parameters.AddWithValue("@EndDate",   plan.EndDate.Date);
+            using var conn = new SqliteConnection(_connectionString);
+            using var cmd  = new SqliteCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@StartDate", plan.StartDate.Date.ToString("yyyy-MM-dd"));
+            cmd.Parameters.AddWithValue("@EndDate",   plan.EndDate.Date.ToString("yyyy-MM-dd"));
             conn.Open();
-            return (int)cmd.ExecuteScalar()!;
+            return Convert.ToInt32(cmd.ExecuteScalar()!);
         }
 
         // ── Issue #113 ───────────────────────────────────────────────────────────
@@ -35,8 +36,8 @@ namespace VibeCoders.Services
 
             string serializedIngredients = JsonSerializer.Serialize(meal.Ingredients);
 
-            using var conn = new SqlConnection(_connectionString);
-            using var cmd  = new SqlCommand(sql, conn);
+            using var conn = new SqliteConnection(_connectionString);
+            using var cmd  = new SqliteCommand(sql, conn);
             cmd.Parameters.AddWithValue("@PlanId",       nutritionPlanId);
             cmd.Parameters.AddWithValue("@Name",         meal.Name);
             cmd.Parameters.AddWithValue("@Ingredients",  serializedIngredients);
@@ -50,15 +51,13 @@ namespace VibeCoders.Services
         /// <inheritdoc/>
         public void AssignNutritionPlanToClient(int clientId, int nutritionPlanId)
         {
+            // INSERT OR IGNORE replaces the T-SQL IF NOT EXISTS pattern.
             const string sql = @"
-                IF NOT EXISTS (
-                    SELECT 1 FROM CLIENT_NUTRITION_PLAN
-                    WHERE client_id = @ClientId AND nutrition_plan_id = @PlanId)
-                INSERT INTO CLIENT_NUTRITION_PLAN (client_id, nutrition_plan_id)
+                INSERT OR IGNORE INTO CLIENT_NUTRITION_PLAN (client_id, nutrition_plan_id)
                 VALUES (@ClientId, @PlanId);";
 
-            using var conn = new SqlConnection(_connectionString);
-            using var cmd  = new SqlCommand(sql, conn);
+            using var conn = new SqliteConnection(_connectionString);
+            using var cmd  = new SqliteCommand(sql, conn);
             cmd.Parameters.AddWithValue("@ClientId", clientId);
             cmd.Parameters.AddWithValue("@PlanId",   nutritionPlanId);
             conn.Open();
@@ -91,8 +90,8 @@ namespace VibeCoders.Services
 
             var plans = new List<NutritionPlan>();
 
-            using var conn = new SqlConnection(_connectionString);
-            using var cmd  = new SqlCommand(sql, conn);
+            using var conn = new SqliteConnection(_connectionString);
+            using var cmd  = new SqliteCommand(sql, conn);
             cmd.Parameters.AddWithValue("@ClientId", clientId);
             conn.Open();
 
@@ -102,8 +101,8 @@ namespace VibeCoders.Services
                 plans.Add(new NutritionPlan
                 {
                     PlanId    = reader.GetInt32(0),
-                    StartDate = reader.GetDateTime(1),
-                    EndDate   = reader.GetDateTime(2),
+                    StartDate = DateTime.Parse(reader.GetString(1)),
+                    EndDate   = DateTime.Parse(reader.GetString(2)),
                 });
             }
 
@@ -124,8 +123,8 @@ namespace VibeCoders.Services
 
             var meals = new List<Meal>();
 
-            using var conn = new SqlConnection(_connectionString);
-            using var cmd  = new SqlCommand(sql, conn);
+            using var conn = new SqliteConnection(_connectionString);
+            using var cmd  = new SqliteCommand(sql, conn);
             cmd.Parameters.AddWithValue("@PlanId", nutritionPlanId);
             conn.Open();
 

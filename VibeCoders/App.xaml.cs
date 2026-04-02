@@ -80,9 +80,9 @@ public partial class App : Application
 
     private static void ConfigureServices(IServiceCollection services)
     {
-        var connectionString = DatabasePaths.GetSqlServerConnectionString();
+        var connectionString = DatabasePaths.GetConnectionString();
 
-        // Primary storage (SQL Server LocalDB); achievements and workout templates live here.
+        // Primary storage (SQLite); achievements and workout templates live here.
         services.AddSingleton<IDataStorage, SqlDataStorage>();
 
         // Session and analytics (same DB as IDataStorage).

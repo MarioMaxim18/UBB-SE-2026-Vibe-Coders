@@ -1,4 +1,4 @@
-﻿using Microsoft.Data.SqlClient;
+using Microsoft.Data.Sqlite;
 using VibeCoders.Models;
 
 namespace VibeCoders.Services
@@ -16,7 +16,7 @@ namespace VibeCoders.Services
                     (client_id, workout_id, date, total_duration, calories_burned, rating)
                 VALUES 
                     (@ClientId, @WorkoutId, @Date, @Duration, @CaloriesBurned, @Rating);
-                SELECT SCOPE_IDENTITY();";
+                SELECT last_insert_rowid();";
 
             const string insertSet = @"
                 INSERT INTO WORKOUT_LOG_SETS
@@ -28,7 +28,7 @@ namespace VibeCoders.Services
                      @TargetReps, @TargetWeight, @PerformanceRatio,
                      @IsSystemAdjusted, @AdjustmentNote);";
 
-            using var conn = new SqlConnection(_connectionString);
+            using var conn = new SqliteConnection(_connectionString);
             conn.Open();
 
             using var transaction = conn.BeginTransaction();
@@ -37,11 +37,11 @@ namespace VibeCoders.Services
             {
                 // 1. Insert the log header and get the generated id.
                 int workoutLogId;
-                using (var cmd = new SqlCommand(insertLog, conn, transaction))
+                using (var cmd = new SqliteCommand(insertLog, conn, transaction))
                 {
                     cmd.Parameters.AddWithValue("@ClientId", log.ClientId);
                     cmd.Parameters.AddWithValue("@WorkoutId", log.SourceTemplateId);
-                    cmd.Parameters.AddWithValue("@Date", log.Date);
+                    cmd.Parameters.AddWithValue("@Date", log.Date.ToString("yyyy-MM-dd HH:mm:ss"));
                     cmd.Parameters.AddWithValue("@Duration", log.Duration.ToString());
                     cmd.Parameters.AddWithValue("@CaloriesBurned", log.TotalCaloriesBurned);
                     cmd.Parameters.AddWithValue("@Rating", DBNull.Value);
@@ -55,7 +55,7 @@ namespace VibeCoders.Services
                 {
                     foreach (var set in exercise.Sets)
                     {
-                        using var cmd = new SqlCommand(insertSet, conn, transaction);
+                        using var cmd = new SqliteCommand(insertSet, conn, transaction);
                         cmd.Parameters.AddWithValue("@WorkoutLogId", workoutLogId);
                         cmd.Parameters.AddWithValue("@ExerciseName", exercise.ExerciseName);
                         cmd.Parameters.AddWithValue("@SetIndex", set.SetIndex);
@@ -64,7 +64,7 @@ namespace VibeCoders.Services
                         cmd.Parameters.AddWithValue("@TargetReps", (object?)set.TargetReps ?? DBNull.Value);
                         cmd.Parameters.AddWithValue("@TargetWeight", (object?)set.TargetWeight ?? DBNull.Value);
                         cmd.Parameters.AddWithValue("@PerformanceRatio", exercise.PerformanceRatio);
-                        cmd.Parameters.AddWithValue("@IsSystemAdjusted", exercise.IsSystemAdjusted);
+                        cmd.Parameters.AddWithValue("@IsSystemAdjusted", exercise.IsSystemAdjusted ? 1 : 0);
                         cmd.Parameters.AddWithValue("@AdjustmentNote", exercise.AdjustmentNote);
 
                         cmd.ExecuteNonQuery();
@@ -96,17 +96,19 @@ namespace VibeCoders.Services
                     wl.calories_burned,
                     wl.workout_id,
                     wl.rating,
-                    wl.trainer_notes
+                    wl.trainer_notes,
+                    wt.name
                 FROM WORKOUT_LOG wl
+                LEFT JOIN WORKOUT_TEMPLATE wt ON wl.workout_id = wt.workout_template_id
                 WHERE wl.client_id = @ClientId
                 ORDER BY wl.date DESC;";
 
             var logs = new List<WorkoutLog>();
 
-            using var conn = new SqlConnection(_connectionString);
+            using var conn = new SqliteConnection(_connectionString);
             conn.Open();
 
-            using (var cmd = new SqlCommand(sqlLogs, conn))
+            using (var cmd = new SqliteCommand(sqlLogs, conn))
             {
                 cmd.Parameters.AddWithValue("@ClientId", clientId);
 
@@ -116,12 +118,13 @@ namespace VibeCoders.Services
                     logs.Add(new WorkoutLog
                     {
                         Id = reader.GetInt32(0),
-                        Date = reader.GetDateTime(1),
+                        Date = DateTime.Parse(reader.GetString(1)),
                         Duration = TimeSpan.Parse(reader.GetString(2)),
                         TotalCaloriesBurned = reader.IsDBNull(3) ? 0 : reader.GetInt32(3),
                         SourceTemplateId = reader.IsDBNull(4) ? 0 : reader.GetInt32(4),
                         Rating = reader.IsDBNull(5) ? -1 : Convert.ToDouble(reader.GetInt32(5)),
                         TrainerNotes = reader.IsDBNull(6) ? string.Empty : reader.GetString(6),
+                        WorkoutName = reader.IsDBNull(7) ? string.Empty : reader.GetString(7),
                         ClientId = clientId
                     });
                 }
@@ -144,7 +147,7 @@ namespace VibeCoders.Services
         public List<WorkoutLog> GetLastTwoLogsForExercise(int templateExerciseId)
         {
             const string sql = @"
-                SELECT TOP 2
+                SELECT
                     wl.workout_log_id,
                     wl.client_id,
                     wl.date,
@@ -155,14 +158,15 @@ namespace VibeCoders.Services
                 INNER JOIN WORKOUT_LOG_SETS wls ON wls.workout_log_id = wl.workout_log_id
                 INNER JOIN TEMPLATE_EXERCISE te  ON te.name = wls.exercise_name
                 WHERE te.id = @TemplateExerciseId
-                ORDER BY wl.date DESC;";
+                ORDER BY wl.date DESC
+                LIMIT 2;";
 
             var logs = new List<WorkoutLog>();
 
-            using var conn = new SqlConnection(_connectionString);
+            using var conn = new SqliteConnection(_connectionString);
             conn.Open();
 
-            using (var cmd = new SqlCommand(sql, conn))
+            using (var cmd = new SqliteCommand(sql, conn))
             {
                 cmd.Parameters.AddWithValue("@TemplateExerciseId", templateExerciseId);
 
@@ -173,7 +177,7 @@ namespace VibeCoders.Services
                     {
                         Id = reader.GetInt32(0),
                         ClientId = reader.GetInt32(1),
-                        Date = reader.GetDateTime(2),
+                        Date = DateTime.Parse(reader.GetString(2)),
                         Duration = TimeSpan.Parse(reader.GetString(3)),
                         TotalCaloriesBurned = reader.IsDBNull(4) ? 0 : reader.GetInt32(4),
                         SourceTemplateId = reader.IsDBNull(5) ? 0 : reader.GetInt32(5)
@@ -198,17 +202,17 @@ namespace VibeCoders.Services
                     trainer_notes = @Notes
                 WHERE workout_log_id = @WorkoutLogId;";
 
-            using var conn = new SqlConnection(_connectionString);
+            using var conn = new SqliteConnection(_connectionString);
             conn.Open();
 
-            using var cmd = new SqlCommand(sql, conn);
+            using var cmd = new SqliteCommand(sql, conn);
             cmd.Parameters.AddWithValue("@WorkoutLogId", workoutLogId);
 
             // If rating is -1 (our default), save it as NULL in the database
-            cmd.Parameters.AddWithValue("@Rating", rating == -1 ? DBNull.Value : (int)rating);
+            cmd.Parameters.AddWithValue("@Rating", rating == -1 ? DBNull.Value : (object)(int)rating);
 
             // If notes are empty, save as NULL, otherwise save the text
-            cmd.Parameters.AddWithValue("@Notes", string.IsNullOrWhiteSpace(notes) ? DBNull.Value : notes);
+            cmd.Parameters.AddWithValue("@Notes", string.IsNullOrWhiteSpace(notes) ? DBNull.Value : (object)notes);
 
             try
             {
@@ -229,7 +233,7 @@ namespace VibeCoders.Services
         /// Loads all exercises and their sets for a given workout log id.
         /// Reuses an open connection to avoid re-opening inside a loop.
         /// </summary>
-        private List<LoggedExercise> LoadExercisesForLog(int workoutLogId, SqlConnection conn)
+        private List<LoggedExercise> LoadExercisesForLog(int workoutLogId, SqliteConnection conn)
         {
             const string sql = @"
                 SELECT
@@ -251,7 +255,7 @@ namespace VibeCoders.Services
 
             var exerciseMap = new Dictionary<string, LoggedExercise>();
 
-            using var cmd = new SqlCommand(sql, conn);
+            using var cmd = new SqliteCommand(sql, conn);
             cmd.Parameters.AddWithValue("@WorkoutLogId", workoutLogId);
 
             using var reader = cmd.ExecuteReader();
@@ -270,7 +274,8 @@ namespace VibeCoders.Services
                         WorkoutLogId = workoutLogId,
                         ExerciseName = exerciseName,
                         PerformanceRatio = reader.IsDBNull(7) ? 0 : reader.GetDouble(7),
-                        IsSystemAdjusted = !reader.IsDBNull(8) && reader.GetBoolean(8),
+                        // SQLite stores BIT as INTEGER: 0/1
+                        IsSystemAdjusted = !reader.IsDBNull(8) && reader.GetInt32(8) != 0,
                         AdjustmentNote = reader.IsDBNull(9) ? string.Empty : reader.GetString(9),
                         TargetMuscles = parsedMuscleGroup
                     };
