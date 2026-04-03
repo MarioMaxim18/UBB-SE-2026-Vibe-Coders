@@ -55,6 +55,25 @@ public sealed partial class ActiveWorkoutPage : Page
         ViewModel.LoadNotificationsCommand.Execute(ClientId);
     }
 
+    private async void StartWorkoutButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (ViewModel.SelectedTemplate == null) return;
+
+        // Create FocusMode dialog
+        var focusPage = new FocusModeView(ViewModel);
+
+        var dialog = new ContentDialog
+        {
+            Content = focusPage,
+            XamlRoot = this.Content.XamlRoot,
+            FullSizeDesired = true,
+            IsPrimaryButtonEnabled = false, // we control finish inside
+            IsSecondaryButtonEnabled = false
+        };
+
+        await dialog.ShowAsync(); // This will block navigation
+    }
+
     private void ApplyGoalsButton_Click(object sender, RoutedEventArgs e)
     {
         TargetGoalsButton.Flyout.Hide();
@@ -68,4 +87,6 @@ public sealed partial class ActiveWorkoutPage : Page
             ViewModel.ConfirmDeloadCommand.Execute(notification);
         }
     }
+
+
 }
