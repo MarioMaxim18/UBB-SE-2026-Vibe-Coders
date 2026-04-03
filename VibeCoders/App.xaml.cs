@@ -28,37 +28,29 @@ public partial class App : Application
 
         var navService = (NavigationService)_services.GetRequiredService<INavigationService>();
         var achievementBus = _services.GetRequiredService<IAchievementUnlockedBus>();
+
+        try
+        {
+            var storage = _services.GetRequiredService<IDataStorage>();
+            if (storage is SqlDataStorage sql)
+            {
+                sql.EnsureSchemaCreated();
+                sql.SeedPrebuiltWorkouts();
+                sql.SeedAchievementCatalog();
+                sql.SeedWorkoutMilestoneAchievements();
+                sql.SeedEvaluationEngineAchievements();
+                sql.SeedTestData();
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Startup database init failed: {ex}");
+        }
+
         _window = new MainWindow(navService, achievementBus);
         _window.Activate();
 
-        var dispatcher = _window.DispatcherQueue ?? DispatcherQueue.GetForCurrentThread();
-        dispatcher.TryEnqueue(async () =>
-        {
-        try
-            {
-                var storage = _services.GetRequiredService<IDataStorage>();
-                if (storage is SqlDataStorage sql)
-                {
-                    await Task.Run(() =>
-                    {
-                        sql.EnsureSchemaCreated();
-                        sql.SeedPrebuiltWorkouts();
-                        sql.SeedAchievementCatalog();
-                        sql.SeedWorkoutMilestoneAchievements();      
-                        sql.SeedEvaluationEngineAchievements();     
-                        sql.SeedTestData();
-                    }).ConfigureAwait(true);
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Startup database init failed: {ex}");
-            }
-
-            navService.NavigateToClientDashboard(requestRefresh: true);
-
-        }
-    );
+        navService.NavigateToClientDashboard(requestRefresh: true);
     }
 
     public static T GetService<T>() where T : notnull
