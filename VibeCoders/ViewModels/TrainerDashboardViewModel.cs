@@ -13,9 +13,13 @@ namespace VibeCoders.ViewModels
     {
         private readonly TrainerService _trainerService;
 
-        public TrainerDashboardViewModel(TrainerService trainerService)
+        private readonly NavigationService _navigationService;
+
+        public TrainerDashboardViewModel(TrainerService trainerService, NavigationService navigationService)
         {
             _trainerService = trainerService;
+            _navigationService = navigationService;
+
             LoadClientsAndWorkouts();
             LoadAvailableExercises();
         }
@@ -321,6 +325,13 @@ namespace VibeCoders.ViewModels
             {
                 AvailableExercises.Add(name);
             }
+        }
+
+        public void OpenClientProfile()
+        {
+            if (SelectedClient == null) return;
+
+            _navigationService.NavigateToClientProfile(SelectedClient.Id);
         }
 
         private void OnWorkoutLogSelected()
