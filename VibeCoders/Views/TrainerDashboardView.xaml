@@ -127,32 +127,50 @@
 									</ListView.ItemTemplate>
 								</ListView>
 
+								<Grid Grid.Row="1" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" Padding="16" CornerRadius="8">
 
-								<Grid Grid.Row="1" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" Padding="16" CornerRadius="8" ColumnSpacing="24">
-									<Grid.ColumnDefinitions>
-										<ColumnDefinition Width="Auto"/>
-										<ColumnDefinition Width="*"/>
-									</Grid.ColumnDefinitions>
+									<Grid ColumnSpacing="24" Visibility="{x:Bind ViewModel.IsFeedbackFormVisible, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
+										<Grid.ColumnDefinitions>
+											<ColumnDefinition Width="Auto"/>
+											<ColumnDefinition Width="*"/>
+										</Grid.ColumnDefinitions>
 
-									<StackPanel Grid.Column="0" Spacing="8" VerticalAlignment="Top">
-										<TextBlock Text="Trainer Feedback" FontSize="14" FontWeight="SemiBold"/>
-										<RatingControl Value="{x:Bind ViewModel.SelectedWorkoutLog.Rating, Mode=TwoWay, FallbackValue=-1}"/>
+										<StackPanel Grid.Column="0" Spacing="8" VerticalAlignment="Top">
+											<TextBlock Text="Trainer Feedback" FontSize="14" FontWeight="SemiBold"/>
+											<RatingControl Value="{x:Bind ViewModel.SelectedWorkoutLog.Rating, Mode=TwoWay, FallbackValue=-1}"/>
+											<TextBlock Text="{x:Bind ViewModel.FeedbackErrorText, Mode=OneWay}"
+													   Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+													   FontSize="12" TextWrapping="Wrap" MaxWidth="150" />
+										</StackPanel>
+
+										<Grid Grid.Column="1">
+											<Grid.RowDefinitions>
+												<RowDefinition Height="*"/>
+												<RowDefinition Height="Auto"/>
+											</Grid.RowDefinitions>
+
+											<TextBox Grid.Row="0"
+													 Text="{x:Bind ViewModel.SelectedWorkoutLog.TrainerNotes, Mode=TwoWay, FallbackValue=''}"
+													 PlaceholderText="Leave feedback or adjust the routine for next time..."
+													 TextWrapping="Wrap" AcceptsReturn="True" MinHeight="80"/>
+
+											<Button Grid.Row="1" Click="{x:Bind ViewModel.SaveCurrentFeedback}"
+													Content="Save Feedback" Style="{ThemeResource AccentButtonStyle}"
+													HorizontalAlignment="Right" Margin="0,8,0,0"/>
+										</Grid>
+									</Grid>
+
+									<StackPanel Orientation="Horizontal" Spacing="12" HorizontalAlignment="Center" VerticalAlignment="Center"
+												Visibility="{x:Bind ViewModel.IsFeedbackFormVisible, Mode=OneWay, Converter={StaticResource BoolToVisibility}, ConverterParameter=Invert}">
+										<FontIcon Glyph="&#xE73E;" FontSize="24" Foreground="{ThemeResource SystemFillColorSuccessBrush}"/>
+										<TextBlock Text="Feedback saved successfully!" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center"/>
 									</StackPanel>
 
-									<Grid Grid.Column="1">
-										<Grid.RowDefinitions>
-											<RowDefinition Height="*"/>
-											<RowDefinition Height="Auto"/>
-										</Grid.RowDefinitions>
-
-										<TextBox Grid.Row="0"
-												 Text="{x:Bind ViewModel.SelectedWorkoutLog.TrainerNotes, Mode=TwoWay, FallbackValue=''}"
-												 PlaceholderText="Leave feedback or adjust the routine for next time..."
-												 TextWrapping="Wrap" AcceptsReturn="True" MinHeight="80"/>
-
-										<Button Grid.Row="1" Click="{x:Bind ViewModel.SaveCurrentFeedback}" Content="Save Feedback" Style="{ThemeResource AccentButtonStyle}" HorizontalAlignment="Right" Margin="0,8,0,0"/>
-									</Grid>
 								</Grid>
+								
+								
+								
+								
 							</Grid>
 						
 						</Grid>
