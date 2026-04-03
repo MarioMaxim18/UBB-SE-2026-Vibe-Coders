@@ -31,6 +31,18 @@ namespace VibeCoders.ViewModels
         public ObservableCollection<string> AvailableExercises { get; } = new();
 
         [ObservableProperty]
+        private string builderErrorText = string.Empty;
+
+
+        public bool HasBuilderError => !string.IsNullOrEmpty(BuilderErrorText);
+
+        partial void OnBuilderErrorTextChanged(string value)
+        {
+            OnPropertyChanged(nameof(HasBuilderError));
+        }
+
+
+        [ObservableProperty]
         private bool isFeedbackFormVisible = true;
 
         [ObservableProperty]

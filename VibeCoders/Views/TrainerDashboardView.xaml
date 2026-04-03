@@ -258,7 +258,7 @@
 												<Button HorizontalAlignment="Right" VerticalAlignment="Top"
 														Margin="-8,-8,-8,0" Padding="8"
 														Background="Transparent" BorderThickness="0"
-														Click="DeleteWorkout_Click">
+														Tapped="DeleteWorkout_Tapped">
 													<FontIcon Glyph="&#xE74D;" FontSize="14" Foreground="Red" Opacity="0.7"/>
 												</Button>
 											</Grid>
@@ -378,6 +378,11 @@
 				<TextBox Header="Routine Name"
                          Text="{x:Bind ViewModel.NewRoutineName, Mode=TwoWay}"
                          PlaceholderText="e.g., Heavy Push Day - Block 1" />
+
+				<TextBlock Text="{x:Bind ViewModel.BuilderErrorText, Mode=OneWay}"
+						   Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+						   FontSize="13" FontWeight="SemiBold"
+						   Visibility="{x:Bind ViewModel.HasBuilderError, Mode=OneWay, Converter={StaticResource BoolToVisibility}}" />
 
 				<Rectangle Height="1" Fill="{ThemeResource ControlStrokeColorDefaultBrush}" Margin="0,8"/>
 
