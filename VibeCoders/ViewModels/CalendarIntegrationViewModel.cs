@@ -259,7 +259,7 @@ namespace VibeCoders.ViewModels
 
         public async Task<string> GenerateCalendarAsync()
         {
-            return await Task.Run(() =>
+            var icsContent = await Task.Run(() =>
             {
                 var validationError = ValidateInput();
                 if (validationError != null)
@@ -269,14 +269,14 @@ namespace VibeCoders.ViewModels
                     throw new InvalidOperationException("No workout selected.");
 
                 var selectedDaysArray = GetSelectedDaysOfWeek();
-                var icsContent = _calendarExportService.GenerateCalendar(
+                return _calendarExportService.GenerateCalendar(
                     SelectedWorkout,
                     DurationWeeks,
                     selectedDaysArray);
-
-                GeneratedIcsContent = icsContent;
-                return icsContent;
             });
+
+            GeneratedIcsContent = icsContent;
+            return icsContent;
         }
 
         public void ToggleDaySelection(int dayOfWeek)
