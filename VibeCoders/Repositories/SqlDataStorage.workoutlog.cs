@@ -88,8 +88,10 @@ namespace VibeCoders.Services
                     wl.calories_burned,
                     wl.workout_id,
                     wl.rating,
-                    wl.trainer_notes
+                    wl.trainer_notes,
+                    wt.name
                 FROM WORKOUT_LOG wl
+                LEFT JOIN WORKOUT_TEMPLATE wt ON wl.workout_id = wt.workout_template_id
                 WHERE wl.client_id = @ClientId
                 ORDER BY wl.date DESC;";
 
@@ -111,10 +113,11 @@ namespace VibeCoders.Services
                         Date                = DateTime.Parse(reader.GetString(1)),
                         Duration            = TimeSpan.Parse(reader.GetString(2)),
                         TotalCaloriesBurned = reader.IsDBNull(3) ? 0 : reader.GetInt32(3),
-                        SourceTemplateId    = reader.IsDBNull(4) ? 0 : reader.GetInt32(4),
-                        Rating              = reader.IsDBNull(5) ? -1 : Convert.ToDouble(reader.GetInt32(5)),
-                        TrainerNotes        = reader.IsDBNull(6) ? string.Empty : reader.GetString(6),
-                        ClientId            = clientId
+                        SourceTemplateId = reader.IsDBNull(4) ? 0 : reader.GetInt32(4),
+                        Rating = reader.IsDBNull(5) ? -1 : Convert.ToDouble(reader.GetInt32(5)),
+                        TrainerNotes = reader.IsDBNull(6) ? string.Empty : reader.GetString(6),
+                        WorkoutName = reader.IsDBNull(7) ? string.Empty : reader.GetString(7),
+                        ClientId = clientId
                     });
                 }
             }
