@@ -31,7 +31,6 @@ public partial class App : Application
         _window = new MainWindow(navService, achievementBus);
         _window.Activate();
 
-        // Show the shell first; schema/seed can block on first LocalDB connection.
         var dispatcher = _window.DispatcherQueue ?? DispatcherQueue.GetForCurrentThread();
         dispatcher.TryEnqueue(async () =>
         {
@@ -45,8 +44,8 @@ public partial class App : Application
                         sql.EnsureSchemaCreated();
                         sql.SeedPrebuiltWorkouts();
                         sql.SeedAchievementCatalog();
-                        sql.SeedWorkoutMilestoneAchievements();       // #186 – total workout count badges
-                        sql.SeedEvaluationEngineAchievements();      // streak + weekly-volume badges
+                        sql.SeedWorkoutMilestoneAchievements();      
+                        sql.SeedEvaluationEngineAchievements();     
                         sql.SeedTestData();
                     }).ConfigureAwait(true);
                 }
@@ -58,15 +57,10 @@ public partial class App : Application
 
             navService.NavigateToClientDashboard(requestRefresh: true);
 
-
         }
     );
     }
 
-    /// <summary>
-    /// Resolves a service from the DI container. Used by pages that cannot
-    /// receive constructor injection (WinUI page activation).
-    /// </summary>
     public static T GetService<T>() where T : notnull
     {
         if (_services is null)
@@ -80,12 +74,10 @@ public partial class App : Application
 
     private static void ConfigureServices(IServiceCollection services)
     {
-        var connectionString = DatabasePaths.GetSqlServerConnectionString();
+        var connectionString = DatabasePaths.GetConnectionString();
 
-        // Primary storage (SQL Server LocalDB); achievements and workout templates live here.
         services.AddSingleton<IDataStorage, SqlDataStorage>();
 
-        // Session and analytics (same DB as IDataStorage).
         services.AddSingleton<IUserSession, UserSession>();
         services.AddSingleton<IWorkoutAnalyticsStore>(
             new SqlWorkoutAnalyticsStore(connectionString));
@@ -100,7 +92,7 @@ public partial class App : Application
 
         services.AddSingleton<ProgressionService>();
         services.AddSingleton<ClientService>();
-        services.AddSingleton<EvaluationEngine>(); // added right now
+        services.AddSingleton<EvaluationEngine>();
         services.AddSingleton<TrainerService>();
 
         services.AddTransient<ClientDashboardViewModel>();

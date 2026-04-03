@@ -90,11 +90,9 @@ namespace VibeCoders.ViewModels
 
             InitializeDaySelection();
 
-            // Populate immediately so UI is responsive even if DB is unavailable.
             var clientId = (int)_userSession.CurrentUserId;
             LoadFallbackWorkouts(clientId);
 
-            // Try to refresh from DB in background.
             _ = LoadAvailableWorkoutsAsync();
         }
 
@@ -120,7 +118,6 @@ namespace VibeCoders.ViewModels
                 var dbLoadTask = Task.Run(() => _dataStorage.GetAvailableWorkouts(clientId));
                 var completedTask = await Task.WhenAny(dbLoadTask, Task.Delay(1500));
 
-                // If DB is slow/unavailable, keep fallback list and return quickly.
                 if (completedTask != dbLoadTask)
                 {
                     return;
@@ -134,7 +131,6 @@ namespace VibeCoders.ViewModels
                     AvailableWorkouts.Add(workout);
                 }
 
-                // Keep the calendar page testable even when DB returns no data.
                 if (AvailableWorkouts.Count == 0)
                 {
                     LoadFallbackWorkouts(clientId);
