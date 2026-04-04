@@ -57,7 +57,10 @@ namespace VibeCoders.Services
 
         public bool AssignNutritionPlan(NutritionPlan plan, int clientId)
         {
-            if (plan == null || clientId <= 0) return false;
+            if (plan == null)
+                return false;
+            if (clientId <= 0)
+                return false;
 
             DataStorage.SaveNutritionPlanForClient(plan, clientId);
             return true;
