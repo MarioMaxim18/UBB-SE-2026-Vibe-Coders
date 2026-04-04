@@ -14,14 +14,14 @@ namespace VibeCoders.ViewModels;
 public sealed partial class WorkoutHistoryItemViewModel : ObservableObject
 {
     private readonly IWorkoutAnalyticsStore _store;
-    private readonly long _userId;
+    private readonly long _clientId;
     private bool _detailLoaded;
 
     public WorkoutHistoryItemViewModel(
-        IWorkoutAnalyticsStore store, long userId, WorkoutHistoryRow row)
+        IWorkoutAnalyticsStore store, long clientId, WorkoutHistoryRow row)
     {
         _store = store;
-        _userId = userId;
+        _clientId = clientId;
         WorkoutLogId = row.Id;
         Title = row.WorkoutName;
         DateLine = row.LogDate.ToString("d", System.Globalization.CultureInfo.CurrentCulture);
@@ -77,7 +77,7 @@ public sealed partial class WorkoutHistoryItemViewModel : ObservableObject
         try
         {
             var detail = await _store.GetWorkoutSessionDetailAsync(
-                _userId, WorkoutLogId).ConfigureAwait(true);
+                _clientId, WorkoutLogId).ConfigureAwait(true);
             Sets.Clear();
             ExerciseCalories.Clear();
             if (detail is not null)

@@ -35,7 +35,7 @@ public sealed partial class ClientDashboardPage : Page
 
     private void SeeAllAchievements_Click(object sender, RoutedEventArgs e)
     {
-        var clientId = (int)App.GetService<IUserSession>().CurrentUserId;
+        var clientId = (int)App.GetService<IUserSession>().CurrentClientId;
         Frame.Navigate(typeof(AchievementsPage), clientId);
     }
 
