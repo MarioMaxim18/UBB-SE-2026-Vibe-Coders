@@ -30,11 +30,43 @@ namespace VibeCoders.ViewModels
             };
         }
 
-        private Dictionary<string, double> GetPreviousBestWeights()
+        public void StartRestTimer(int seconds = 90)
+        {
+            RestTimeRemaining = seconds;
+            IsResting = true;
+
+            _restTimer?.Stop();
+            _restTimer = new System.Timers.Timer(1000);
+
+            _restTimer.Elapsed += (s, e) =>
+            {
+                if (RestTimeRemaining > 0)
+                {
+                    RestTimeRemaining--;
+                }
+                else
+                {
+                    _restTimer?.Stop();
+                    IsResting = false;
+                }
+            };
+
+            _restTimer.Start();
+        }
+
+        private System.Timers.Timer? _restTimer;
+
+        [ObservableProperty]
+        private int restTimeRemaining;
+
+        [ObservableProperty]
+        private bool isResting;
+
+        private Dictionary<string, double> GetPreviousBestWeights(int clientId)
         {
             try
             {
-                var allLogs = _storage.GetWorkoutLogs();
+                var allLogs = _storage.GetWorkoutHistory(clientId);
 
                 return allLogs
                     .SelectMany(log => log.Exercises)
