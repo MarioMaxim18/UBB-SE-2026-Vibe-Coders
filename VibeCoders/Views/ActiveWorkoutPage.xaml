@@ -68,6 +68,8 @@
                         <TextBlock Text="Finish Workout" />
                     </StackPanel>
                 </Button>
+                <Button Content="Finish Workout" Width="200" Height="50"
+        CommandParameter="{x:Bind ClientId}" />
             </Grid>
         </Border>
 

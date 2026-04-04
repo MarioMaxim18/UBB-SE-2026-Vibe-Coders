@@ -20,6 +20,7 @@
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Views\ClientProfileView.xaml" />
+    <None Remove="Views\FocusModeView.xaml" />
     <None Remove="Views\TrainerDashboardView.xaml" />
   </ItemGroup>
 
@@ -59,6 +60,7 @@
   </ItemGroup>
   <ItemGroup>
     <Page Update="Views\ClientProfileView.xaml">
+    <Page Update="Views\FocusModeView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>

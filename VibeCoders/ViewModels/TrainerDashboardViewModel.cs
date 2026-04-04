@@ -6,10 +6,12 @@ using System.Runtime.CompilerServices;
 using Microsoft.UI.Xaml;
 using VibeCoders.Models;
 using VibeCoders.Services;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace VibeCoders.ViewModels
 {
-    public class TrainerDashboardViewModel : INotifyPropertyChanged
+    public partial class TrainerDashboardViewModel : ObservableObject
     {
         private readonly TrainerService _trainerService;
 
@@ -24,12 +26,6 @@ namespace VibeCoders.ViewModels
             LoadAvailableExercises();
         }
 
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        private void OnPropertyChanged([CallerMemberName] string propertyName = "")
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
 
         public ObservableCollection<Client> AssignedClients { get; } = new();
         public ObservableCollection<WorkoutLog> SelectedClientLogs { get; } = new();
@@ -37,6 +33,24 @@ namespace VibeCoders.ViewModels
         public ObservableCollection<WorkoutTemplate> AssignedWorkouts { get; } = new();
         public ObservableCollection<TemplateExercise> BuilderExercises { get; } = new();
         public ObservableCollection<string> AvailableExercises { get; } = new();
+
+        [ObservableProperty]
+        private string builderErrorText = string.Empty;
+
+
+        public bool HasBuilderError => !string.IsNullOrEmpty(BuilderErrorText);
+
+        partial void OnBuilderErrorTextChanged(string value)
+        {
+            OnPropertyChanged(nameof(HasBuilderError));
+        }
+
+
+        [ObservableProperty]
+        private bool isFeedbackFormVisible = true;
+
+        [ObservableProperty]
+        private string feedbackErrorText = string.Empty;
 
         public int EditingTemplateId { get; set; }
 
@@ -275,8 +289,19 @@ namespace VibeCoders.ViewModels
 
         private void SaveCurrentFeedbackCore()
         {
+            FeedbackErrorText = string.Empty;
+
             if (SelectedWorkoutLog == null) return;
+
+            if (SelectedWorkoutLog.Rating < 1)
+            {
+                FeedbackErrorText = "You cannot assign an empty feedback. Please select a star rating.";
+                return; 
+            }
+
             _trainerService.SaveWorkoutFeedback(SelectedWorkoutLog);
+
+            IsFeedbackFormVisible = false;
         }
 
         public void SaveCurrentFeedback(object sender, RoutedEventArgs e)
@@ -337,6 +362,8 @@ namespace VibeCoders.ViewModels
         private void OnWorkoutLogSelected()
         {
             CurrentWorkoutDetails.Clear();
+            IsFeedbackFormVisible = true;
+            FeedbackErrorText = string.Empty;
             if (_selectedWorkoutLog == null) return;
 
             foreach (var exercise in _selectedWorkoutLog.Exercises)
@@ -348,6 +375,16 @@ namespace VibeCoders.ViewModels
                     Sets = exercise.Sets
                 });
             }
+
+            if (_selectedWorkoutLog.Rating >= 1)
+            {
+                IsFeedbackFormVisible = false;
+            }
+            else
+            {
+                IsFeedbackFormVisible = true;
+            }
+
         }
     }
 }
