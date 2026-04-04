@@ -47,9 +47,9 @@ public sealed partial class RankShowcaseViewModel : ObservableObject
         IsLoading = true;
         try
         {
-            var userId = _session.CurrentUserId;
+            var clientId = _session.CurrentClientId;
             var total  = await _analytics
-                .GetTotalActiveTimeAsync(userId, cancellationToken)
+                .GetTotalActiveTimeAsync(clientId, cancellationToken)
                 .ConfigureAwait(true);
 
             var tiers   = LevelingTierEvaluator.DefaultTiers;
@@ -63,7 +63,7 @@ public sealed partial class RankShowcaseViewModel : ObservableObject
             ComputeNextRankProgress(total, tiers, result.Level);
 
             ShowcaseAchievements.Clear();
-            foreach (var row in _data.GetAchievementShowcaseForClient((int)userId))
+            foreach (var row in _data.GetAchievementShowcaseForClient((int)clientId))
                 ShowcaseAchievements.Add(row);
         }
         finally

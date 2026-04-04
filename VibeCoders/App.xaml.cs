@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
@@ -47,6 +48,8 @@ public partial class App : Application
             Debug.WriteLine($"Startup database init failed: {ex}");
         }
 
+        TrySyncDemoClientSession();
+
         _window = new MainWindow(navService, achievementBus);
         _window.Activate();
 
@@ -62,6 +65,31 @@ public partial class App : Application
         }
 
         return _services.GetRequiredService<T>();
+    }
+
+    private void TrySyncDemoClientSession()
+    {
+        if (_services is null) return;
+
+        try
+        {
+            var storage = _services.GetRequiredService<IDataStorage>();
+            var session = _services.GetRequiredService<IUserSession>();
+            var user    = storage.LoadUser("TestClient");
+            if (user is null) return;
+
+            var roster = storage.GetTrainerClient(1);
+            var client = roster.FirstOrDefault(c =>
+                string.Equals(c.Username, "TestClient", StringComparison.OrdinalIgnoreCase));
+            if (client is null) return;
+
+            session.CurrentUserId   = user.Id;
+            session.CurrentClientId = client.Id;
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Session sync skipped: {ex.Message}");
+        }
     }
 
     private static void ConfigureServices(IServiceCollection services)
