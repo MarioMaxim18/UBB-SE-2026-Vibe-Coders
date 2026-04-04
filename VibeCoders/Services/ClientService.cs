@@ -121,6 +121,26 @@ namespace VibeCoders.Services
             }
         }
 
+        public NutritionPlan? GetActiveNutritionPlan(int clientId)
+        {
+            if (clientId <= 0) return null;
+
+            try
+            {
+                var today = DateTime.Today;
+                return _storage
+                    .GetNutritionPlansForClient(clientId)
+                    .Where(p => p.StartDate.Date <= today && today <= p.EndDate.Date)
+                    .OrderByDescending(p => p.StartDate)
+                    .FirstOrDefault();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error loading active nutrition plan: {ex.Message}");
+                return null;
+            }
+        }
+
         private void RunAchievementEvaluation(int clientId)
         {
             try
