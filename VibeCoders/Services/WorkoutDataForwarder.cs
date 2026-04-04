@@ -34,7 +34,7 @@ public sealed class WorkoutDataForwarder : IWorkoutDataForwarder
             log.IntensityTag = CalculateIntensityTag(log.AverageMet);
         }
 
-        var logId = await _store.SaveWorkoutAsync(userId, log, cancellationToken);
+        var logId = await _store.SaveWorkoutAsync(log.ClientId, log, cancellationToken);
 
         _refreshBus.RequestRefresh();
 
