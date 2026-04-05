@@ -121,6 +121,7 @@ public partial class App : Application
         services.AddTransient<ActiveWorkoutViewModel>();
         services.AddTransient<WorkoutLogsViewModel>();
         services.AddTransient<AchievementsViewModel>();
+        services.AddTransient<ClientProfileViewModel>();
 
         services.AddTransient<TrainerDashboardViewModel>(sp =>
         {
