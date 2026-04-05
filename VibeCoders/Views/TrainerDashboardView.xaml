@@ -32,7 +32,7 @@
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
-            <ListView ItemsSource="{x:Bind ViewModel.AssignedClients}">
+            <!--<ListView ItemsSource="{x:Bind ViewModel.AssignedClients}">
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="models:Client">
                         <StackPanel Orientation="Horizontal">
@@ -42,7 +42,7 @@
                         </StackPanel>
                     </DataTemplate>
                 </ListView.ItemTemplate>
-            </ListView>
+            </ListView>-->
         </Grid>
 
 		<ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
