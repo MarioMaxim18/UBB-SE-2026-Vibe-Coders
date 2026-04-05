@@ -1,4 +1,3 @@
-using Microsoft.Data.Sqlite;
 using VibeCoders.Models;
 
 namespace VibeCoders.Services;
@@ -10,7 +9,7 @@ public sealed class WorkoutDataForwarder : IWorkoutDataForwarder
 
     private const float LightThreshold = 3.0f;
     private const float ModerateThreshold = 6.0f;
-    
+
     private const string LightIntensity = "light";
     private const string ModerateIntensity = "moderate";
     private const string IntenseIntensity = "intense";
@@ -27,7 +26,7 @@ public sealed class WorkoutDataForwarder : IWorkoutDataForwarder
         long userId, WorkoutLog log, CancellationToken cancellationToken = default)
     {
         log.TotalCaloriesBurned = log.Exercises.Sum(e => e.ExerciseCaloriesBurned);
-        
+
         if (log.Exercises.Count > 0)
         {
             log.AverageMet = log.Exercises.Average(e => e.Met);
@@ -44,35 +43,9 @@ public sealed class WorkoutDataForwarder : IWorkoutDataForwarder
     private static string CalculateIntensityTag(float averageMet)
     {
         if (averageMet < LightThreshold)
-        {
             return LightIntensity;
-        }
-        else if (averageMet < ModerateThreshold)
-        {
+        if (averageMet < ModerateThreshold)
             return ModerateIntensity;
-        }
-        else
-        {
-            return IntenseIntensity;
-        }
-    }
-
-    public int GetTotalActiveTimeForClient(int clientId)
-    {
-        string _connectionString = "";
-        using var conn = new SqliteConnection(_connectionString);
-        conn.Open();
-
-        using var cmd = conn.CreateCommand();
-        cmd.CommandText = @"
-        SELECT SUM(Duration)
-        FROM WorkoutLog
-        WHERE ClientId = @ClientId
-          AND IsFinalized = 1;
-    ";
-        cmd.Parameters.AddWithValue("@ClientId", clientId);
-
-        var result = cmd.ExecuteScalar();
-        return result != DBNull.Value ? Convert.ToInt32(result) : 0;
+        return IntenseIntensity;
     }
 }

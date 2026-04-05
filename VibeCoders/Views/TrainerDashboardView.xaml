@@ -16,12 +16,20 @@
         <Grid Grid.Column="0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <TextBlock Grid.Row="0" Text="Client List Dashboard" FontSize="28" FontWeight="SemiBold" Margin="0,0,0,24"/>
+            <TextBlock Grid.Row="0" Text="Client List Dashboard" FontSize="28" FontWeight="SemiBold" Margin="0,0,0,12"/>
 
-            <ListView Grid.Row="1" ItemsSource="{x:Bind ViewModel.AssignedClients}" SelectedItem="{x:Bind ViewModel.SelectedClient, Mode=TwoWay}">
+            <StackPanel Grid.Row="1" Spacing="8" Margin="0,0,0,16">
+                <TextBlock Text="Trainer tools" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                <Button Content="Open selected client profile" Command="{x:Bind ViewModel.OpenClientProfileCommand}"/>
+                <Button Content="Workout logs (client app)" Command="{x:Bind ViewModel.OpenWorkoutLogsCommand}"/>
+                <Button Content="Calendar" Command="{x:Bind ViewModel.OpenCalendarCommand}"/>
+            </StackPanel>
+
+            <ListView Grid.Row="2" ItemsSource="{x:Bind ViewModel.AssignedClients}" SelectedItem="{x:Bind ViewModel.SelectedClient, Mode=TwoWay}">
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="models:Client">
                         <StackPanel Margin="0,8,0,16" Padding="16" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8">

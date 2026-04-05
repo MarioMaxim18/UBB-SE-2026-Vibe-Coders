@@ -1,4 +1,3 @@
-using System;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
@@ -13,41 +12,20 @@ public sealed partial class ActiveWorkoutPage : Page
     public ActiveWorkoutViewModel ViewModel { get; }
     public int ClientId { get; private set; }
 
-    private DispatcherTimer _timer;
-    private TimeSpan _elapsed = TimeSpan.Zero;
-
     public ActiveWorkoutPage()
     {
         ViewModel = App.GetService<ActiveWorkoutViewModel>();
         DataContext = ViewModel;
         InitializeComponent();
-
-        _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
-        _timer.Tick += (s, e) =>
-        {
-            _elapsed = _elapsed.Add(TimeSpan.FromSeconds(1));
-            WorkoutTimerDisplay.Text = _elapsed.ToString(@"mm\:ss");
-        };
-        _timer.Start();
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
         base.OnNavigatedTo(e);
         if (e.Parameter is int clientId && clientId != 0)
-        {
             ClientId = clientId;
-        }
         else
-        {
             ClientId = (int)App.GetService<IUserSession>().CurrentClientId;
-        }
-    }
-
-    protected override void OnNavigatedFrom(NavigationEventArgs e)
-    {
-        base.OnNavigatedFrom(e);
-        _timer.Stop();
     }
 
     private void Page_Loaded(object sender, RoutedEventArgs e)
@@ -55,23 +33,21 @@ public sealed partial class ActiveWorkoutPage : Page
         ViewModel.LoadNotificationsCommand.Execute(ClientId);
     }
 
-    private async void StartWorkoutButton_Click(object sender, RoutedEventArgs e)
+    private async void OpenFocusMode_Click(object sender, RoutedEventArgs e)
     {
-        if (ViewModel.SelectedTemplate == null) return;
-
-        // Create FocusMode dialog
-        var focusPage = new FocusModeView(ViewModel);
+        if (!ViewModel.IsWorkoutStarted) return;
 
         var dialog = new ContentDialog
         {
-            Content = focusPage,
-            XamlRoot = this.Content.XamlRoot,
+            XamlRoot = Content.XamlRoot,
             FullSizeDesired = true,
-            IsPrimaryButtonEnabled = false, // we control finish inside
+            IsPrimaryButtonEnabled = false,
             IsSecondaryButtonEnabled = false
         };
 
-        await dialog.ShowAsync(); // This will block navigation
+        var focusPage = new FocusModeView(ViewModel, ClientId, dialog);
+        dialog.Content = focusPage;
+        await dialog.ShowAsync();
     }
 
     private void ApplyGoalsButton_Click(object sender, RoutedEventArgs e)
@@ -83,10 +59,12 @@ public sealed partial class ActiveWorkoutPage : Page
     private void ConfirmDeloadButton_Click(object sender, RoutedEventArgs e)
     {
         if (sender is Button btn && btn.Tag is Notification notification)
-        {
             ViewModel.ConfirmDeloadCommand.Execute(notification);
-        }
     }
 
-
+    private void SaveSetButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement fe && fe.DataContext is ActiveSetViewModel setVm)
+            ViewModel.SaveSetCommand.Execute(setVm);
+    }
 }

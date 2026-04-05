@@ -108,6 +108,9 @@ public partial class App : Application
         services.AddSingleton<ICalendarExportService, CalendarExportService>();
         services.AddSingleton<INavigationService, NavigationService>();
 
+        services.AddSingleton(new NutritionSyncOptions());
+        services.AddSingleton<WorkoutUiState>();
+
         services.AddHttpClient();
 
         services.AddSingleton<ProgressionService>();
@@ -126,8 +129,8 @@ public partial class App : Application
         services.AddTransient<TrainerDashboardViewModel>(sp =>
         {
             var trainerService = sp.GetRequiredService<TrainerService>();
-            var navService = sp.GetRequiredService<INavigationService>() as NavigationService;
-            return new TrainerDashboardViewModel(trainerService, navService!);
+            var navService = sp.GetRequiredService<INavigationService>();
+            return new TrainerDashboardViewModel(trainerService, navService);
         });
     }
 }

@@ -15,9 +15,9 @@ namespace VibeCoders.ViewModels
     {
         private readonly TrainerService _trainerService;
 
-        private readonly NavigationService _navigationService;
+        private readonly INavigationService _navigationService;
 
-        public TrainerDashboardViewModel(TrainerService trainerService, NavigationService navigationService)
+        public TrainerDashboardViewModel(TrainerService trainerService, INavigationService navigationService)
         {
             _trainerService = trainerService;
             _navigationService = navigationService;
@@ -354,12 +354,19 @@ namespace VibeCoders.ViewModels
             }
         }
 
-        public void OpenClientProfile()
+        [RelayCommand]
+        private void OpenClientProfile()
         {
             if (SelectedClient == null) return;
 
             _navigationService.NavigateToClientProfile(SelectedClient.Id);
         }
+
+        [RelayCommand]
+        private void OpenWorkoutLogs() => _navigationService.NavigateToWorkoutLogs();
+
+        [RelayCommand]
+        private void OpenCalendar() => _navigationService.NavigateToCalendarIntegration();
 
         private void OnWorkoutLogSelected()
         {

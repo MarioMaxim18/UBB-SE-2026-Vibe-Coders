@@ -10,6 +10,7 @@ namespace VibeCoders.Views;
 public sealed partial class ClientDashboardPage : Page
 {
     private readonly CartesianChart _chart;
+    private readonly IAchievementUnlockedBus _achievementBus;
 
     public ClientDashboardViewModel ViewModel { get; }
 
@@ -18,6 +19,9 @@ public sealed partial class ClientDashboardPage : Page
         ViewModel = App.GetService<ClientDashboardViewModel>();
         DataContext = ViewModel;
         InitializeComponent();
+
+        _achievementBus = App.GetService<IAchievementUnlockedBus>();
+        _achievementBus.AchievementUnlocked += OnAchievementUnlocked;
 
         _chart = new CartesianChart
         {
@@ -42,12 +46,27 @@ public sealed partial class ClientDashboardPage : Page
     private async void Page_Loaded(object sender, RoutedEventArgs e)
     {
         await ViewModel.LoadInitialAsync();
+
+        var workoutState = App.GetService<WorkoutUiState>();
+        var note = workoutState.ProgressionHeadsUp;
+        if (!string.IsNullOrWhiteSpace(note))
+        {
+            ProgressionInfoBar.Message = note;
+            ProgressionInfoBar.IsOpen = true;
+            workoutState.ProgressionHeadsUp = null;
+        }
     }
 
     private void Page_Unloaded(object sender, RoutedEventArgs e)
     {
+        _achievementBus.AchievementUnlocked -= OnAchievementUnlocked;
         ViewModel.PropertyChanged -= OnViewModelPropertyChanged;
         ChartContainer.Children.Remove(_chart);
+    }
+
+    private void OnAchievementUnlocked(object? sender, AchievementUnlockedEventArgs e)
+    {
+        ViewModel.ReloadAchievementsPreview();
     }
 
     private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)

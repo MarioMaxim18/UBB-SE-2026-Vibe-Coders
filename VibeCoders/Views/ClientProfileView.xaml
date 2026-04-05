@@ -17,9 +17,13 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <StackPanel Grid.Row="0" Grid.ColumnSpan="2" Spacing="4" Margin="0,0,0,8">
+        <StackPanel Grid.Row="0" Grid.ColumnSpan="2" Spacing="8" Margin="0,0,0,8">
             <TextBlock Text="{Binding CaloriesSummary, Mode=OneWay}" FontSize="14" />
             <TextBlock Text="{Binding LatestSessionHint, Mode=OneWay}" FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+            <StackPanel Orientation="Horizontal" Spacing="12">
+                <Button Content="Sync calories to nutrition API" Command="{Binding SyncNutritionCommand}" />
+                <TextBlock Text="{Binding SyncNutritionStatus, Mode=OneWay}" VerticalAlignment="Center" FontSize="12" TextWrapping="Wrap" />
+            </StackPanel>
         </StackPanel>
 
         <!-- Left: latest workout exercises -->
