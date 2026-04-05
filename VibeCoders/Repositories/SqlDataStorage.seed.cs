@@ -1,5 +1,6 @@
 using Microsoft.Data.Sqlite;
 using VibeCoders.Domain;
+using VibeCoders.Models;
 
 namespace VibeCoders.Services
 {
@@ -253,6 +254,8 @@ namespace VibeCoders.Services
                 clientId = Convert.ToInt32(idCmd.ExecuteScalar());
             }
 
+            SeedDemoNutritionForTestClientIfNeeded(clientId);
+
             int CreateLog(DateTime date, string duration, int cals)
             {
                 using var cmd = new SqliteCommand(@"
@@ -306,6 +309,71 @@ namespace VibeCoders.Services
             AddSet(log3, "Barbell Row", 1, 10, 60.0);
             AddSet(log3, "Barbell Row", 2, 10, 60.0);
             AddSet(log3, "Barbell Row", 3,  8, 65.0);
+        }
+
+        private void SeedDemoNutritionForTestClientIfNeeded(int clientId)
+        {
+            const string checkSql = @"
+                SELECT COUNT(1)
+                FROM CLIENT_NUTRITION_PLAN
+                WHERE client_id = @ClientId;";
+
+            using var conn = new SqliteConnection(_connectionString);
+            conn.Open();
+
+            using (var checkCmd = new SqliteCommand(checkSql, conn))
+            {
+                checkCmd.Parameters.AddWithValue("@ClientId", clientId);
+                if (Convert.ToInt32(checkCmd.ExecuteScalar()) > 0)
+                    return;
+            }
+
+            var today = DateTime.Today;
+            var plan = new NutritionPlan
+            {
+                StartDate = today.AddDays(-1),
+                EndDate   = today.AddDays(14),
+                Meals = new List<Meal>
+                {
+                    new()
+                    {
+                        Name = "Breakfast — oatmeal bowl",
+                        Ingredients = new List<string> { "Rolled oats", "Milk", "Banana", "Honey" },
+                        Instructions =
+                            "Simmer oats in milk until creamy. Top with sliced banana and a drizzle of honey."
+                    },
+                    new()
+                    {
+                        Name = "Lunch — chicken salad",
+                        Ingredients = new List<string>
+                        {
+                            "Grilled chicken breast",
+                            "Mixed greens",
+                            "Cherry tomatoes",
+                            "Olive oil",
+                            "Lemon juice"
+                        },
+                        Instructions =
+                            "Slice chicken, toss with greens and tomatoes. Dress with olive oil and lemon."
+                    },
+                    new()
+                    {
+                        Name = "Dinner — salmon and vegetables",
+                        Ingredients = new List<string>
+                        {
+                            "Salmon fillet",
+                            "Broccoli",
+                            "Sweet potato",
+                            "Salt",
+                            "Pepper"
+                        },
+                        Instructions =
+                            "Roast salmon and vegetables at 200°C until salmon flakes easily. Season to taste."
+                    }
+                }
+            };
+
+            SaveNutritionPlanForClient(plan, clientId);
         }
     }
 }
