@@ -108,7 +108,12 @@ public partial class App : Application
         services.AddSingleton<ICalendarExportService, CalendarExportService>();
         services.AddSingleton<INavigationService, NavigationService>();
 
-        services.AddSingleton(new NutritionSyncOptions());
+        var nutritionSyncOptions = new NutritionSyncOptions();
+#if DEBUG
+        // Demo-friendly: other team's nutrition API often is not running during class demos.
+        nutritionSyncOptions.UseInProcessMock = true;
+#endif
+        services.AddSingleton(nutritionSyncOptions);
         services.AddSingleton<WorkoutUiState>();
 
         services.AddHttpClient();

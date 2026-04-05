@@ -14,6 +14,7 @@ public partial class ClientProfileViewModel : ObservableObject
 {
     private readonly IDataStorage _storage;
     private readonly ClientService _clientService;
+    private readonly NutritionSyncOptions _nutritionSyncOptions;
     private int _loadedClientId;
 
     [ObservableProperty]
@@ -31,10 +32,14 @@ public partial class ClientProfileViewModel : ObservableObject
     [ObservableProperty]
     private string syncNutritionStatus = string.Empty;
 
-    public ClientProfileViewModel(IDataStorage storage, ClientService clientService)
+    public ClientProfileViewModel(
+        IDataStorage storage,
+        ClientService clientService,
+        NutritionSyncOptions nutritionSyncOptions)
     {
         _storage = storage;
         _clientService = clientService;
+        _nutritionSyncOptions = nutritionSyncOptions;
     }
 
     [RelayCommand]
@@ -70,9 +75,20 @@ public partial class ClientProfileViewModel : ObservableObject
         };
 
         var ok = await _clientService.SyncNutritionAsync(payload).ConfigureAwait(true);
-        SyncNutritionStatus = ok
-            ? "Nutrition sync OK."
-            : "Sync failed — start your local nutrition API (see NutritionSyncOptions default URL) or check the network.";
+        if (ok && _nutritionSyncOptions.UseInProcessMock)
+        {
+            SyncNutritionStatus =
+                "Nutrition sync OK (demo mock — no HTTP, flip UseInProcessMock off when their API is up).";
+        }
+        else if (ok)
+        {
+            SyncNutritionStatus = "Nutrition sync OK.";
+        }
+        else
+        {
+            SyncNutritionStatus =
+                "Sync failed — start your local nutrition API (see NutritionSyncOptions default URL) or check the network.";
+        }
     }
 
     public void LoadClientData(int clientId)

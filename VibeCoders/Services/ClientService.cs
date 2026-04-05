@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Net.Http;
 using System.Net.Http.Json;
 using VibeCoders.Models;
@@ -106,6 +107,14 @@ namespace VibeCoders.Services
             NutritionSyncPayload payload,
             CancellationToken cancellationToken = default)
         {
+            if (_nutritionSync.UseInProcessMock)
+            {
+                Debug.WriteLine(
+                    $"[NutritionSync] in-process mock: calories={payload.TotalCalories}, difficulty={payload.WorkoutDifficulty}, bmi={payload.UserBmi}");
+                await Task.Yield();
+                return true;
+            }
+
             try
             {
                 var client = _httpClientFactory.CreateClient();
@@ -117,7 +126,7 @@ namespace VibeCoders.Services
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error syncing nutrition: {ex.Message}");
+                Debug.WriteLine($"Error syncing nutrition: {ex.Message}");
                 return false;
             }
         }
