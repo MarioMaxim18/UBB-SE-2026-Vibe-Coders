@@ -10,99 +10,94 @@
     d:DesignHeight="700"
     d:DesignWidth="1100">
 
-    <Grid Padding="24" RowDefinitions="Auto,Auto,*,Auto" RowSpacing="20">
-        <StackPanel Spacing="6">
-            <TextBlock Text="Create Workout" Style="{StaticResource TitleTextBlockStyle}" />
-            <TextBlock
-                Text="Build a custom routine and save it to My Saved Workouts."
-                Style="{StaticResource BodyTextBlockStyle}"
-                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+    <Grid Padding="24" RowDefinitions="Auto,Auto,Auto" RowSpacing="16">
+        <StackPanel Spacing="8">
+            <TextBlock Text="Routine Name" Style="{StaticResource BodyStrongTextBlockStyle}" />
+            <TextBox Text="{Binding WorkoutName, Mode=TwoWay}"
+                     PlaceholderText="e.g., Heavy Push Day - Block 1" />
         </StackPanel>
 
-        <Border Grid.Row="1" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="12" Padding="20">
-            <StackPanel Spacing="16">
-                <StackPanel Spacing="8">
-                    <TextBlock Text="Workout name" Style="{StaticResource BodyStrongTextBlockStyle}" />
-                    <TextBox Text="{Binding WorkoutName, Mode=TwoWay}" PlaceholderText="Enter workout name" />
-                </StackPanel>
-            </StackPanel>
-        </Border>
+        <Rectangle Grid.Row="1" Height="1"
+                   Fill="{ThemeResource ControlStrokeColorDefaultBrush}" />
 
-        <Border Grid.Row="2" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="12" Padding="20">
-            <StackPanel Spacing="16">
-                <TextBlock Text="Exercises in this Routine" Style="{StaticResource BodyStrongTextBlockStyle}" />
+        <StackPanel Grid.Row="2" Spacing="16">
+            <TextBlock Text="Exercises in this Routine" Style="{StaticResource BodyStrongTextBlockStyle}" />
 
-                <ListView Height="170"
-                          Background="{ThemeResource LayerFillColorDefaultBrush}"
-                          CornerRadius="4"
-                          Padding="4"
-                          HorizontalContentAlignment="Stretch"
-                          ItemsSource="{Binding Exercises}"
-                          SelectionMode="None">
-                    <ListView.ItemTemplate>
-                        <DataTemplate x:DataType="models:TemplateExercise">
-                            <Grid ColumnDefinitions="*,Auto" Margin="0,4">
-                                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                    <TextBlock Text="{x:Bind Name}" FontWeight="SemiBold"/>
-                                    <TextBlock Text="(" Foreground="Gray"/>
-                                    <TextBlock Text="{x:Bind TargetSets}" Foreground="Gray"/>
-                                    <TextBlock Text="×" Foreground="Gray"/>
-                                    <TextBlock Text="{x:Bind TargetReps}" Foreground="Gray"/>
-                                    <TextBlock Text=")" Foreground="Gray"/>
-                                </StackPanel>
-                                <Button Grid.Column="1"
-                                        Content="Remove"
-                                        Command="{Binding DataContext.RemoveExerciseCommand, ElementName=Root}"
-                                        CommandParameter="{Binding}" />
-                            </Grid>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
+            <ListView Height="150"
+                      Background="{ThemeResource LayerFillColorDefaultBrush}"
+                      CornerRadius="4"
+                      Padding="4"
+                      HorizontalContentAlignment="Stretch"
+                      ItemsSource="{Binding Exercises}"
+                      SelectionMode="None">
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="models:TemplateExercise">
+                        <Grid ColumnDefinitions="*,Auto" Margin="0,4">
+                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                <TextBlock Text="{x:Bind Name}" FontWeight="SemiBold"/>
+                                <TextBlock Text="(" Foreground="Gray"/>
+                                <TextBlock Text="{x:Bind TargetSets}" Foreground="Gray"/>
+                                <TextBlock Text="×" Foreground="Gray"/>
+                                <TextBlock Text="{x:Bind TargetReps}" Foreground="Gray"/>
+                                <TextBlock Text=")" Foreground="Gray"/>
+                            </StackPanel>
+                            <Button Grid.Column="1"
+                                    Content="Remove"
+                                    Command="{Binding DataContext.RemoveExerciseCommand, ElementName=Root}"
+                                    CommandParameter="{Binding}" />
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
 
-                <Grid ColumnSpacing="8" RowSpacing="12">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="2*"/>
-                        <ColumnDefinition Width="1*"/>
-                        <ColumnDefinition Width="1*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
+            <Grid ColumnSpacing="8" RowSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="1*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
 
-                    <ComboBox Grid.Row="0" Grid.Column="0"
-                              Header="Select Exercise"
-                              HorizontalAlignment="Stretch"
-                              PlaceholderText="Choose..."
-                              ItemsSource="{Binding AvailableExercises}"
-                              SelectedItem="{Binding SelectedNewExercise, Mode=TwoWay}"/>
+                <ComboBox Grid.Row="0" Grid.Column="0"
+                          Header="Select Exercise"
+                          HorizontalAlignment="Stretch"
+                          PlaceholderText="Choose..."
+                          ItemsSource="{Binding AvailableExercises}"
+                          SelectedItem="{Binding SelectedNewExercise, Mode=TwoWay}" />
 
-                    <NumberBox Grid.Row="0" Grid.Column="1"
-                               Header="Sets"
-                               Minimum="1"
-                               Maximum="10"
-                               SpinButtonPlacementMode="Hidden"
-                               Value="{Binding NewExerciseSets, Mode=TwoWay}"/>
+                <NumberBox Grid.Row="0" Grid.Column="1"
+                           Header="Sets"
+                           Minimum="1"
+                           Maximum="10"
+                           SpinButtonPlacementMode="Hidden"
+                           Value="{Binding NewExerciseSets, Mode=TwoWay}" />
 
-                    <NumberBox Grid.Row="0" Grid.Column="2"
-                               Header="Reps"
-                               Minimum="1"
-                               Maximum="100"
-                               SpinButtonPlacementMode="Hidden"
-                               Value="{Binding NewExerciseReps, Mode=TwoWay}"/>
+                <NumberBox Grid.Row="0" Grid.Column="2"
+                           Header="Reps"
+                           Minimum="1"
+                           Maximum="100"
+                           SpinButtonPlacementMode="Hidden"
+                           Value="{Binding NewExerciseReps, Mode=TwoWay}" />
 
-                    <TextBlock Grid.Row="0" Grid.Column="3"
-                               VerticalAlignment="Bottom"
-                               Text="No target weight"
-                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                <TextBlock Grid.Row="0" Grid.Column="3"
+                           VerticalAlignment="Bottom"
+                           Text="No target weight"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
 
-                    <Button Grid.Row="1" Grid.ColumnSpan="4"
-                            Content="+ Add to Routine"
-                            HorizontalAlignment="Stretch"
-                            Command="{Binding AddExerciseCommand}"/>
-                </Grid>
-            </StackPanel>
-        </Border>
+                <Button Grid.Row="1" Grid.ColumnSpan="4"
+                        Content="+ Add to Routine"
+                        HorizontalAlignment="Stretch"
+                        Command="{Binding AddExerciseCommand}" />
+            </Grid>
 
-        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12">
-            <Button Content="Save Workout" Command="{Binding SaveWorkoutCommand}" />
+            <Button Content="Save Routine"
+                    HorizontalAlignment="Left"
+                    Style="{ThemeResource AccentButtonStyle}"
+                    Command="{Binding SaveWorkoutCommand}" />
         </StackPanel>
     </Grid>
 </UserControl>
