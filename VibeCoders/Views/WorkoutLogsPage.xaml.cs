@@ -35,4 +35,16 @@ public sealed partial class WorkoutLogsPage : Page
             : (int)App.GetService<IUserSession>().CurrentClientId;
         ViewModel.LoadLogsCommand.Execute(clientId);
     }
+
+    private void ToggleEditMode_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button button && button.Tag is WorkoutLogItemViewModel item)
+            ViewModel.ToggleEditModeCommand.Execute(item);
+    }
+
+    private void SaveEditedLog_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button button && button.Tag is WorkoutLogItemViewModel item)
+            ViewModel.SaveEditedLogCommand.Execute(item);
+    }
 }

@@ -55,7 +55,7 @@ public sealed partial class ActiveWorkoutPage : Page
             IsSecondaryButtonEnabled = false
         };
 
-        var focusPage = new FocusModeView(ViewModel, ClientId, dialog);
+        var focusPage = new FocusModeView(ViewModel, dialog);
         dialog.Content = focusPage;
         _isFocusDialogOpen = true;
         try

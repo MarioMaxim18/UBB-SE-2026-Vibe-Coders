@@ -16,6 +16,7 @@ namespace VibeCoders.Services
         List<WorkoutTemplate> GetAvailableWorkouts(int clientId);
 
         bool SaveWorkoutLog(WorkoutLog log);
+        bool UpdateWorkoutLog(WorkoutLog log);
         List<WorkoutLog> GetWorkoutHistory(int clientId);
         List<WorkoutLog> GetLastTwoLogsForExercise(int templateExerciseId);
 

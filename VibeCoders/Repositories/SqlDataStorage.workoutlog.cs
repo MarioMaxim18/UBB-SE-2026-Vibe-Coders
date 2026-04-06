@@ -143,6 +143,89 @@ namespace VibeCoders.Services
             return logs;
         }
 
+        public bool UpdateWorkoutLog(WorkoutLog log)
+        {
+            const string updateLog = @"
+                UPDATE WORKOUT_LOG
+                SET total_duration  = @Duration,
+                    calories_burned = @CaloriesBurned,
+                    intensity_tag   = @IntensityTag,
+                    rating          = @Rating,
+                    trainer_notes   = @TrainerNotes
+                WHERE workout_log_id = @WorkoutLogId;";
+
+            const string deleteSets = @"
+                DELETE FROM WORKOUT_LOG_SETS
+                WHERE workout_log_id = @WorkoutLogId;";
+
+            const string insertSet = @"
+                INSERT INTO WORKOUT_LOG_SETS
+                    (workout_log_id, exercise_name, sets, reps, weight,
+                     target_reps, target_weight, performance_ratio,
+                     is_system_adjusted, adjustment_note)
+                VALUES
+                    (@WorkoutLogId, @ExerciseName, @SetIndex, @ActualReps, @ActualWeight,
+                     @TargetReps, @TargetWeight, @PerformanceRatio,
+                     @IsSystemAdjusted, @AdjustmentNote);";
+
+            using var conn = new SqliteConnection(_connectionString);
+            conn.Open();
+            using var transaction = conn.BeginTransaction();
+
+            try
+            {
+                using (var cmd = new SqliteCommand(updateLog, conn, transaction))
+                {
+                    cmd.Parameters.AddWithValue("@WorkoutLogId", log.Id);
+                    cmd.Parameters.AddWithValue("@Duration", log.Duration.ToString());
+                    cmd.Parameters.AddWithValue("@CaloriesBurned", log.TotalCaloriesBurned);
+                    cmd.Parameters.AddWithValue("@IntensityTag", log.IntensityTag ?? string.Empty);
+                    cmd.Parameters.AddWithValue("@Rating", log.Rating == -1 ? DBNull.Value : (object)(int)log.Rating);
+                    cmd.Parameters.AddWithValue("@TrainerNotes", string.IsNullOrWhiteSpace(log.TrainerNotes) ? DBNull.Value : (object)log.TrainerNotes);
+                    cmd.ExecuteNonQuery();
+                }
+
+                using (var cmd = new SqliteCommand(deleteSets, conn, transaction))
+                {
+                    cmd.Parameters.AddWithValue("@WorkoutLogId", log.Id);
+                    cmd.ExecuteNonQuery();
+                }
+
+                foreach (var exercise in log.Exercises)
+                {
+                    var orderedSets = exercise.Sets
+                        .OrderBy(s => s.SetIndex)
+                        .ToList();
+
+                    for (int i = 0; i < orderedSets.Count; i++)
+                    {
+                        var set = orderedSets[i];
+                        using var cmd = new SqliteCommand(insertSet, conn, transaction);
+                        cmd.Parameters.AddWithValue("@WorkoutLogId", log.Id);
+                        cmd.Parameters.AddWithValue("@ExerciseName", exercise.ExerciseName);
+                        cmd.Parameters.AddWithValue("@SetIndex", i + 1);
+                        cmd.Parameters.AddWithValue("@ActualReps", (object?)set.ActualReps ?? DBNull.Value);
+                        cmd.Parameters.AddWithValue("@ActualWeight", (object?)set.ActualWeight ?? DBNull.Value);
+                        cmd.Parameters.AddWithValue("@TargetReps", (object?)set.TargetReps ?? DBNull.Value);
+                        cmd.Parameters.AddWithValue("@TargetWeight", (object?)set.TargetWeight ?? DBNull.Value);
+                        cmd.Parameters.AddWithValue("@PerformanceRatio", exercise.PerformanceRatio);
+                        cmd.Parameters.AddWithValue("@IsSystemAdjusted", exercise.IsSystemAdjusted ? 1 : 0);
+                        cmd.Parameters.AddWithValue("@AdjustmentNote", exercise.AdjustmentNote);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+
+                transaction.Commit();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                transaction.Rollback();
+                System.Diagnostics.Debug.WriteLine($"UpdateWorkoutLog failed: {ex.Message}");
+                return false;
+            }
+        }
+
         public List<WorkoutLog> GetLastTwoLogsForExercise(int templateExerciseId)
         {
             const string sql = @"

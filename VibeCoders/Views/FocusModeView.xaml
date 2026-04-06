@@ -87,12 +87,12 @@
                     </ItemsRepeater.ItemTemplate>
                 </ItemsRepeater>
 
-                <Button Content="Finish workout"
+                <Button Content="Exit Focus Mode"
                         HorizontalAlignment="Center"
                         Width="220"
                         Height="48"
                         Style="{StaticResource AccentButtonStyle}"
-                        Click="FinishButton_Click" />
+                        Click="ExitButton_Click" />
             </StackPanel>
         </ScrollViewer>
     </Grid>
