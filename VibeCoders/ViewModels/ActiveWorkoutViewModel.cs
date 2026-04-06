@@ -286,6 +286,8 @@ namespace VibeCoders.ViewModels
         {
             if (setViewModel == null || !IsWorkoutStarted) return;
 
+            ErrorMessage = string.Empty;
+
             var set = new LoggedSet
             {
                 ExerciseName = setViewModel.ExerciseName,
@@ -296,7 +298,13 @@ namespace VibeCoders.ViewModels
                 TargetWeight = setViewModel.TargetWeight
             };
 
-            _clientService.SaveSet(_activeLog, setViewModel.ExerciseName, set);
+            bool isSaved = _clientService.SaveSet(_activeLog, setViewModel.ExerciseName, set);
+            if (!isSaved)
+            {
+                ErrorMessage = "Failed to save set. Please try again.";
+                return;
+            }
+
             setViewModel.IsCompleted = true;
 
             StartRestTimer();

@@ -305,6 +305,7 @@
                                                             <Button
                                                                 Grid.Column="4"
                                                                 VerticalAlignment="Center"
+                                                                Tag="{x:Bind}"
                                                                 Click="SaveSetButton_Click"
                                                                 Visibility="{x:Bind IsCompleted, Mode=OneWay, Converter={StaticResource BoolToVisibility}, ConverterParameter=Invert}">
                                                                 <FontIcon Glyph="&#xE73E;" FontSize="14" />
