@@ -21,7 +21,7 @@
                    Fill="{ThemeResource ControlStrokeColorDefaultBrush}" />
 
         <StackPanel Grid.Row="2" Spacing="16">
-            <TextBlock Text="Exercises in this Routine" Style="{StaticResource BodyStrongTextBlockStyle}" />
+            <TextBlock Text="Exercises in this Workout" Style="{StaticResource BodyStrongTextBlockStyle}" />
 
             <ListView Height="150"
                       Background="{ThemeResource LayerFillColorDefaultBrush}"
@@ -90,7 +90,7 @@
             </Grid>
 
             <Button Content="Save Routine"
-                    HorizontalAlignment="Right"
+                    HorizontalAlignment="Left"
                     Margin="0,8,0,0"
                     Style="{ThemeResource AccentButtonStyle}"
                     Command="{Binding SaveWorkoutCommand}" />

@@ -405,7 +405,7 @@
 
 				<Rectangle Height="1" Fill="{ThemeResource ControlStrokeColorDefaultBrush}" Margin="0,8"/>
 
-				<TextBlock Text="Exercises in this Routine" FontWeight="SemiBold"/>
+				<TextBlock Text="Exercises in this Workout" FontWeight="SemiBold"/>
 
 				<ListView Height="150" Background="{ThemeResource LayerFillColorDefaultBrush}" CornerRadius="4" Padding="4"
                           ItemsSource="{x:Bind ViewModel.BuilderExercises, Mode=OneWay}" SelectionMode="None">
