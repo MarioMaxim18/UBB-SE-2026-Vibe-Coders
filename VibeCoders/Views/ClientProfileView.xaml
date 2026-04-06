@@ -7,16 +7,29 @@
     xmlns:models="using:VibeCoders.Models"
     xmlns:vm="using:VibeCoders.ViewModels">
 
-    <Grid>
+    <Grid Padding="12" RowSpacing="8">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <!-- Left: Exercises -->
-        <ScrollViewer Grid.Column="0" Padding="12">
+        <StackPanel Grid.Row="0" Grid.ColumnSpan="2" Spacing="8" Margin="0,0,0,8">
+            <TextBlock Text="{Binding CaloriesSummary, Mode=OneWay}" FontSize="14" />
+            <TextBlock Text="{Binding LatestSessionHint, Mode=OneWay}" FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+            <StackPanel Orientation="Horizontal" Spacing="12">
+                <Button Content="Sync calories to nutrition API" Command="{Binding SyncNutritionCommand}" />
+                <TextBlock Text="{Binding SyncNutritionStatus, Mode=OneWay}" VerticalAlignment="Center" FontSize="12" TextWrapping="Wrap" />
+            </StackPanel>
+        </StackPanel>
+
+        <!-- Left: latest workout exercises -->
+        <ScrollViewer Grid.Row="1" Grid.Column="0" Padding="0,0,12,0">
             <StackPanel>
-                <TextBlock Text="Assigned Exercises" FontSize="24" FontWeight="Bold" Margin="0,0,0,12"/>
+                <TextBlock Text="Latest workout exercises" FontSize="24" FontWeight="Bold" Margin="0,0,0,12"/>
 
                 <ItemsRepeater ItemsSource="{Binding LoggedExercises}">
                     <ItemsRepeater.ItemTemplate>
@@ -49,7 +62,7 @@
         </ScrollViewer>
 
         <!-- Right: Nutrition -->
-        <ScrollViewer Grid.Column="1" Padding="12">
+        <ScrollViewer Grid.Row="1" Grid.Column="1" Padding="12,0,0,0">
             <StackPanel>
                 <TextBlock Text="Nutrition Plan" FontSize="24" FontWeight="Bold" Margin="0,0,0,12"/>
 

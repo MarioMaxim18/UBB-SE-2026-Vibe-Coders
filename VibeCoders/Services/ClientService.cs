@@ -12,21 +12,22 @@ namespace VibeCoders.Services
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly EvaluationEngine _evaluationEngine;
         private readonly IAchievementUnlockedBus _achievementBus;
-
-        private const string NutritionApiEndpoint = "https://nutrition-app.vibecoders.internal/api/nutrition/sync";
+        private readonly NutritionSyncOptions _nutritionSync;
 
         public ClientService(
             IDataStorage storage,
             ProgressionService progressionService,
             IHttpClientFactory httpClientFactory,
             EvaluationEngine evaluationEngine,
-            IAchievementUnlockedBus achievementBus)
+            IAchievementUnlockedBus achievementBus,
+            NutritionSyncOptions nutritionSync)
         {
             _storage            = storage;
             _progressionService = progressionService;
             _httpClientFactory  = httpClientFactory;
             _evaluationEngine   = evaluationEngine;
             _achievementBus     = achievementBus;
+            _nutritionSync      = nutritionSync;
         }
 
         public bool FinalizeWorkout(WorkoutLog log)
@@ -109,7 +110,7 @@ namespace VibeCoders.Services
             {
                 var client = _httpClientFactory.CreateClient();
                 var response = await client
-                    .PostAsJsonAsync(NutritionApiEndpoint, payload, cancellationToken)
+                    .PostAsJsonAsync(_nutritionSync.Endpoint, payload, cancellationToken)
                     .ConfigureAwait(false);
 
                 return response.IsSuccessStatusCode;

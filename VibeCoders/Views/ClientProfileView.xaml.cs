@@ -1,6 +1,5 @@
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
-using VibeCoders.Services;
 using VibeCoders.ViewModels;
 
 namespace VibeCoders.Views;
@@ -11,12 +10,9 @@ public sealed partial class ClientProfileView : Page
 
     public ClientProfileView()
     {
-        this.InitializeComponent();
-
-        // Inject the repository
-        var repository = new ClientDataRepository("Data Source=vibecoders.db");
-        ViewModel = new ClientProfileViewModel(repository);
-        this.DataContext = ViewModel;
+        InitializeComponent();
+        ViewModel = App.GetService<ClientProfileViewModel>();
+        DataContext = ViewModel;
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -24,9 +20,6 @@ public sealed partial class ClientProfileView : Page
         base.OnNavigatedTo(e);
 
         if (e.Parameter is int clientId)
-        {
-            // Load client-specific exercises and nutrition
             ViewModel.LoadClientData(clientId);
-        }
     }
 }

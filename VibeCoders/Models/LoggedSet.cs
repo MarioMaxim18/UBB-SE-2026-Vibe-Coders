@@ -12,5 +12,5 @@ public sealed class LoggedSet
     public double? ActualWeight { get; set; }
     public int SetNumber { get; set; }
 
-    public LoggedExercise Exercise { get; set; }
+    public LoggedExercise? Exercise { get; set; }
 }

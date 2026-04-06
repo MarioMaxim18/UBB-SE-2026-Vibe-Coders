@@ -40,8 +40,7 @@
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         CharacterSpacing="100" />
                     <TextBlock
-                        x:Name="WorkoutTimerDisplay"
-                        Text="00:00"
+                        Text="{x:Bind ViewModel.WorkoutElapsedDisplay, Mode=OneWay}"
                         FontSize="52"
                         FontWeight="Bold"
                         FontFamily="Consolas"
@@ -71,8 +70,6 @@
                         <TextBlock Text="Finish Workout" />
                     </StackPanel>
                 </Button>
-                <Button Content="Finish Workout" Width="200" Height="50"
-        CommandParameter="{x:Bind ClientId}" />
             </Grid>
         </Border>
 
@@ -178,6 +175,12 @@
                         </ItemsRepeater>
                     </StackPanel>
                 </Border>
+
+                <Button
+                    Content="Open focus mode (fullscreen summary)"
+                    HorizontalAlignment="Stretch"
+                    Click="OpenFocusMode_Click"
+                    Visibility="{x:Bind ViewModel.IsWorkoutStarted, Mode=OneWay, Converter={StaticResource BoolToVisibility}}" />
 
                 <!-- ── Exercise List ───────────────────────────────── -->
                 <ItemsRepeater
@@ -302,6 +305,7 @@
                                                             <Button
                                                                 Grid.Column="4"
                                                                 VerticalAlignment="Center"
+                                                                Click="SaveSetButton_Click"
                                                                 Visibility="{x:Bind IsCompleted, Mode=OneWay, Converter={StaticResource BoolToVisibility}, ConverterParameter=Invert}">
                                                                 <FontIcon Glyph="&#xE73E;" FontSize="14" />
                                                             </Button>

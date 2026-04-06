@@ -211,6 +211,9 @@ public sealed partial class ClientDashboardViewModel : ObservableObject
         }
     }
 
+    public void ReloadAchievementsPreview() =>
+        LoadRecentAchievements((int)_session.CurrentClientId);
+
     private void CancelPendingLoad()
     {
         _loadCts?.Cancel();
