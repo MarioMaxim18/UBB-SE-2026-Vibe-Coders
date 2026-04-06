@@ -26,7 +26,7 @@ public sealed class EvaluationEngine
         checks.Add(new VibeCoders.Domain.StreakCheck("3-Day Streak", requiredConsecutiveDays: 3));
         checks.Add(new VibeCoders.Domain.StreakCheck("Week Warrior",  requiredConsecutiveDays: 7));
 
-        checks.Add(new VibeCoders.Domain.WeeklyVolumeCheck("Week Champion", requiredWorkoutsPerWeek: 6));
+        checks.Add(new VibeCoders.Domain.WeeklyVolumeCheck("Iron Week", requiredWorkoutsPerWeek: 5));
 
         return checks;
     }

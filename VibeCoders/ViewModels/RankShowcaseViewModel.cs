@@ -29,7 +29,7 @@ public sealed partial class RankShowcaseViewModel : ObservableObject
 
     [ObservableProperty] private int    displayLevel;
     [ObservableProperty] private string rankTitle              = "\u2014";
-    [ObservableProperty] private string totalActiveTimeDisplay = "0h 00m";
+    [ObservableProperty] private string unlockedAchievementsDisplay = "0 achievements unlocked";
     [ObservableProperty] private bool   isLoading;
 
     [ObservableProperty] private string levelDisplayLine = "Level \u2014";
@@ -42,28 +42,38 @@ public sealed partial class RankShowcaseViewModel : ObservableObject
 
     public ObservableCollection<AchievementShowcaseItem> ShowcaseAchievements { get; } = new();
 
-    public async Task LoadAsync(CancellationToken cancellationToken = default)
+    public Task LoadAsync(CancellationToken cancellationToken = default)
+    {
+        Load();
+        return Task.CompletedTask;
+    }
+
+    private void Load()
     {
         IsLoading = true;
         try
         {
             var clientId = _session.CurrentClientId;
-            var total  = await _analytics
-                .GetTotalActiveTimeAsync(clientId, cancellationToken)
-                .ConfigureAwait(true);
+
+            var showcase = _data.GetAchievementShowcaseForClient((int)clientId);
+            int unlockedCount = 0;
+            foreach (var item in showcase)
+            {
+                if (item.IsUnlocked) unlockedCount++;
+            }
 
             var tiers   = LevelingTierEvaluator.DefaultTiers;
-            var result  = LevelingTierEvaluator.Evaluate(total, tiers);
+            var result  = LevelingTierEvaluator.Evaluate(unlockedCount, tiers);
 
             DisplayLevel        = result.Level;
             RankTitle           = result.RankTitle;
             LevelDisplayLine    = $"Level {result.Level}: {result.RankTitle}";
-            TotalActiveTimeDisplay = FormatTime(total);
+            UnlockedAchievementsDisplay = $"{unlockedCount} achievement{(unlockedCount == 1 ? "" : "s")} unlocked";
 
-            ComputeNextRankProgress(total, tiers, result.Level);
+            ComputeNextRankProgress(unlockedCount, tiers, result.Level);
 
             ShowcaseAchievements.Clear();
-            foreach (var row in _data.GetAchievementShowcaseForClient((int)clientId))
+            foreach (var row in showcase)
                 ShowcaseAchievements.Add(row);
         }
         finally
@@ -73,7 +83,7 @@ public sealed partial class RankShowcaseViewModel : ObservableObject
     }
 
     private void ComputeNextRankProgress(
-        TimeSpan total,
+        int unlockedCount,
         IReadOnlyList<LevelTier> tiers,
         int currentLevel)
     {
@@ -100,27 +110,17 @@ public sealed partial class RankShowcaseViewModel : ObservableObject
         var current  = tiers[currentIndex];
         var next     = tiers[nextIndex];
 
-        long currentSeconds = (long)Math.Max(0, total.TotalSeconds);
-        long bandStart      = current.MinTotalSeconds;
-        long bandEnd        = next.MinTotalSeconds;
-        long earned         = currentSeconds - bandStart;
-        long needed         = bandEnd - bandStart;
+        int bandStart = current.MinAchievements;
+        int bandEnd   = next.MinAchievements;
+        int earned    = unlockedCount - bandStart;
+        int needed    = bandEnd - bandStart;
 
         ProgressPercent = needed > 0
             ? Math.Min(100, Math.Round(earned * 100.0 / needed, 1))
             : 100;
 
-        var remaining  = TimeSpan.FromSeconds(Math.Max(0, bandEnd - currentSeconds));
-        NextRankInfo   = $"Next: Level {next.Level}: {next.RankTitle} — {FormatTime(remaining)} to go";
-    }
-
-    private static string FormatTime(TimeSpan t)
-    {
-        if (t.TotalHours >= 1)
-            return $"{(int)t.TotalHours}h {t.Minutes:D2}m";
-        if (t.TotalMinutes >= 1)
-            return $"{t.Minutes}m {t.Seconds:D2}s";
-        return $"{(int)t.TotalSeconds}s";
+        int remaining = Math.Max(0, bandEnd - unlockedCount);
+        NextRankInfo  = $"Next: Level {next.Level}: {next.RankTitle} — {remaining} more achievement{(remaining == 1 ? "" : "s")} to go";
     }
 
     [RelayCommand]

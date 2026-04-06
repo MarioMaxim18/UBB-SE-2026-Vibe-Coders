@@ -6,14 +6,16 @@ public static class LevelingTierEvaluator
 {
     public static IReadOnlyList<LevelTier> DefaultTiers { get; } =
     [
-        new LevelTier(1, "Novice", 0),
-        new LevelTier(2, "Beginner", (long)TimeSpan.FromHours(1).TotalSeconds),
-        new LevelTier(3, "Regular", (long)TimeSpan.FromHours(10).TotalSeconds),
-        new LevelTier(4, "Dedicated", (long)TimeSpan.FromHours(50).TotalSeconds),
-        new LevelTier(5, "Elite", (long)TimeSpan.FromHours(200).TotalSeconds),
+        new LevelTier(1, "Beginner",       0),
+        new LevelTier(2, "Trainee",        1),
+        new LevelTier(3, "Apprentice",     2),
+        new LevelTier(4, "Gym Novice",     3),
+        new LevelTier(5, "Gym Enthusiast", 5),
+        new LevelTier(6, "Athlete",        7),
+        new LevelTier(7, "Elite",         10),
     ];
 
-    public static LevelingResult Evaluate(TimeSpan totalActiveTime, IReadOnlyList<LevelTier>? tiers = null)
+    public static LevelingResult Evaluate(int unlockedAchievements, IReadOnlyList<LevelTier>? tiers = null)
     {
         tiers ??= DefaultTiers;
         if (tiers.Count == 0)
@@ -21,12 +23,10 @@ public static class LevelingTierEvaluator
             return new LevelingResult(0, "Unranked");
         }
 
-        var seconds = (long)Math.Max(0, totalActiveTime.TotalSeconds);
-
         LevelTier? best = null;
         foreach (var tier in tiers)
         {
-            if (seconds >= tier.MinTotalSeconds)
+            if (unlockedAchievements >= tier.MinAchievements)
             {
                 best = tier;
             }
@@ -38,11 +38,11 @@ public static class LevelingTierEvaluator
     }
 }
 
-public readonly record struct LevelTier(int Level, string RankTitle, long MinTotalSeconds)
+public readonly record struct LevelTier(int Level, string RankTitle, int MinAchievements)
 {
     public override string ToString() =>
         string.Format(CultureInfo.InvariantCulture,
-            "Level {0} {1} @ {2}s", Level, RankTitle, MinTotalSeconds);
+            "Level {0} {1} @ {2} achievements", Level, RankTitle, MinAchievements);
 }
 
 public readonly record struct LevelingResult(int Level, string RankTitle);

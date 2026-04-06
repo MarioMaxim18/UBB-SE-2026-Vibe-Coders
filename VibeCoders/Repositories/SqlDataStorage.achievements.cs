@@ -154,13 +154,18 @@ public partial class SqlDataStorage
         using var cmd    = new SqliteCommand(sql, conn);
         cmd.Parameters.AddWithValue("@ClientId", clientId);
 
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         using var reader = cmd.ExecuteReader();
         while (reader.Read())
         {
+            var title = reader.GetString(1);
+            if (!seen.Add(title))
+                continue;
+
             list.Add(new AchievementShowcaseItem
             {
                 AchievementId = reader.GetInt32(0),
-                Title         = reader.GetString(1),
+                Title         = title,
                 Description   = reader.GetString(2),
                 Criteria      = reader.GetString(3),
                 IsUnlocked    = reader.GetInt32(4) != 0
