@@ -249,12 +249,18 @@ namespace VibeCoders.Services
                     exerciseMap[exerciseName] = exercise;
                 }
 
+                int setIndex = reader.GetInt32(2);
                 exercise.Sets.Add(new LoggedSet
                 {
                     Id           = reader.GetInt32(0),
                     WorkoutLogId = workoutLogId,
                     ExerciseName = exerciseName,
+<<<<<<< HEAD
                     SetIndex     = reader.GetInt32(2),
+=======
+                    SetIndex     = setIndex,
+                    SetNumber    = setIndex + 1,
+>>>>>>> origin/main
                     ActualReps   = reader.IsDBNull(3) ? null : reader.GetInt32(3),
                     ActualWeight = reader.IsDBNull(4) ? null : reader.GetDouble(4),
                     TargetReps   = reader.IsDBNull(5) ? null : reader.GetInt32(5),
@@ -263,6 +269,23 @@ namespace VibeCoders.Services
             }
 
             return exerciseMap.Values.ToList();
+        }
+
+        public int GetTotalActiveTimeForClient(int clientId)
+        {
+            using var conn = new SqliteConnection(_connectionString);
+            conn.Open();
+            using var cmd = new SqliteCommand(@"
+                SELECT COALESCE(SUM(
+                    CASE
+                        WHEN total_duration IS NOT NULL AND total_duration != ''
+                        THEN strftime('%s', total_duration) - strftime('%s', '00:00:00')
+                        ELSE 0
+                    END), 0)
+                FROM WORKOUT_LOG
+                WHERE client_id = @ClientId;", conn);
+            cmd.Parameters.AddWithValue("@ClientId", clientId);
+            return Convert.ToInt32(cmd.ExecuteScalar(), System.Globalization.CultureInfo.InvariantCulture);
         }
     }
 }

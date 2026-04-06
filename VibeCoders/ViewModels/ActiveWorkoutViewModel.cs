@@ -4,6 +4,8 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml;
 using VibeCoders.Models;
 using VibeCoders.Services;
 
@@ -14,22 +16,137 @@ namespace VibeCoders.ViewModels
         private readonly ClientService _clientService;
         private readonly IDataStorage _storage;
         private readonly INavigationService _navigation;
+        private readonly WorkoutUiState _workoutUiState;
         private WorkoutLog _activeLog;
+
+        private System.Timers.Timer? _restTimer;
+        private DispatcherTimer? _elapsedTimer;
+        private TimeSpan _elapsedWorkout;
 
         public ActiveWorkoutViewModel(
             ClientService clientService,
             IDataStorage storage,
-            INavigationService navigation)
+            INavigationService navigation,
+            WorkoutUiState workoutUiState)
         {
             _clientService = clientService;
             _storage = storage;
             _navigation = navigation;
+            _workoutUiState = workoutUiState;
             _activeLog = new WorkoutLog
             {
                 Date = DateTime.Now
             };
         }
 
+<<<<<<< HEAD
+=======
+        public void StartRestTimer(int seconds = 90)
+        {
+            var dq = DispatcherQueue.GetForCurrentThread();
+            if (dq is null) return;
+
+            RestTimeRemaining = seconds;
+            IsResting = true;
+
+            _restTimer?.Stop();
+            _restTimer = new System.Timers.Timer(1000);
+
+            _restTimer.Elapsed += (_, _) =>
+            {
+                dq.TryEnqueue(() =>
+                {
+                    if (RestTimeRemaining > 0)
+                        RestTimeRemaining--;
+                    else
+                    {
+                        _restTimer?.Stop();
+                        IsResting = false;
+                    }
+                });
+            };
+
+            _restTimer.Start();
+        }
+
+        [ObservableProperty]
+        private int restTimeRemaining;
+
+        [ObservableProperty]
+        private bool isResting;
+
+        [ObservableProperty]
+        private string workoutElapsedDisplay = "00:00";
+
+        [ObservableProperty]
+        private string workoutSessionTitle = string.Empty;
+
+        partial void OnIsWorkoutStartedChanged(bool value)
+        {
+            if (value)
+            {
+                _elapsedWorkout = TimeSpan.Zero;
+                WorkoutElapsedDisplay = "00:00";
+                StartWorkoutElapsedTimer();
+            }
+            else
+            {
+                StopWorkoutElapsedTimer();
+            }
+        }
+
+        private void StartWorkoutElapsedTimer()
+        {
+            StopWorkoutElapsedTimer();
+            _elapsedTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+            _elapsedTimer.Tick += (_, _) =>
+            {
+                _elapsedWorkout = _elapsedWorkout.Add(TimeSpan.FromSeconds(1));
+                WorkoutElapsedDisplay = _elapsedWorkout.ToString(@"mm\:ss");
+            };
+            _elapsedTimer.Start();
+        }
+
+        private void StopWorkoutElapsedTimer()
+        {
+            if (_elapsedTimer is null) return;
+            _elapsedTimer.Stop();
+            _elapsedTimer = null;
+        }
+
+        private static string? BuildProgressionHeadsUp(WorkoutLog log)
+        {
+            var lines = log.Exercises
+                .Where(e => e.IsSystemAdjusted || !string.IsNullOrWhiteSpace(e.AdjustmentNote))
+                .Select(e => string.IsNullOrWhiteSpace(e.AdjustmentNote)
+                    ? $"{e.ExerciseName}: targets were adjusted for next time."
+                    : $"{e.ExerciseName}: {e.AdjustmentNote}")
+                .ToList();
+            return lines.Count == 0 ? null : string.Join("\n", lines);
+        }
+
+        private Dictionary<string, double> GetPreviousBestWeights(int clientId)
+        {
+            try
+            {
+                var allLogs = _storage.GetWorkoutHistory(clientId);
+
+                return allLogs
+                    .SelectMany(log => log.Exercises)
+                    .SelectMany(ex => ex.Sets)
+                    .GroupBy(s => s.ExerciseName)
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g.Max(s => s.ActualWeight ?? 0)
+                    );
+            }
+            catch
+            {
+                return new Dictionary<string, double>();
+            }
+        }
+
+>>>>>>> origin/main
         [ObservableProperty]
         private ObservableCollection<WorkoutTemplate> availableWorkouts = new();
 
@@ -96,6 +213,7 @@ namespace VibeCoders.ViewModels
                     }
                 }
 
+                WorkoutSessionTitle = _activeLog.WorkoutName;
                 IsWorkoutStarted = true;
             }
             catch (Exception ex)
@@ -125,6 +243,7 @@ namespace VibeCoders.ViewModels
                 ExerciseRows.Add(new ActiveExerciseViewModel(exercise));
             }
 
+            WorkoutSessionTitle = value.Name;
             IsWorkoutStarted = true;
         }
 
@@ -143,7 +262,7 @@ namespace VibeCoders.ViewModels
         [RelayCommand]
         private void SaveSet(ActiveSetViewModel setViewModel)
         {
-            if (setViewModel == null || SelectedTemplate == null) return;
+            if (setViewModel == null || !IsWorkoutStarted) return;
 
             var set = new LoggedSet
             {
@@ -158,6 +277,10 @@ namespace VibeCoders.ViewModels
             _clientService.SaveSet(_activeLog, setViewModel.ExerciseName, set);
             setViewModel.IsCompleted = true;
 
+<<<<<<< HEAD
+=======
+            StartRestTimer();
+>>>>>>> origin/main
             FocusNextSet(setViewModel);
         }
 
@@ -179,9 +302,11 @@ namespace VibeCoders.ViewModels
                 if (success)
                 {
                     LastCompletedLog = _activeLog;
+                    _workoutUiState.ProgressionHeadsUp = BuildProgressionHeadsUp(_activeLog);
                     IsWorkoutStarted = false;
                     ExerciseRows.Clear();
                     _activeLog = new WorkoutLog { Date = DateTime.Now };
+                    WorkoutSessionTitle = string.Empty;
 
                     _navigation.NavigateToClientDashboard(requestRefresh: true);
                 }
@@ -257,6 +382,8 @@ namespace VibeCoders.ViewModels
     public sealed partial class ActiveExerciseViewModel : ObservableObject
     {
         public string ExerciseName { get; }
+        [ObservableProperty]
+        private double? previousBestWeight;
         public MuscleGroup MuscleGroup { get; }
         public ObservableCollection<ActiveSetViewModel> Sets { get; } = new();
 

@@ -17,6 +17,9 @@
     </Page.Transitions>
 
     <Grid RowDefinitions="Auto,*">
+        <TextBlock Text="{x:Bind ViewModel.RestTimeRemaining, Mode=OneWay}"
+           Foreground="Orange"
+           Visibility="{x:Bind ViewModel.IsResting, Mode=OneWay, Converter={StaticResource BoolToVisibility}}"/>
 
         <!-- ═══════════════════════════════════════════════════════
              TOP BAR — Timer + Finish button (always visible, fixed)
@@ -37,8 +40,7 @@
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         CharacterSpacing="100" />
                     <TextBlock
-                        x:Name="WorkoutTimerDisplay"
-                        Text="00:00"
+                        Text="{x:Bind ViewModel.WorkoutElapsedDisplay, Mode=OneWay}"
                         FontSize="52"
                         FontWeight="Bold"
                         FontFamily="Consolas"
@@ -174,6 +176,12 @@
                     </StackPanel>
                 </Border>
 
+                <Button
+                    Content="Open focus mode (fullscreen summary)"
+                    HorizontalAlignment="Stretch"
+                    Click="OpenFocusMode_Click"
+                    Visibility="{x:Bind ViewModel.IsWorkoutStarted, Mode=OneWay, Converter={StaticResource BoolToVisibility}}" />
+
                 <!-- ── Exercise List ───────────────────────────────── -->
                 <ItemsRepeater
                     ItemsSource="{x:Bind ViewModel.ExerciseRows, Mode=OneWay}"
@@ -297,6 +305,7 @@
                                                             <Button
                                                                 Grid.Column="4"
                                                                 VerticalAlignment="Center"
+                                                                Click="SaveSetButton_Click"
                                                                 Visibility="{x:Bind IsCompleted, Mode=OneWay, Converter={StaticResource BoolToVisibility}, ConverterParameter=Invert}">
                                                                 <FontIcon Glyph="&#xE73E;" FontSize="14" />
                                                             </Button>

@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
@@ -47,6 +48,11 @@ public partial class App : Application
             Debug.WriteLine($"Startup database init failed: {ex}");
         }
 
+<<<<<<< HEAD
+=======
+        TrySyncDemoClientSession();
+
+>>>>>>> origin/main
         _window = new MainWindow(navService, achievementBus);
         _window.Activate();
 
@@ -62,6 +68,31 @@ public partial class App : Application
         }
 
         return _services.GetRequiredService<T>();
+    }
+
+    private void TrySyncDemoClientSession()
+    {
+        if (_services is null) return;
+
+        try
+        {
+            var storage = _services.GetRequiredService<IDataStorage>();
+            var session = _services.GetRequiredService<IUserSession>();
+            var user    = storage.LoadUser("TestClient");
+            if (user is null) return;
+
+            var roster = storage.GetTrainerClient(1);
+            var client = roster.FirstOrDefault(c =>
+                string.Equals(c.Username, "TestClient", StringComparison.OrdinalIgnoreCase));
+            if (client is null) return;
+
+            session.CurrentUserId   = user.Id;
+            session.CurrentClientId = client.Id;
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Session sync skipped: {ex.Message}");
+        }
     }
 
     private static void ConfigureServices(IServiceCollection services)
@@ -80,6 +111,9 @@ public partial class App : Application
         services.AddSingleton<ICalendarExportService, CalendarExportService>();
         services.AddSingleton<INavigationService, NavigationService>();
 
+        services.AddSingleton(new NutritionSyncOptions());
+        services.AddSingleton<WorkoutUiState>();
+
         services.AddHttpClient();
 
         services.AddSingleton<ProgressionService>();
@@ -93,5 +127,16 @@ public partial class App : Application
         services.AddTransient<ActiveWorkoutViewModel>();
         services.AddTransient<WorkoutLogsViewModel>();
         services.AddTransient<AchievementsViewModel>();
+<<<<<<< HEAD
+=======
+        services.AddTransient<ClientProfileViewModel>();
+
+        services.AddTransient<TrainerDashboardViewModel>(sp =>
+        {
+            var trainerService = sp.GetRequiredService<TrainerService>();
+            var navService = sp.GetRequiredService<INavigationService>();
+            return new TrainerDashboardViewModel(trainerService, navService);
+        });
+>>>>>>> origin/main
     }
 }

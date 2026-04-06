@@ -12,21 +12,22 @@ namespace VibeCoders.Services
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly EvaluationEngine _evaluationEngine;
         private readonly IAchievementUnlockedBus _achievementBus;
-
-        private const string NutritionApiEndpoint = "https://nutrition-app.vibecoders.internal/api/nutrition/sync";
+        private readonly NutritionSyncOptions _nutritionSync;
 
         public ClientService(
             IDataStorage storage,
             ProgressionService progressionService,
             IHttpClientFactory httpClientFactory,
             EvaluationEngine evaluationEngine,
-            IAchievementUnlockedBus achievementBus)
+            IAchievementUnlockedBus achievementBus,
+            NutritionSyncOptions nutritionSync)
         {
             _storage            = storage;
             _progressionService = progressionService;
             _httpClientFactory  = httpClientFactory;
             _evaluationEngine   = evaluationEngine;
             _achievementBus     = achievementBus;
+            _nutritionSync      = nutritionSync;
         }
 
         public bool FinalizeWorkout(WorkoutLog log)
@@ -109,7 +110,7 @@ namespace VibeCoders.Services
             {
                 var client = _httpClientFactory.CreateClient();
                 var response = await client
-                    .PostAsJsonAsync(NutritionApiEndpoint, payload, cancellationToken)
+                    .PostAsJsonAsync(_nutritionSync.Endpoint, payload, cancellationToken)
                     .ConfigureAwait(false);
 
                 return response.IsSuccessStatusCode;
@@ -121,6 +122,38 @@ namespace VibeCoders.Services
             }
         }
 
+<<<<<<< HEAD
+=======
+        public NutritionPlan? GetActiveNutritionPlan(int clientId)
+        {
+            if (clientId <= 0)
+                return null;
+
+            try
+            {
+                var plans = _storage.GetNutritionPlansForClient(clientId);
+                var today = DateTime.Today;
+                NutritionPlan? best = null;
+
+                foreach (var plan in plans)
+                {
+                    if (plan.StartDate.Date > today || plan.EndDate.Date < today)
+                        continue;
+
+                    if (best == null || plan.StartDate > best.StartDate)
+                        best = plan;
+                }
+
+                return best;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error loading active nutrition plan: {ex.Message}");
+                return null;
+            }
+        }
+
+>>>>>>> origin/main
         private void RunAchievementEvaluation(int clientId)
         {
             try
