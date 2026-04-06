@@ -33,11 +33,7 @@ public sealed partial class ClientDashboardPage : Page
         Unloaded += Page_Unloaded;
     }
 
-    private void SeeAllAchievements_Click(object sender, RoutedEventArgs e)
-    {
-        var clientId = (int)App.GetService<IUserSession>().CurrentUserId;
-        Frame.Navigate(typeof(AchievementsPage), clientId);
-    }
+
 
     private async void Page_Loaded(object sender, RoutedEventArgs e)
     {
