@@ -49,7 +49,6 @@ public partial class App : Application
         }
 
         TrySyncDemoClientSession();
-
         _window = new MainWindow(navService, achievementBus);
         _window.Activate();
 
