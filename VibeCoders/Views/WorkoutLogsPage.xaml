@@ -114,7 +114,7 @@
 
                                 <!-- Collapsed view: Workout Name + Total Duration HH:MM -->
                                 <Expander.Header>
-                                    <Grid ColumnDefinitions="*,Auto,Auto,Auto" Padding="0,8" ColumnSpacing="16">
+                                    <Grid ColumnDefinitions="*,Auto,Auto" Padding="0,8" ColumnSpacing="16">
 
                                         <!-- Workout Name -->
                                         <StackPanel Spacing="4" VerticalAlignment="Center">
@@ -148,23 +148,9 @@
                                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                             VerticalAlignment="Center" />
 
-                                        <Button
-                                            Grid.Column="2"
-                                            Content="Edit"
-                                            Tag="{x:Bind Id}"
-                                            Click="ToggleEditMode_Click"
-                                            Visibility="{x:Bind IsEditMode, Converter={StaticResource BoolToVisibility}, ConverterParameter=Invert}" />
-                                        <Button
-                                            Grid.Column="2"
-                                            Content="Save"
-                                            Tag="{x:Bind Id}"
-                                            Style="{StaticResource AccentButtonStyle}"
-                                            Click="SaveEditedLog_Click"
-                                            Visibility="{x:Bind IsEditMode, Converter={StaticResource BoolToVisibility}}" />
-
                                         <!-- Total Duration HH:MM -->
                                         <StackPanel
-                                            Grid.Column="3"
+                                            Grid.Column="2"
                                             Orientation="Horizontal"
                                             Spacing="6"
                                             VerticalAlignment="Center">
