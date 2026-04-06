@@ -122,24 +122,32 @@
                                 <Flyout Placement="Bottom">
                                     <StackPanel Spacing="12" MinWidth="260" Padding="8">
                                         <TextBlock
-                                            Text="Select your target goals"
+                                            Text="Select your target goal"
                                             Style="{StaticResource BodyStrongTextBlockStyle}" />
 
-                                        <CheckBox
+                                        <RadioButton
                                             Content="Weight Loss — HIIT Fat Burner"
-                                            IsChecked="{x:Bind ViewModel.GoalWeightLoss, Mode=TwoWay}" />
+                                            GroupName="TargetGoal"
+                                            Tag="HIIT Fat Burner"
+                                            Checked="GoalRadioButton_Checked" />
 
-                                        <CheckBox
+                                        <RadioButton
                                             Content="Muscle Gain — Full Body Mass"
-                                            IsChecked="{x:Bind ViewModel.GoalMuscleGain, Mode=TwoWay}" />
+                                            GroupName="TargetGoal"
+                                            Tag="Full Body Mass"
+                                            Checked="GoalRadioButton_Checked" />
 
-                                        <CheckBox
+                                        <RadioButton
                                             Content="Raw Strength — Full Body Power"
-                                            IsChecked="{x:Bind ViewModel.GoalRawStrength, Mode=TwoWay}" />
+                                            GroupName="TargetGoal"
+                                            Tag="Full Body Power"
+                                            Checked="GoalRadioButton_Checked" />
 
-                                        <CheckBox
+                                        <RadioButton
                                             Content="Muscular Endurance — Endurance Circuit"
-                                            IsChecked="{x:Bind ViewModel.GoalMuscularEndurance, Mode=TwoWay}" />
+                                            GroupName="TargetGoal"
+                                            Tag="Endurance Circuit"
+                                            Checked="GoalRadioButton_Checked" />
 
                                         <Button
                                             Style="{StaticResource AccentButtonStyle}"
@@ -169,6 +177,64 @@
                                             <TextBlock Text="{x:Bind Name}"
                                                        Style="{StaticResource BodyTextBlockStyle}" />
                                         </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsRepeater.ItemTemplate>
+                        </ItemsRepeater>
+                    </StackPanel>
+                </Border>
+
+                <!-- ── Custom Workouts ────────────────────────────── -->
+                <Border
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1" CornerRadius="8" Padding="24">
+                    <StackPanel Spacing="12">
+                        <Grid>
+                            <TextBlock
+                                Text="My Custom Workouts"
+                                Style="{StaticResource SubtitleTextBlockStyle}"
+                                VerticalAlignment="Center" />
+                            <Button
+                                HorizontalAlignment="Right"
+                                Click="CreateCustomWorkout_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <FontIcon Glyph="&#xE710;" FontSize="14" />
+                                    <TextBlock Text="Create Custom" />
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+
+                        <TextBlock
+                            Text="No custom workouts yet. Create one to get started."
+                            Style="{StaticResource BodyTextBlockStyle}"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Visibility="{x:Bind ViewModel.HasCustomWorkouts, Mode=OneWay, Converter={StaticResource BoolToVisibility}, ConverterParameter=Invert}" />
+
+                        <ItemsRepeater
+                            ItemsSource="{x:Bind ViewModel.CustomWorkouts, Mode=OneWay}"
+                            Visibility="{x:Bind ViewModel.HasCustomWorkouts, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
+                            <ItemsRepeater.ItemTemplate>
+                                <DataTemplate x:DataType="models:WorkoutTemplate">
+                                    <Border
+                                        Background="{ThemeResource SubtleFillColorSecondaryBrush}"
+                                        CornerRadius="4"
+                                        Padding="12,8"
+                                        Margin="0,2">
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                                <FontIcon Glyph="&#xE71E;" FontSize="12"
+                                                          Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+                                                <TextBlock Text="{x:Bind Name}"
+                                                           Style="{StaticResource BodyTextBlockStyle}" />
+                                            </StackPanel>
+                                            <Button
+                                                Grid.Column="1"
+                                                Content="Start"
+                                                Style="{StaticResource AccentButtonStyle}"
+                                                Tag="{x:Bind}"
+                                                Click="StartCustomWorkout_Click" />
+                                        </Grid>
                                     </Border>
                                 </DataTemplate>
                             </ItemsRepeater.ItemTemplate>

@@ -45,11 +45,14 @@ namespace VibeCoders.ViewModels
 
         private readonly IDataStorage _dataStorage;
 
+        public int ClientId { get; set; }
+
+        public event Action? WorkoutSaved;
+
         public CreateWorkoutViewModel(IDataStorage dataStorage)
         {
             _dataStorage = dataStorage;
-            
-            // Simple command stubs
+
             AddExerciseCommand = new RelayCommand(AddExercise);
             RemoveExerciseCommand = new RelayCommand<TemplateExercise>(RemoveExercise);
             SaveWorkoutCommand = new RelayCommand(SaveWorkout);
@@ -76,21 +79,20 @@ namespace VibeCoders.ViewModels
 
         private void SaveWorkout()
         {
-            // Create the template
+            if (string.IsNullOrWhiteSpace(WorkoutName) || Exercises.Count == 0) return;
+
             var newWorkout = new WorkoutTemplate
             {
                 Name = WorkoutName,
                 Type = IsTrainerCreating ? WorkoutType.TRAINER_ASSIGNED : WorkoutType.CUSTOM,
-                // Assign a ClientId based on current selected client or current user context
-                ClientId = 0
+                ClientId = ClientId
             };
 
             foreach (var exercise in Exercises)
-            {
                 newWorkout.AddExercise(exercise);
-            }
 
             _dataStorage.SaveTrainerWorkout(newWorkout);
+            WorkoutSaved?.Invoke();
         }
 
         protected virtual void OnPropertyChanged(string propertyName)

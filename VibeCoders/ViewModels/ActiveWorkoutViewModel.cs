@@ -171,34 +171,42 @@ namespace VibeCoders.ViewModels
         private ObservableCollection<WorkoutTemplate> availableWorkouts = new();
 
         [ObservableProperty]
+        private ObservableCollection<WorkoutTemplate> customWorkouts = new();
+
+        [ObservableProperty]
+        private bool hasCustomWorkouts;
+
+        [ObservableProperty]
         private WorkoutTemplate? selectedTemplate;
 
         [ObservableProperty]
         private bool isLoadingWorkouts;
 
         [ObservableProperty]
-        private bool goalWeightLoss;
+        private string selectedGoal = string.Empty;
 
-        [ObservableProperty]
-        private bool goalMuscleGain;
+        public void LoadCustomWorkouts(int clientId)
+        {
+            var allWorkouts = _storage.GetAvailableWorkouts(clientId);
+            CustomWorkouts.Clear();
+            foreach (var w in allWorkouts.Where(w => w.Type == WorkoutType.CUSTOM && w.ClientId == clientId))
+                CustomWorkouts.Add(w);
+            HasCustomWorkouts = CustomWorkouts.Count > 0;
+        }
 
-        [ObservableProperty]
-        private bool goalRawStrength;
-
-        [ObservableProperty]
-        private bool goalMuscularEndurance;
+        [RelayCommand]
+        private void SelectCustomWorkout(WorkoutTemplate template)
+        {
+            SelectedTemplate = null;
+            SelectedTemplate = template;
+        }
 
         [RelayCommand]
         private void ApplyTargetGoals(int clientId)
         {
-            var selectedGoalNames = new List<string>();
+            if (string.IsNullOrEmpty(SelectedGoal)) return;
 
-            if (GoalWeightLoss) selectedGoalNames.Add("HIIT Fat Burner");
-            if (GoalMuscleGain) selectedGoalNames.Add("Full Body Mass");
-            if (GoalRawStrength) selectedGoalNames.Add("Full Body Power");
-            if (GoalMuscularEndurance) selectedGoalNames.Add("Endurance Circuit");
-
-            if (selectedGoalNames.Count == 0) return;
+            var selectedGoalNames = new List<string> { SelectedGoal };
 
             try
             {

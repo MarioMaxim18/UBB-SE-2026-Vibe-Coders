@@ -201,7 +201,7 @@ public sealed partial class ClientDashboardViewModel : ObservableObject
 
         var items = _dataStorage.GetAchievementShowcaseForClient(clientId)
             .Where(a => a.IsUnlocked)
-            .OrderByDescending(a => a.UnlockedDate)
+            .OrderByDescending(a => a.AchievementId)
             .Take(3);
 
         foreach (var item in items)
