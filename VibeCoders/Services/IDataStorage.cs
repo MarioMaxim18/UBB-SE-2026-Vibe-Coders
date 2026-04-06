@@ -60,5 +60,7 @@ namespace VibeCoders.Services
         List<Meal> GetMealsForPlan(int nutritionPlanId);
 
         int GetTotalActiveTimeForClient(int clientId);
+
+        double GetClientWeight(int clientId);
     }
 }

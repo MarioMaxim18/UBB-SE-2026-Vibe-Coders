@@ -20,7 +20,7 @@
                     <SymbolIcon Symbol="Home" />
                 </NavigationViewItem.Icon>
             </NavigationViewItem>
-            <NavigationViewItem Content="Workout Logs" Tag="WorkoutLogs">
+            <NavigationViewItem Content="Workout Tracker" Tag="WorkoutLogs">
                 <NavigationViewItem.Icon>
                     <FontIcon Glyph="&#xE14C;" />
                 </NavigationViewItem.Icon>

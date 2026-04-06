@@ -5,6 +5,17 @@ namespace VibeCoders.Services
 {
     public partial class SqlDataStorage
     {
+        public double GetClientWeight(int clientId)
+        {
+            const string sql = "SELECT weight FROM CLIENT WHERE client_id = @ClientId LIMIT 1;";
+            using var conn = new SqliteConnection(_connectionString);
+            conn.Open();
+            using var cmd = new SqliteCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@ClientId", clientId);
+            var result = cmd.ExecuteScalar();
+            return result is null || result == DBNull.Value ? 75.0 : Convert.ToDouble(result);
+        }
+
         public bool SaveWorkoutLog(WorkoutLog log)
         {
             const string insertLog = @"
