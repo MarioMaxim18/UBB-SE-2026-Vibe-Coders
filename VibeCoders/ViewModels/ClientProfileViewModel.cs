@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -50,6 +51,9 @@ public partial class ClientProfileViewModel : ObservableObject
         var difficulty = string.IsNullOrWhiteSpace(last?.IntensityTag) ? "unknown" : last.IntensityTag;
 
         float bmi = 0f;
+        // UserBmi is optional on the payload: missing roster row or zero weight/height stays at 0 without throwing.
+        // Tighter than the old empty catch: normal path uses only FirstOrDefault + pattern match; we only catch
+        // unexpected storage failures, log them, and still run sync so calories/difficulty are not blocked.
         try
         {
             var roster = _storage.GetTrainerClient(1);
@@ -57,9 +61,9 @@ public partial class ClientProfileViewModel : ObservableObject
             if (client is { Weight: > 0, Height: > 0 })
                 bmi = (float)BmiCalculator.Calculate(client.Weight, client.Height);
         }
-        catch
+        catch (Exception ex)
         {
-            // leave bmi at 0 if profile data is incomplete
+            Debug.WriteLine($"ClientProfileViewModel: BMI lookup failed; sync continues with UserBmi=0. {ex.Message}");
         }
 
         var payload = new NutritionSyncPayload
