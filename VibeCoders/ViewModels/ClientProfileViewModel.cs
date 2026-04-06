@@ -52,19 +52,21 @@ public partial class ClientProfileViewModel : ObservableObject
 
         float bmi = 0f;
         // UserBmi is optional on the payload: missing roster row or zero weight/height stays at 0 without throwing.
-        // Tighter than the old empty catch: normal path uses only FirstOrDefault + pattern match; we only catch
-        // unexpected storage failures, log them, and still run sync so calories/difficulty are not blocked.
+        // Only GetTrainerClient is in try/catch (storage I/O); FirstOrDefault + BMI math run outside so failures there are not swallowed.
+        List<Client> roster;
         try
         {
-            var roster = _storage.GetTrainerClient(1);
-            var client = roster.FirstOrDefault(c => c.Id == _loadedClientId);
-            if (client is { Weight: > 0, Height: > 0 })
-                bmi = (float)BmiCalculator.Calculate(client.Weight, client.Height);
+            roster = _storage.GetTrainerClient(1);
         }
         catch (Exception ex)
         {
             Debug.WriteLine($"ClientProfileViewModel: BMI lookup failed; sync continues with UserBmi=0. {ex.Message}");
+            roster = [];
         }
+
+        var profileClient = roster.FirstOrDefault(c => c.Id == _loadedClientId);
+        if (profileClient is { Weight: > 0, Height: > 0 })
+            bmi = (float)BmiCalculator.Calculate(profileClient.Weight, profileClient.Height);
 
         var payload = new NutritionSyncPayload
         {
