@@ -163,6 +163,7 @@ namespace VibeCoders.ViewModels
         public void CommitEditMode()
         {
             _log.Exercises = Exercises.Select(e => e.ToLoggedExercise(_log.Id)).ToList();
+            LoadExercisesFromLog(_log);
             IsEditMode = false;
         }
 
