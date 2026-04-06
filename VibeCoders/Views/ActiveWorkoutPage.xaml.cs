@@ -84,8 +84,16 @@ public sealed partial class ActiveWorkoutPage : Page
             XamlRoot = Content.XamlRoot,
             Title = "Create Custom Workout",
             Content = createView,
+            PrimaryButtonText = "Save Routine",
             CloseButtonText = "Cancel",
+            DefaultButton = ContentDialogButton.Primary,
             MinWidth = 700
+        };
+
+        dialog.PrimaryButtonClick += (d, args) =>
+        {
+            args.Cancel = true;
+            createView.ViewModel.SaveWorkoutCommand.Execute(null);
         };
 
         createView.ViewModel.WorkoutSaved += () =>

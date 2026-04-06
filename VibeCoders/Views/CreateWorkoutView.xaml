@@ -89,11 +89,6 @@
                         Command="{Binding AddExerciseCommand}" />
             </Grid>
 
-            <Button Content="Save Routine"
-                    HorizontalAlignment="Left"
-                    Margin="0,8,0,0"
-                    Style="{ThemeResource AccentButtonStyle}"
-                    Command="{Binding SaveWorkoutCommand}" />
         </StackPanel>
     </Grid>
 </UserControl>
