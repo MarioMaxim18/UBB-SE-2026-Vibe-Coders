@@ -34,7 +34,7 @@
                 <!-- Header -->
                 <Grid>
                     <TextBlock
-                        Text="Workout Logs"
+                        Text="Workout Tracker"
                         Style="{StaticResource TitleTextBlockStyle}"
                         VerticalAlignment="Center" />
 
@@ -62,7 +62,7 @@
                 <InfoBar
                     IsOpen="{x:Bind ViewModel.ErrorMessage, Mode=OneWay, Converter={StaticResource StringToBool}}"
                     Severity="Error"
-                    Title="Workout Logs"
+                    Title="Workout Tracker"
                     Message="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}" />
 
                 <!-- Empty state -->
@@ -95,7 +95,7 @@
                     </Button>
                 </StackPanel>
 
-                <!-- Workout Logs List -->
+                <!-- Workout Tracker List -->
                 <ItemsRepeater
                     ItemsSource="{x:Bind ViewModel.Logs, Mode=OneWay}"
                     Visibility="{x:Bind ViewModel.ShowEmptyState, Mode=OneWay, Converter={StaticResource BoolToVisibility}, ConverterParameter=Invert}">
