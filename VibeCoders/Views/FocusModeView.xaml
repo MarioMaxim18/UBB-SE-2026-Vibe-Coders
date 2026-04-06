@@ -21,15 +21,7 @@
                         <TextBlock Text="{x:Bind ViewModel.WorkoutElapsedDisplay, Mode=OneWay}"
                                    Foreground="LimeGreen" FontSize="36" FontFamily="Consolas" />
                     </StackPanel>
-                    <StackPanel Spacing="4" Visibility="{x:Bind ViewModel.IsResting, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
-                        <TextBlock Text="REST (s)" Foreground="Gray" FontSize="12" />
-                        <TextBlock Text="{x:Bind ViewModel.RestTimeRemaining, Mode=OneWay}"
-                                   Foreground="Orange" FontSize="36" FontFamily="Consolas" />
-                    </StackPanel>
                 </StackPanel>
-
-                <TextBlock Text="Summary only — log your sets on the main workout page."
-                           Foreground="Gray" FontSize="12" HorizontalAlignment="Center" TextWrapping="Wrap" />
 
                 <ItemsRepeater ItemsSource="{x:Bind ViewModel.ExerciseRows, Mode=OneWay}">
                     <ItemsRepeater.ItemTemplate>

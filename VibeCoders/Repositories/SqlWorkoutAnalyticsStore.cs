@@ -354,10 +354,11 @@ public sealed class SqlWorkoutAnalyticsStore : IWorkoutAnalyticsStore
             while (await sr.ReadAsync(cancellationToken).ConfigureAwait(false))
             {
                 var exName = sr.GetString(0);
+                var setIndex = sr.GetInt32(1) + 1;
                 sets.Add(new WorkoutSetRow
                 {
                     ExerciseName = exName,
-                    SetIndex     = sr.GetInt32(1),
+                    SetIndex     = setIndex,
                     ActualReps   = sr.IsDBNull(2) ? null : sr.GetInt32(2),
                     ActualWeight = sr.IsDBNull(3) ? null : sr.GetDouble(3)
                 });

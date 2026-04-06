@@ -78,7 +78,7 @@ namespace VibeCoders.Services
                     log.Exercises.Add(exercise);
                 }
 
-                set.SetIndex = exercise.Sets.Count;
+                set.SetIndex = exercise.Sets.Count + 1;
                 set.WorkoutLogId = log.Id;
                 set.ExerciseName = exerciseName;
                 exercise.Sets.Add(set);

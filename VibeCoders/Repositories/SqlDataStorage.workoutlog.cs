@@ -269,14 +269,14 @@ namespace VibeCoders.Services
                     exerciseMap[exerciseName] = exercise;
                 }
 
-                int setIndex = reader.GetInt32(2);
+                int setIndex = reader.GetInt32(2) + 1;
                 exercise.Sets.Add(new LoggedSet
                 {
                     Id           = reader.GetInt32(0),
                     WorkoutLogId = workoutLogId,
                     ExerciseName = exerciseName,
                     SetIndex     = setIndex,
-                    SetNumber    = setIndex + 1,
+                    SetNumber    = setIndex,
                     ActualReps   = reader.IsDBNull(3) ? null : reader.GetInt32(3),
                     ActualWeight = reader.IsDBNull(4) ? null : reader.GetDouble(4),
                     TargetReps   = reader.IsDBNull(5) ? null : reader.GetInt32(5),

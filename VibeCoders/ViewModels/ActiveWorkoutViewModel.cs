@@ -317,7 +317,6 @@ namespace VibeCoders.ViewModels
 
             setViewModel.IsCompleted = true;
 
-            StartRestTimer();
             FocusNextSet(setViewModel);
         }
 
@@ -440,7 +439,7 @@ namespace VibeCoders.ViewModels
                 Sets.Add(new ActiveSetViewModel
                 {
                     ExerciseName = template.Name,
-                    SetIndex = i,
+                    SetIndex = i + 1,
                     TargetReps = template.TargetReps,
                     TargetWeight = null,
                     IsFocused = i == 0
