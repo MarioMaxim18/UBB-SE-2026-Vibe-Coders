@@ -263,22 +263,31 @@
                                                 </ItemsControl>
                                             </StackPanel>
 
-                                            <Grid ColumnDefinitions="3*,*,*,*" Margin="44,0,0,8"
-                                                  Visibility="{x:Bind IsLoadingDetail, Mode=OneWay, Converter={StaticResource BoolToVisibility}, ConverterParameter=Invert}">
-                                                <TextBlock Text="Exercise" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                                <TextBlock Grid.Column="1" Text="Set" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                                <TextBlock Grid.Column="2" Text="Reps" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                                <TextBlock Grid.Column="3" Text="Weight" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                            </Grid>
-                                            <ItemsControl ItemsSource="{x:Bind Sets, Mode=OneWay}" Margin="44,0,0,0">
+                                            <ItemsControl ItemsSource="{x:Bind ExerciseSetGroups, Mode=OneWay}" Margin="44,0,0,0"
+                                                          Visibility="{x:Bind IsLoadingDetail, Mode=OneWay, Converter={StaticResource BoolToVisibility}, ConverterParameter=Invert}">
                                                 <ItemsControl.ItemTemplate>
-                                                    <DataTemplate x:DataType="models:WorkoutSetRow">
-                                                        <Grid ColumnDefinitions="3*,*,*,*" Padding="0,6">
-                                                            <TextBlock Text="{x:Bind ExerciseName}" Style="{StaticResource BodyTextBlockStyle}" />
-                                                            <TextBlock Grid.Column="1" Text="{x:Bind SetIndex}" Style="{StaticResource BodyTextBlockStyle}" />
-                                                            <TextBlock Grid.Column="2" Text="{x:Bind RepsDisplay}" Style="{StaticResource BodyTextBlockStyle}" />
-                                                            <TextBlock Grid.Column="3" Text="{x:Bind WeightDisplay}" Style="{StaticResource BodyTextBlockStyle}" />
-                                                        </Grid>
+                                                    <DataTemplate x:DataType="vm:ExerciseSetGroupViewModel">
+                                                        <StackPanel Margin="0,0,0,10">
+                                                            <TextBlock Text="{x:Bind ExerciseName}"
+                                                                       Style="{StaticResource BodyStrongTextBlockStyle}"
+                                                                       Margin="0,0,0,4" />
+                                                            <Grid ColumnDefinitions="*,*,*" Margin="0,0,0,6">
+                                                                <TextBlock Text="Set" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                                <TextBlock Grid.Column="1" Text="Reps" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                                <TextBlock Grid.Column="2" Text="Weight" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                            </Grid>
+                                                            <ItemsControl ItemsSource="{x:Bind Sets, Mode=OneWay}">
+                                                                <ItemsControl.ItemTemplate>
+                                                                    <DataTemplate x:DataType="vm:SetDetailRowViewModel">
+                                                                        <Grid ColumnDefinitions="*,*,*" Padding="0,3">
+                                                                            <TextBlock Text="{x:Bind SetNumber}" Style="{StaticResource BodyTextBlockStyle}" />
+                                                                            <TextBlock Grid.Column="1" Text="{x:Bind RepsDisplay}" Style="{StaticResource BodyTextBlockStyle}" />
+                                                                            <TextBlock Grid.Column="2" Text="{x:Bind WeightDisplay}" Style="{StaticResource BodyTextBlockStyle}" />
+                                                                        </Grid>
+                                                                    </DataTemplate>
+                                                                </ItemsControl.ItemTemplate>
+                                                            </ItemsControl>
+                                                        </StackPanel>
                                                     </DataTemplate>
                                                 </ItemsControl.ItemTemplate>
                                             </ItemsControl>

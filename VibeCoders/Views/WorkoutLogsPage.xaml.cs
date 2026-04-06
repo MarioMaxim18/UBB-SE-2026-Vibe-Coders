@@ -1,6 +1,7 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
+using System.Linq;
 using VibeCoders.Services;
 using VibeCoders.ViewModels;
 
@@ -34,5 +35,21 @@ public sealed partial class WorkoutLogsPage : Page
             ? ClientId
             : (int)App.GetService<IUserSession>().CurrentClientId;
         ViewModel.LoadLogsCommand.Execute(clientId);
+    }
+
+    private void ToggleEditMode_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button button || button.Tag is not int id) return;
+        var item = ViewModel.Logs.FirstOrDefault(l => l.Id == id);
+        if (item is not null)
+            ViewModel.ToggleEditModeCommand.Execute(item);
+    }
+
+    private void SaveEditedLog_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button button || button.Tag is not int id) return;
+        var item = ViewModel.Logs.FirstOrDefault(l => l.Id == id);
+        if (item is not null)
+            ViewModel.SaveEditedLogCommand.Execute(item);
     }
 }

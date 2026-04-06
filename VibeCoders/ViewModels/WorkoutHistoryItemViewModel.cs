@@ -1,5 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -52,7 +53,7 @@ public sealed partial class WorkoutHistoryItemViewModel : ObservableObject
         }
     }
 
-    public ObservableCollection<WorkoutSetRow> Sets { get; } = new();
+    public ObservableCollection<ExerciseSetGroupViewModel> ExerciseSetGroups { get; } = new();
     public ObservableCollection<ExerciseCalorieInfo> ExerciseCalories { get; } = new();
 
     [ObservableProperty]
@@ -78,13 +79,33 @@ public sealed partial class WorkoutHistoryItemViewModel : ObservableObject
         {
             var detail = await _store.GetWorkoutSessionDetailAsync(
                 _clientId, WorkoutLogId).ConfigureAwait(true);
-            Sets.Clear();
+            ExerciseSetGroups.Clear();
             ExerciseCalories.Clear();
             if (detail is not null)
             {
-                foreach (var s in detail.Sets)
+                foreach (var group in detail.Sets
+                             .GroupBy(s => s.ExerciseName)
+                             .OrderBy(g => g.Key, StringComparer.CurrentCultureIgnoreCase))
                 {
-                    Sets.Add(s);
+                    var groupVm = new ExerciseSetGroupViewModel
+                    {
+                        ExerciseName = group.Key
+                    };
+
+                    foreach (var (set, index) in group
+                                 .OrderBy(s => s.SetIndex)
+                                 .ThenBy(s => s.ExerciseName, StringComparer.CurrentCultureIgnoreCase)
+                                 .Select((s, i) => (s, i)))
+                    {
+                        groupVm.Sets.Add(new SetDetailRowViewModel
+                        {
+                            SetNumber = index + 1,
+                            RepsDisplay = set.RepsDisplay,
+                            WeightDisplay = set.WeightDisplay
+                        });
+                    }
+
+                    ExerciseSetGroups.Add(groupVm);
                 }
                 foreach (var e in detail.ExerciseCalories)
                 {
@@ -99,4 +120,17 @@ public sealed partial class WorkoutHistoryItemViewModel : ObservableObject
             IsLoadingDetail = false;
         }
     }
+}
+
+public sealed class ExerciseSetGroupViewModel
+{
+    public string ExerciseName { get; init; } = string.Empty;
+    public ObservableCollection<SetDetailRowViewModel> Sets { get; } = new();
+}
+
+public sealed class SetDetailRowViewModel
+{
+    public int SetNumber { get; init; }
+    public string RepsDisplay { get; init; } = "\u2014";
+    public string WeightDisplay { get; init; } = "\u2014";
 }

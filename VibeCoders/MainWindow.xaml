@@ -22,7 +22,7 @@
             </NavigationViewItem>
             <NavigationViewItem Content="Workout Tracker" Tag="WorkoutLogs">
                 <NavigationViewItem.Icon>
-                    <FontIcon Glyph="&#xE14C;" />
+                    <SymbolIcon Symbol="Library" />
                 </NavigationViewItem.Icon>
             </NavigationViewItem>
             <NavigationViewItem Content="Calendar" Tag="Calendar">

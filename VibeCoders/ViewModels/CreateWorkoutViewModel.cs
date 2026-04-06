@@ -25,17 +25,6 @@ namespace VibeCoders.ViewModels
             }
         }
 
-        private bool _isTrainerCreating;
-        public bool IsTrainerCreating
-        {
-            get => _isTrainerCreating;
-            set
-            {
-                _isTrainerCreating = value;
-                OnPropertyChanged(nameof(IsTrainerCreating));
-            }
-        }
-
         public ObservableCollection<TemplateExercise> Exercises { get; } = new ObservableCollection<TemplateExercise>();
         public ObservableCollection<string> AvailableExercises { get; } = new ObservableCollection<string>();
 
@@ -125,7 +114,7 @@ namespace VibeCoders.ViewModels
             var newWorkout = new WorkoutTemplate
             {
                 Name = WorkoutName,
-                Type = IsTrainerCreating ? WorkoutType.TRAINER_ASSIGNED : WorkoutType.CUSTOM,
+                Type = WorkoutType.CUSTOM,
                 ClientId = ClientId
             };
 

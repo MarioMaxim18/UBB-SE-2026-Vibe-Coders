@@ -34,7 +34,7 @@
                 <!-- Header -->
                 <Grid>
                     <TextBlock
-                        Text="Workout Logs"
+                        Text="Workout Tracker"
                         Style="{StaticResource TitleTextBlockStyle}"
                         VerticalAlignment="Center" />
 
@@ -62,7 +62,7 @@
                 <InfoBar
                     IsOpen="{x:Bind ViewModel.ErrorMessage, Mode=OneWay, Converter={StaticResource StringToBool}}"
                     Severity="Error"
-                    Title="Workout Logs"
+                    Title="Workout Tracker"
                     Message="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}" />
 
                 <!-- Empty state -->
@@ -95,7 +95,7 @@
                     </Button>
                 </StackPanel>
 
-                <!-- Workout Logs List -->
+                <!-- Workout Tracker List -->
                 <ItemsRepeater
                     ItemsSource="{x:Bind ViewModel.Logs, Mode=OneWay}"
                     Visibility="{x:Bind ViewModel.ShowEmptyState, Mode=OneWay, Converter={StaticResource BoolToVisibility}, ConverterParameter=Invert}">
@@ -168,7 +168,9 @@
 
                                 <!-- Expanded view: Exercise Name, Sets, Reps, Weight -->
                                 <Expander.Content>
-                                    <StackPanel Padding="0,8,0,12" Spacing="4">
+                                    <Grid>
+                                    <StackPanel Padding="0,8,0,12" Spacing="4"
+                                                Visibility="{x:Bind IsEditMode, Converter={StaticResource BoolToVisibility}, ConverterParameter=Invert}">
 
                                         <!-- Column headers -->
                                         <Grid ColumnDefinitions="2*,*,2*,2*,Auto" Padding="44,0,0,8">
@@ -274,6 +276,50 @@
                                             </ItemsControl.ItemTemplate>
                                         </ItemsControl>
                                     </StackPanel>
+
+                                    <StackPanel Padding="0,8,0,12" Spacing="8"
+                                                Visibility="{x:Bind IsEditMode, Converter={StaticResource BoolToVisibility}}">
+                                        <ItemsControl
+                                            ItemsSource="{x:Bind Exercises}"
+                                            Margin="44,0,0,0">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate x:DataType="vm:WorkoutLogExerciseSummary">
+                                                    <StackPanel Margin="0,0,0,12">
+                                                        <TextBlock
+                                                            Text="{x:Bind ExerciseName}"
+                                                            Style="{StaticResource BodyStrongTextBlockStyle}"
+                                                            Margin="0,0,0,4" />
+                                                        <Grid ColumnDefinitions="Auto,Auto,Auto" ColumnSpacing="16" Margin="0,0,0,6">
+                                                            <TextBlock Text="Set" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                            <TextBlock Grid.Column="1" Text="Reps" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                            <TextBlock Grid.Column="2" Text="Weight (kg)" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                        </Grid>
+                                                        <ItemsControl ItemsSource="{x:Bind Sets}">
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate x:DataType="vm:WorkoutLogSetEditorViewModel">
+                                                                    <Grid ColumnDefinitions="Auto,120,120" ColumnSpacing="16" Padding="0,2">
+                                                                        <TextBlock Text="{x:Bind SetNumber}" Style="{StaticResource BodyTextBlockStyle}" VerticalAlignment="Center" />
+                                                                        <NumberBox Grid.Column="1"
+                                                                                   Value="{x:Bind RepsInput, Mode=TwoWay}"
+                                                                                   Minimum="0"
+                                                                                   Maximum="999"
+                                                                                   SpinButtonPlacementMode="Hidden" />
+                                                                        <NumberBox Grid.Column="2"
+                                                                                   Value="{x:Bind WeightInput, Mode=TwoWay}"
+                                                                                   Minimum="0"
+                                                                                   Maximum="9999"
+                                                                                   SmallChange="0.5"
+                                                                                   SpinButtonPlacementMode="Hidden" />
+                                                                    </Grid>
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                    </Grid>
                                 </Expander.Content>
                             </Expander>
 

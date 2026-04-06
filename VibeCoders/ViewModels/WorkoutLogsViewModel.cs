@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq;
 using VibeCoders.Models;
 using VibeCoders.Services;
@@ -67,10 +68,47 @@ namespace VibeCoders.ViewModels
         {
             _navigation.NavigateToActiveWorkout(clientId);
         }
+
+        [RelayCommand]
+        private void ToggleEditMode(WorkoutLogItemViewModel item)
+        {
+            if (item == null) return;
+
+            if (item.IsEditMode)
+                item.CancelEditMode();
+            else
+                item.EnterEditMode();
+        }
+
+        [RelayCommand]
+        private void SaveEditedLog(WorkoutLogItemViewModel item)
+        {
+            if (item == null || !item.IsEditMode) return;
+
+            try
+            {
+                ErrorMessage = string.Empty;
+                var updated = item.BuildUpdatedWorkoutLog();
+                bool ok = _storage.UpdateWorkoutLog(updated);
+                if (!ok)
+                {
+                    ErrorMessage = "Failed to save workout changes.";
+                    return;
+                }
+
+                item.CommitEditMode();
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = $"Failed to save workout changes: {ex.Message}";
+                System.Diagnostics.Debug.WriteLine(ex);
+            }
+        }
     }
 
     public sealed partial class WorkoutLogItemViewModel : ObservableObject
     {
+        private readonly WorkoutLog _log;
         public int Id { get; }
         public string WorkoutName { get; }
         public DateTime Date { get; }
@@ -79,13 +117,17 @@ namespace VibeCoders.ViewModels
 
         public string TotalDurationDisplay { get; }
 
-        public List<WorkoutLogExerciseSummary> Exercises { get; }
+        public ObservableCollection<WorkoutLogExerciseSummary> Exercises { get; } = new();
 
         [ObservableProperty]
         private bool isExpanded;
 
+        [ObservableProperty]
+        private bool isEditMode;
+
         public WorkoutLogItemViewModel(WorkoutLog log)
         {
+            _log = log;
             Id = log.Id;
             WorkoutName = string.IsNullOrWhiteSpace(log.WorkoutName) ? "Workout" : log.WorkoutName;
             Date = log.Date;
@@ -107,48 +149,147 @@ namespace VibeCoders.ViewModels
             var duration = TimeSpan.FromMinutes(totalMinutes);
             TotalDurationDisplay = $"{(int)duration.TotalHours:D2}:{duration.Minutes:D2}";
 
-            Exercises = log.Exercises
-                .Select(e => new WorkoutLogExerciseSummary(e))
-                .ToList();
+            LoadExercisesFromLog(log);
+        }
+
+        public void EnterEditMode() => IsEditMode = true;
+
+        public void CancelEditMode()
+        {
+            LoadExercisesFromLog(_log);
+            IsEditMode = false;
+        }
+
+        public void CommitEditMode()
+        {
+            _log.Exercises = Exercises.Select(e => e.ToLoggedExercise(_log.Id)).ToList();
+            IsEditMode = false;
+        }
+
+        public WorkoutLog BuildUpdatedWorkoutLog()
+        {
+            var clone = new WorkoutLog
+            {
+                Id = _log.Id,
+                ClientId = _log.ClientId,
+                WorkoutName = _log.WorkoutName,
+                Date = _log.Date,
+                Duration = _log.Duration,
+                SourceTemplateId = _log.SourceTemplateId,
+                Type = _log.Type,
+                TotalCaloriesBurned = _log.TotalCaloriesBurned,
+                AverageMet = _log.AverageMet,
+                IntensityTag = _log.IntensityTag,
+                Rating = _log.Rating,
+                TrainerNotes = _log.TrainerNotes,
+                Exercises = Exercises.Select(e => e.ToLoggedExercise(_log.Id)).ToList()
+            };
+
+            return clone;
+        }
+
+        private void LoadExercisesFromLog(WorkoutLog log)
+        {
+            Exercises.Clear();
+            foreach (var exercise in log.Exercises)
+                Exercises.Add(new WorkoutLogExerciseSummary(exercise));
         }
     }
 
     public sealed class WorkoutLogExerciseSummary
     {
         public string ExerciseName { get; }
-        public int NumberOfSets { get; }
-        public string RepsDisplay { get; }
-        public string WeightDisplay { get; }
         public bool IsSystemAdjusted { get; }
         public string TooltipText { get; }
+        public ObservableCollection<WorkoutLogSetEditorViewModel> Sets { get; } = new();
+
+        public int NumberOfSets => Sets.Count;
+        public string RepsDisplay => Sets.Count > 0
+            ? string.Join(" / ", Sets.Select(s => s.RepsDisplay))
+            : "—";
+        public string WeightDisplay => Sets.Count > 0
+            ? string.Join(" / ", Sets.Select(s => s.WeightDisplay))
+            : "—";
 
         public WorkoutLogExerciseSummary(LoggedExercise exercise)
         {
             ExerciseName = exercise.ExerciseName;
-            NumberOfSets = exercise.Sets.Count;
             IsSystemAdjusted = exercise.IsSystemAdjusted;
 
             TooltipText = !string.IsNullOrWhiteSpace(exercise.AdjustmentNote)
                 ? exercise.AdjustmentNote
                 : $"Performance: {exercise.PerformanceRatio * 100:F0}% of target reps achieved.";
 
-            var reps = exercise.Sets
-                .Where(s => s.ActualReps.HasValue)
-                .Select(s => s.ActualReps!.Value)
-                .ToList();
+            int index = 1;
+            foreach (var set in exercise.Sets.OrderBy(s => s.SetIndex))
+            {
+                Sets.Add(new WorkoutLogSetEditorViewModel
+                {
+                    SetNumber = index++,
+                    Reps = set.ActualReps,
+                    Weight = set.ActualWeight
+                });
+            }
+        }
 
-            var weights = exercise.Sets
-                .Where(s => s.ActualWeight.HasValue)
-                .Select(s => s.ActualWeight!.Value)
-                .ToList();
+        public LoggedExercise ToLoggedExercise(int workoutLogId)
+        {
+            return new LoggedExercise
+            {
+                WorkoutLogId = workoutLogId,
+                ExerciseName = ExerciseName,
+                IsSystemAdjusted = IsSystemAdjusted,
+                AdjustmentNote = TooltipText,
+                Sets = Sets.Select((s, i) => new LoggedSet
+                {
+                    WorkoutLogId = workoutLogId,
+                    ExerciseName = ExerciseName,
+                    SetIndex = i + 1,
+                    SetNumber = i + 1,
+                    ActualReps = s.Reps,
+                    ActualWeight = s.Weight
+                }).ToList()
+            };
+        }
+    }
 
-            RepsDisplay = reps.Count > 0
-                ? string.Join(" / ", reps.Select(r => r.ToString()))
-                : "—";
+    public sealed partial class WorkoutLogSetEditorViewModel : ObservableObject
+    {
+        public int SetNumber { get; init; }
 
-            WeightDisplay = weights.Count > 0
-                ? string.Join(" / ", weights.Select(w => $"{w} kg"))
-                : "—";
+        [ObservableProperty]
+        private int? reps;
+
+        [ObservableProperty]
+        private double? weight;
+
+        public double RepsInput
+        {
+            get => Reps.HasValue ? Reps.Value : double.NaN;
+            set => Reps = double.IsNaN(value) ? null : (int)Math.Round(value);
+        }
+
+        public double WeightInput
+        {
+            get => Weight ?? double.NaN;
+            set => Weight = double.IsNaN(value) ? null : value;
+        }
+
+        public string RepsDisplay => Reps?.ToString(CultureInfo.InvariantCulture) ?? "—";
+        public string WeightDisplay => Weight.HasValue
+            ? $"{Weight.Value.ToString("0.##", CultureInfo.InvariantCulture)} kg"
+            : "—";
+
+        partial void OnRepsChanged(int? value)
+        {
+            OnPropertyChanged(nameof(RepsInput));
+            OnPropertyChanged(nameof(RepsDisplay));
+        }
+
+        partial void OnWeightChanged(double? value)
+        {
+            OnPropertyChanged(nameof(WeightInput));
+            OnPropertyChanged(nameof(WeightDisplay));
         }
     }
 }

@@ -17,10 +17,6 @@
     </Page.Transitions>
 
     <Grid RowDefinitions="Auto,*">
-        <TextBlock Text="{x:Bind ViewModel.RestTimeRemaining, Mode=OneWay}"
-           Foreground="Orange"
-           Visibility="{x:Bind ViewModel.IsResting, Mode=OneWay, Converter={StaticResource BoolToVisibility}}"/>
-
         <!-- ═══════════════════════════════════════════════════════
              TOP BAR — Timer + Finish button (always visible, fixed)
              ═══════════════════════════════════════════════════════ -->
@@ -227,6 +223,13 @@
                                                           Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
                                                 <TextBlock Text="{x:Bind Name}"
                                                            Style="{StaticResource BodyTextBlockStyle}" />
+                                                <Border Background="{ThemeResource SubtleFillColorSecondaryBrush}"
+                                                        CornerRadius="999"
+                                                        Padding="8,2">
+                                                    <TextBlock Text="{x:Bind Type}"
+                                                               Style="{StaticResource CaptionTextBlockStyle}"
+                                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                </Border>
                                             </StackPanel>
                                             <Button
                                                 Grid.Column="1"
@@ -354,7 +357,7 @@
                                                                 Grid.Column="2"
                                                                 Value="{x:Bind ActualRepsValue, Mode=TwoWay}"
                                                                 Minimum="0" Maximum="999"
-                                                                SpinButtonPlacementMode="Compact"
+                                                                SpinButtonPlacementMode="Hidden"
                                                                 PlaceholderText="Reps"
                                                                 IsEnabled="{x:Bind IsCompleted, Mode=OneWay, Converter={StaticResource BoolNegate}}"
                                                                 HorizontalAlignment="Stretch" />
@@ -362,18 +365,10 @@
                                                                 Grid.Column="3"
                                                                 Value="{x:Bind ActualWeightValue, Mode=TwoWay}"
                                                                 Minimum="0" Maximum="9999" SmallChange="0.5"
-                                                                SpinButtonPlacementMode="Compact"
+                                                                SpinButtonPlacementMode="Hidden"
                                                                 PlaceholderText="kg"
                                                                 IsEnabled="{x:Bind IsCompleted, Mode=OneWay, Converter={StaticResource BoolNegate}}"
                                                                 HorizontalAlignment="Stretch" />
-                                                            <Button
-                                                                Grid.Column="4"
-                                                                VerticalAlignment="Center"
-                                                                Tag="{x:Bind}"
-                                                                Click="SaveSetButton_Click"
-                                                                Visibility="{x:Bind IsCompleted, Mode=OneWay, Converter={StaticResource BoolToVisibility}, ConverterParameter=Invert}">
-                                                                <FontIcon Glyph="&#xE73E;" FontSize="14" />
-                                                            </Button>
                                                             <FontIcon
                                                                 Grid.Column="4"
                                                                 Glyph="&#xE73E;" FontSize="16"
