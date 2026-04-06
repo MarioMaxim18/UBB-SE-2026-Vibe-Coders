@@ -394,7 +394,7 @@
                        PrimaryButtonClick="WorkoutBuilderDialog_PrimaryButtonClick">
 
 			<StackPanel Spacing="16" Width="500">
-				<TextBox Header="Routine Name"
+				<TextBox Header="Workout Name"
                          Text="{x:Bind ViewModel.NewRoutineName, Mode=TwoWay}"
                          PlaceholderText="e.g., Heavy Push Day - Block 1" />
 
@@ -444,8 +444,6 @@
 
 					<NumberBox Grid.Row="0" Grid.Column="1" Header="Sets" Minimum="1" Maximum="10" SpinButtonPlacementMode="Hidden" Value="{x:Bind ViewModel.NewExerciseSets, Mode=TwoWay}"/>
 					<NumberBox Grid.Row="0" Grid.Column="2" Header="Reps" Minimum="1" Maximum="100" SpinButtonPlacementMode="Hidden" Value="{x:Bind ViewModel.NewExerciseReps, Mode=TwoWay}"/>
-					<TextBlock Grid.Row="0" Grid.Column="3" VerticalAlignment="Bottom" Text="No target weight" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-
 					<Button Grid.Row="1" Grid.ColumnSpan="4" Content="+ Add to Routine" HorizontalAlignment="Stretch"
                             Click="{x:Bind ViewModel.AddExerciseToRoutine}"/>
 				</Grid>
