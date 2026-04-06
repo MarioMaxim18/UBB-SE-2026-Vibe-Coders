@@ -161,7 +161,7 @@
                                Style="{StaticResource SubtitleTextBlockStyle}" />
 
                     <!-- Header Row for the history list -->
-                    <Grid Padding="16,8" ColumnDefinitions="250,150,150,*"
+                    <Grid Padding="16,8" Margin="0,0,48,0" ColumnDefinitions="2*,*,*"
                           Visibility="{x:Bind ViewModel.ShowEmptyState, Mode=OneWay, Converter={StaticResource BoolToVisibility}, ConverterParameter=Invert}">
                         <TextBlock Text="WORKOUT" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         <TextBlock Grid.Column="1" Text="DATE" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
@@ -182,7 +182,7 @@
                                     CornerRadius="4"
                                     Margin="0,0,0,8">
                                     <Expander.Header>
-                                        <Grid ColumnDefinitions="250,150,150,*" Padding="0,8">
+                                        <Grid ColumnDefinitions="2*,*,*" Padding="0,8">
                                             <StackPanel Orientation="Horizontal" Spacing="12">
                                                 <FontIcon Glyph="&#xE14C;" FontSize="16" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
                                                 <TextBlock Text="{x:Bind Title}"
