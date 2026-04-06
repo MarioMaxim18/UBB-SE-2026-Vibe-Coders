@@ -51,18 +51,19 @@
                     IsClosable="True" />
 
                 <!-- ── Achievements Preview ─────────────────────────────────── -->
-<StackPanel Spacing="12">
-    <Grid>
-        <TextBlock
-            Text="Achievements"
-            Style="{StaticResource SubtitleTextBlockStyle}"
-            VerticalAlignment="Center" />
-        <HyperlinkButton
-            Content="See all"
-            HorizontalAlignment="Right"
-            VerticalAlignment="Center"
-            Click="SeeAllAchievements_Click" />
-    </Grid>
+                <StackPanel Spacing="12">
+                    <Grid>
+                        <TextBlock
+                            Text="Achievements"
+                            Style="{StaticResource SubtitleTextBlockStyle}"
+                            VerticalAlignment="Center" />
+                        <HyperlinkButton
+                            Content="See all"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            Click="SeeAllAchievements_Click" />
+                    </Grid>
+                </StackPanel>
 
 
                 <!-- KPI Summary Cards -->
