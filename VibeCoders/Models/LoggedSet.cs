@@ -12,9 +12,5 @@ public sealed class LoggedSet
     public double? ActualWeight { get; set; }
     public int SetNumber { get; set; }
 
-<<<<<<< HEAD
-    public LoggedExercise Exercise { get; set; }
-=======
     public LoggedExercise? Exercise { get; set; }
->>>>>>> origin/main
 }

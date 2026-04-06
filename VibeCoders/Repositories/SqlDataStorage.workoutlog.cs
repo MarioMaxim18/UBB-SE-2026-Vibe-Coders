@@ -9,9 +9,9 @@ namespace VibeCoders.Services
         {
             const string insertLog = @"
                 INSERT INTO WORKOUT_LOG
-                    (client_id, workout_id, date, total_duration, calories_burned, rating)
+                    (client_id, workout_id, type, date, total_duration, calories_burned, rating)
                 VALUES
-                    (@ClientId, @WorkoutId, @Date, @Duration, @CaloriesBurned, @Rating);";
+                    (@ClientId, @WorkoutId, @Type, @Date, @Duration, @CaloriesBurned, @Rating);";
 
             const string insertSet = @"
                 INSERT INTO WORKOUT_LOG_SETS
@@ -35,6 +35,7 @@ namespace VibeCoders.Services
                 {
                     cmd.Parameters.AddWithValue("@ClientId",      log.ClientId);
                     cmd.Parameters.AddWithValue("@WorkoutId",     log.SourceTemplateId);
+                    cmd.Parameters.AddWithValue("@Type",          SerializeWorkoutType(log.Type));
                     cmd.Parameters.AddWithValue("@Date",          log.Date.ToString("o"));
                     cmd.Parameters.AddWithValue("@Duration",      log.Duration.ToString());
                     cmd.Parameters.AddWithValue("@CaloriesBurned",log.TotalCaloriesBurned);
@@ -89,7 +90,8 @@ namespace VibeCoders.Services
                     wl.workout_id,
                     wl.rating,
                     wl.trainer_notes,
-                    wt.name
+                    wt.name,
+                    wl.type
                 FROM WORKOUT_LOG wl
                 LEFT JOIN WORKOUT_TEMPLATE wt ON wl.workout_id = wt.workout_template_id
                 WHERE wl.client_id = @ClientId
@@ -117,6 +119,7 @@ namespace VibeCoders.Services
                         Rating = reader.IsDBNull(5) ? -1 : Convert.ToDouble(reader.GetInt32(5)),
                         TrainerNotes = reader.IsDBNull(6) ? string.Empty : reader.GetString(6),
                         WorkoutName = reader.IsDBNull(7) ? string.Empty : reader.GetString(7),
+                        Type = ParseWorkoutType(reader.IsDBNull(8) ? null : reader.GetString(8)),
                         ClientId = clientId
                     });
                 }
@@ -137,7 +140,8 @@ namespace VibeCoders.Services
                     wl.date,
                     wl.total_duration,
                     wl.calories_burned,
-                    wl.workout_id
+                    wl.workout_id,
+                    wl.type
                 FROM WORKOUT_LOG wl
                 INNER JOIN WORKOUT_LOG_SETS  wls ON wls.workout_log_id = wl.workout_log_id
                 INNER JOIN TEMPLATE_EXERCISE te  ON te.name = wls.exercise_name
@@ -164,7 +168,8 @@ namespace VibeCoders.Services
                         Date                = DateTime.Parse(reader.GetString(2)),
                         Duration            = TimeSpan.Parse(reader.GetString(3)),
                         TotalCaloriesBurned = reader.IsDBNull(4) ? 0 : reader.GetInt32(4),
-                        SourceTemplateId    = reader.IsDBNull(5) ? 0 : reader.GetInt32(5)
+                        SourceTemplateId    = reader.IsDBNull(5) ? 0 : reader.GetInt32(5),
+                        Type                = ParseWorkoutType(reader.IsDBNull(6) ? null : reader.GetString(6))
                     });
                 }
             }
@@ -216,9 +221,11 @@ namespace VibeCoders.Services
                     wls.performance_ratio,
                     wls.is_system_adjusted,
                     wls.adjustment_note,
-                    te.muscle_group
+                    te.muscle_group,
+                    te.id
                 FROM WORKOUT_LOG_SETS wls
-                LEFT JOIN TEMPLATE_EXERCISE te ON wls.exercise_name = te.name
+                LEFT JOIN WORKOUT_LOG wl ON wls.workout_log_id = wl.workout_log_id
+                LEFT JOIN TEMPLATE_EXERCISE te ON wls.exercise_name = te.name AND te.workout_template_id = wl.workout_id
                 WHERE wls.workout_log_id = @WorkoutLogId
                 ORDER BY wls.exercise_name, wls.sets;";
 
@@ -244,7 +251,8 @@ namespace VibeCoders.Services
                         PerformanceRatio = reader.IsDBNull(7) ? 0 : reader.GetDouble(7),
                         IsSystemAdjusted = !reader.IsDBNull(8) && reader.GetInt32(8) != 0,
                         AdjustmentNote   = reader.IsDBNull(9) ? string.Empty : reader.GetString(9),
-                        TargetMuscles    = parsedMuscleGroup
+                        TargetMuscles    = parsedMuscleGroup,
+                        ParentTemplateExerciseId = reader.IsDBNull(11) ? 0 : reader.GetInt32(11)
                     };
                     exerciseMap[exerciseName] = exercise;
                 }
@@ -255,16 +263,13 @@ namespace VibeCoders.Services
                     Id           = reader.GetInt32(0),
                     WorkoutLogId = workoutLogId,
                     ExerciseName = exerciseName,
-<<<<<<< HEAD
-                    SetIndex     = reader.GetInt32(2),
-=======
                     SetIndex     = setIndex,
                     SetNumber    = setIndex + 1,
->>>>>>> origin/main
                     ActualReps   = reader.IsDBNull(3) ? null : reader.GetInt32(3),
                     ActualWeight = reader.IsDBNull(4) ? null : reader.GetDouble(4),
                     TargetReps   = reader.IsDBNull(5) ? null : reader.GetInt32(5),
-                    TargetWeight = reader.IsDBNull(6) ? null : reader.GetDouble(6)
+                    TargetWeight = reader.IsDBNull(6) ? null : reader.GetDouble(6),
+                    Exercise     = exercise
                 });
             }
 

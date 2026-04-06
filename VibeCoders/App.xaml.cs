@@ -48,11 +48,7 @@ public partial class App : Application
             Debug.WriteLine($"Startup database init failed: {ex}");
         }
 
-<<<<<<< HEAD
-=======
         TrySyncDemoClientSession();
-
->>>>>>> origin/main
         _window = new MainWindow(navService, achievementBus);
         _window.Activate();
 
@@ -126,9 +122,8 @@ public partial class App : Application
         services.AddTransient<RankShowcaseViewModel>();
         services.AddTransient<ActiveWorkoutViewModel>();
         services.AddTransient<WorkoutLogsViewModel>();
+        services.AddTransient<CreateWorkoutViewModel>();
         services.AddTransient<AchievementsViewModel>();
-<<<<<<< HEAD
-=======
         services.AddTransient<ClientProfileViewModel>();
 
         services.AddTransient<TrainerDashboardViewModel>(sp =>
@@ -137,6 +132,5 @@ public partial class App : Application
             var navService = sp.GetRequiredService<INavigationService>();
             return new TrainerDashboardViewModel(trainerService, navService);
         });
->>>>>>> origin/main
     }
 }

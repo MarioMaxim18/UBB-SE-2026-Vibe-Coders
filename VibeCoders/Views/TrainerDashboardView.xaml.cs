@@ -39,11 +39,8 @@ namespace VibeCoders.Views
 
         private async void OpenBuilderButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-<<<<<<< HEAD
-=======
             if (_isDialogOpen) return;
 
->>>>>>> origin/main
             ViewModel.EditingTemplateId = 0;
             ViewModel.NewRoutineName = string.Empty;
             ViewModel.BuilderExercises.Clear();
@@ -66,13 +63,9 @@ namespace VibeCoders.Views
 
         private void WorkoutBuilderDialog_PrimaryButtonClick(Microsoft.UI.Xaml.Controls.ContentDialog sender, Microsoft.UI.Xaml.Controls.ContentDialogButtonClickEventArgs args)
         {
-<<<<<<< HEAD
-            if (string.IsNullOrWhiteSpace(ViewModel.NewRoutineName) || ViewModel.BuilderExercises.Count == 0)
-=======
             ViewModel.BuilderErrorText = string.Empty;
 
             if (string.IsNullOrWhiteSpace(ViewModel.NewRoutineName))
->>>>>>> origin/main
             {
                 ViewModel.BuilderErrorText = "Routine Name cannot be empty.";
                 args.Cancel = true;
@@ -113,11 +106,7 @@ namespace VibeCoders.Views
             }
         }
 
-<<<<<<< HEAD
-        private async void DeleteWorkout_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-=======
         private async void DeleteWorkout_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
->>>>>>> origin/main
         {
             e.Handled = true;
             if (_isDialogOpen) return;
@@ -155,12 +144,9 @@ namespace VibeCoders.Views
 
         private async void Card_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
         {
-<<<<<<< HEAD
-=======
 
             if (_isDialogOpen || e.Handled) return;
 
->>>>>>> origin/main
             var grid = sender as Microsoft.UI.Xaml.Controls.Grid;
             var workout = grid?.DataContext as VibeCoders.Models.WorkoutTemplate;
 

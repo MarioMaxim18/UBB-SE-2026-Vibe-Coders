@@ -87,6 +87,8 @@ public sealed partial class ClientDashboardViewModel : ObservableObject
 
     public ObservableCollection<WorkoutHistoryItemViewModel> HistoryItems { get; } = new();
 
+    public ObservableCollection<AchievementShowcaseItem> RecentAchievements { get; } = new();
+
     public int PageSize { get; set; } = DefaultPageSize;
 
     private int TotalPages =>
@@ -147,13 +149,8 @@ public sealed partial class ClientDashboardViewModel : ObservableObject
 
             ApplySummary(summaryTask.Result);
             ApplyBuckets(bucketsTask.Result);
-<<<<<<< HEAD
-            ApplyHistory(historyTask.Result, uid);
-
-=======
             ApplyHistory(historyTask.Result, clientId);
             LoadRecentAchievements((int)clientId);
->>>>>>> origin/main
 
             IsLoadingSummary = false;
             IsLoadingChart = false;
@@ -197,6 +194,21 @@ public sealed partial class ClientDashboardViewModel : ObservableObject
 
     public void ReloadAchievementsPreview() =>
         LoadRecentAchievements((int)_session.CurrentClientId);
+
+    private void LoadRecentAchievements(int clientId)
+    {
+        RecentAchievements.Clear();
+
+        var items = _dataStorage.GetAchievementShowcaseForClient(clientId)
+            .Where(a => a.IsUnlocked)
+            .OrderByDescending(a => a.UnlockedDate)
+            .Take(3);
+
+        foreach (var item in items)
+        {
+            RecentAchievements.Add(item);
+        }
+    }
 
     private void CancelPendingLoad()
     {

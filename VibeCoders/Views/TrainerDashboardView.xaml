@@ -418,9 +418,7 @@
 									<TextBlock Text="{x:Bind TargetSets}" Foreground="Gray"/>
 									<TextBlock Text="×" Foreground="Gray"/>
 									<TextBlock Text="{x:Bind TargetReps}" Foreground="Gray"/>
-									<TextBlock Text="@" Foreground="Gray"/>
-									<TextBlock Text="{x:Bind TargetWeight}" Foreground="Gray"/>
-									<TextBlock Text="kg)" Foreground="Gray"/>
+									<TextBlock Text=")" Foreground="Gray"/>
 								</StackPanel>
 								<Button Grid.Column="1" Content="✕" Click="RemoveExercise_Click" Background="Transparent" Foreground="Red" Padding="8,4"/>
 							</Grid>
@@ -446,7 +444,7 @@
 
 					<NumberBox Grid.Row="0" Grid.Column="1" Header="Sets" Minimum="1" Maximum="10" Value="{x:Bind ViewModel.NewExerciseSets, Mode=TwoWay}"/>
 					<NumberBox Grid.Row="0" Grid.Column="2" Header="Reps" Minimum="1" Maximum="100" Value="{x:Bind ViewModel.NewExerciseReps, Mode=TwoWay}"/>
-					<NumberBox Grid.Row="0" Grid.Column="3" Header="Weight" Minimum="0" Value="{x:Bind ViewModel.NewExerciseWeight, Mode=TwoWay}"/>
+					<TextBlock Grid.Row="0" Grid.Column="3" VerticalAlignment="Bottom" Text="No target weight" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
 
 					<Button Grid.Row="1" Grid.ColumnSpan="4" Content="+ Add to Routine" HorizontalAlignment="Stretch"
                             Click="{x:Bind ViewModel.AddExerciseToRoutine}"/>

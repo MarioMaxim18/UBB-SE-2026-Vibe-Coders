@@ -37,10 +37,10 @@ public sealed class NavigationService : INavigationService
         _frame.Navigate(typeof(RankShowcasePage));
     }
 
-    public void NavigateToActiveWorkout()
+    public void NavigateToActiveWorkout(int clientId = 0)
     {
         if (_frame is null) return;
-        _frame.Navigate(typeof(ActiveWorkoutPage));
+        _frame.Navigate(typeof(ActiveWorkoutPage), clientId);
     }
 
     public void NavigateToWorkoutLogs()

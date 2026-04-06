@@ -28,13 +28,18 @@ namespace VibeCoders.ViewModels
         [ObservableProperty]
         private bool showEmptyState = true;
 
+        [ObservableProperty]
+        private string errorMessage = string.Empty;
+
         [RelayCommand]
         private void LoadLogs(int clientId)
         {
             try
             {
                 IsLoading = true;
+                ErrorMessage = string.Empty;
                 Logs.Clear();
+                ShowEmptyState = false;
 
                 var logs = _storage.GetWorkoutHistory(clientId);
                 foreach (var log in logs)
@@ -44,6 +49,13 @@ namespace VibeCoders.ViewModels
 
                 ShowEmptyState = Logs.Count == 0;
             }
+            catch (Exception ex)
+            {
+                Logs.Clear();
+                ShowEmptyState = true;
+                ErrorMessage = $"Failed to load workout logs: {ex.Message}";
+                System.Diagnostics.Debug.WriteLine(ex);
+            }
             finally
             {
                 IsLoading = false;
@@ -51,9 +63,9 @@ namespace VibeCoders.ViewModels
         }
 
         [RelayCommand]
-        private void StartWorkout()
+        private void StartWorkout(int clientId)
         {
-            _navigation.NavigateToActiveWorkout();
+            _navigation.NavigateToActiveWorkout(clientId);
         }
     }
 
@@ -63,6 +75,7 @@ namespace VibeCoders.ViewModels
         public string WorkoutName { get; }
         public DateTime Date { get; }
         public string DateDisplay { get; }
+        public string TypeDisplay { get; }
 
         public string TotalDurationDisplay { get; }
 
@@ -76,6 +89,12 @@ namespace VibeCoders.ViewModels
             Id = log.Id;
             WorkoutName = string.IsNullOrWhiteSpace(log.WorkoutName) ? "Workout" : log.WorkoutName;
             Date = log.Date;
+            TypeDisplay = log.Type switch
+            {
+                WorkoutType.PREBUILT => "PRE-BUILT",
+                WorkoutType.TRAINER_ASSIGNED => "TRAINER ASSIGNED",
+                _ => "CUSTOM"
+            };
 
             DateDisplay = log.Date.ToString("yyyy-MM-dd");
 

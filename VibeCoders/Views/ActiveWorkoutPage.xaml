@@ -281,9 +281,7 @@
                                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}">
                                                                     <Run Text="Target: " />
                                                                     <Run Text="{x:Bind TargetReps}" />
-                                                                    <Run Text=" reps @ " />
-                                                                    <Run Text="{x:Bind TargetWeight}" />
-                                                                    <Run Text=" kg" />
+                                                                    <Run Text=" reps" />
                                                                 </TextBlock>
                                                             </StackPanel>
                                                             <NumberBox
@@ -305,6 +303,7 @@
                                                             <Button
                                                                 Grid.Column="4"
                                                                 VerticalAlignment="Center"
+                                                                Tag="{x:Bind}"
                                                                 Click="SaveSetButton_Click"
                                                                 Visibility="{x:Bind IsCompleted, Mode=OneWay, Converter={StaticResource BoolToVisibility}, ConverterParameter=Invert}">
                                                                 <FontIcon Glyph="&#xE73E;" FontSize="14" />

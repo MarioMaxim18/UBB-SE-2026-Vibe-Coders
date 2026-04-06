@@ -39,10 +39,31 @@ namespace VibeCoders.ViewModels
             };
         }
 
-<<<<<<< HEAD
-=======
+        [RelayCommand]
+        private void SetRestTime(string? timeStr)
+        {
+            if (string.IsNullOrWhiteSpace(timeStr))
+                return;
+
+            if (int.TryParse(timeStr, out int seconds))
+            {
+                if (seconds < 0) seconds = 0;
+                if (seconds > 3600) seconds = 3600; // Cap at 1 hour
+
+                StartRestTimer(seconds);
+            }
+        }
+
         public void StartRestTimer(int seconds = 90)
         {
+            if (seconds <= 0)
+            {
+                IsResting = false;
+                RestTimeRemaining = 0;
+                _restTimer?.Stop();
+                return;
+            }
+
             var dq = DispatcherQueue.GetForCurrentThread();
             if (dq is null) return;
 
@@ -146,7 +167,6 @@ namespace VibeCoders.ViewModels
             }
         }
 
->>>>>>> origin/main
         [ObservableProperty]
         private ObservableCollection<WorkoutTemplate> availableWorkouts = new();
 
@@ -201,6 +221,7 @@ namespace VibeCoders.ViewModels
                 {
                     WorkoutName = string.Join(" + ", selected.Select(t => t.Name)),
                     SourceTemplateId = selected[0].Id,
+                    Type = selected[0].Type,
                     Date = DateTime.Now
                 };
 
@@ -234,6 +255,7 @@ namespace VibeCoders.ViewModels
             {
                 WorkoutName = value.Name,
                 SourceTemplateId = value.Id,
+                Type = value.Type,
                 Date = DateTime.Now
             };
 
@@ -264,6 +286,8 @@ namespace VibeCoders.ViewModels
         {
             if (setViewModel == null || !IsWorkoutStarted) return;
 
+            ErrorMessage = string.Empty;
+
             var set = new LoggedSet
             {
                 ExerciseName = setViewModel.ExerciseName,
@@ -271,16 +295,19 @@ namespace VibeCoders.ViewModels
                 ActualReps = setViewModel.ActualReps,
                 ActualWeight = setViewModel.ActualWeight,
                 TargetReps = setViewModel.TargetReps,
-                TargetWeight = setViewModel.TargetWeight
+                TargetWeight = null
             };
 
-            _clientService.SaveSet(_activeLog, setViewModel.ExerciseName, set);
+            bool isSaved = _clientService.SaveSet(_activeLog, setViewModel.ExerciseName, set);
+            if (!isSaved)
+            {
+                ErrorMessage = "Failed to save set. Please try again.";
+                return;
+            }
+
             setViewModel.IsCompleted = true;
 
-<<<<<<< HEAD
-=======
             StartRestTimer();
->>>>>>> origin/main
             FocusNextSet(setViewModel);
         }
 
@@ -405,7 +432,7 @@ namespace VibeCoders.ViewModels
                     ExerciseName = template.Name,
                     SetIndex = i,
                     TargetReps = template.TargetReps,
-                    TargetWeight = template.TargetWeight,
+                    TargetWeight = null,
                     IsFocused = i == 0
                 });
             }

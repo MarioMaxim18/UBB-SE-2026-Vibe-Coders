@@ -5,6 +5,24 @@ namespace VibeCoders.Services
 {
     public partial class SqlDataStorage
     {
+        private static WorkoutType ParseWorkoutType(string? value)
+        {
+            if (string.Equals(value, "PRE_BUILT", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(value, "PREBUILT", StringComparison.OrdinalIgnoreCase))
+            {
+                return WorkoutType.PREBUILT;
+            }
+
+            return Enum.TryParse<WorkoutType>(value, true, out var parsed)
+                ? parsed
+                : WorkoutType.CUSTOM;
+        }
+
+        private static string SerializeWorkoutType(WorkoutType type)
+        {
+            return type == WorkoutType.PREBUILT ? "PRE_BUILT" : type.ToString();
+        }
+
         public List<WorkoutTemplate> GetAvailableWorkouts(int clientId)
         {
             const string sql = @"
@@ -14,7 +32,7 @@ namespace VibeCoders.Services
                     wt.name,
                     wt.type
                 FROM WORKOUT_TEMPLATE wt
-                WHERE wt.type = 'PREBUILT'
+                WHERE wt.type = 'PRE_BUILT'
                    OR (wt.type = 'TRAINER_ASSIGNED' AND wt.client_id = @ClientId)
                    OR (wt.type = 'CUSTOM'           AND wt.client_id = @ClientId)
                 ORDER BY wt.type, wt.name;";
@@ -36,7 +54,7 @@ namespace VibeCoders.Services
                         Id       = reader.GetInt32(0),
                         ClientId = reader.GetInt32(1),
                         Name     = reader.GetString(2),
-                        Type     = Enum.Parse<WorkoutType>(reader.GetString(3))
+                        Type     = ParseWorkoutType(reader.GetString(3))
                     });
                 }
             }

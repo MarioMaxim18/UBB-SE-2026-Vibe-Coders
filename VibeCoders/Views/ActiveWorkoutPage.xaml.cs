@@ -33,8 +33,6 @@ public sealed partial class ActiveWorkoutPage : Page
         ViewModel.LoadNotificationsCommand.Execute(ClientId);
     }
 
-<<<<<<< HEAD
-=======
     private async void OpenFocusMode_Click(object sender, RoutedEventArgs e)
     {
         if (!ViewModel.IsWorkoutStarted) return;
@@ -52,7 +50,6 @@ public sealed partial class ActiveWorkoutPage : Page
         await dialog.ShowAsync();
     }
 
->>>>>>> origin/main
     private void ApplyGoalsButton_Click(object sender, RoutedEventArgs e)
     {
         TargetGoalsButton.Flyout.Hide();
@@ -67,7 +64,7 @@ public sealed partial class ActiveWorkoutPage : Page
 
     private void SaveSetButton_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is FrameworkElement fe && fe.DataContext is ActiveSetViewModel setVm)
+        if (sender is Button btn && btn.Tag is ActiveSetViewModel setVm)
             ViewModel.SaveSetCommand.Execute(setVm);
     }
 }
