@@ -18,6 +18,7 @@ namespace VibeCoders.ViewModels
         private readonly INavigationService _navigation;
         private readonly WorkoutUiState _workoutUiState;
         private WorkoutLog _activeLog;
+        private ActiveSetViewModel? _currentPendingSet;
 
         private System.Timers.Timer? _restTimer;
         private DispatcherTimer? _elapsedTimer;
@@ -101,6 +102,21 @@ namespace VibeCoders.ViewModels
 
         [ObservableProperty]
         private string workoutSessionTitle = string.Empty;
+
+        [ObservableProperty]
+        private string currentExerciseName = string.Empty;
+
+        [ObservableProperty]
+        private int? currentTargetReps;
+
+        [ObservableProperty]
+        private int currentSetNumber;
+
+        [ObservableProperty]
+        private double currentSetRepsInput = double.NaN;
+
+        [ObservableProperty]
+        private double currentSetWeightInput = double.NaN;
 
         partial void OnIsWorkoutStartedChanged(bool value)
         {
@@ -240,10 +256,11 @@ namespace VibeCoders.ViewModels
                 {
                     foreach (var exercise in template.GetExercises())
                     {
-                        ExerciseRows.Add(new ActiveExerciseViewModel(exercise));
+                        ExerciseRows.Add(new ActiveExerciseViewModel(exercise, SaveSet));
                     }
                 }
 
+                UpdateCurrentSetDisplay();
                 WorkoutSessionTitle = _activeLog.WorkoutName;
                 IsWorkoutStarted = true;
             }
@@ -272,9 +289,10 @@ namespace VibeCoders.ViewModels
             ExerciseRows.Clear();
             foreach (var exercise in value.GetExercises())
             {
-                ExerciseRows.Add(new ActiveExerciseViewModel(exercise));
+                ExerciseRows.Add(new ActiveExerciseViewModel(exercise, SaveSet));
             }
 
+            UpdateCurrentSetDisplay();
             WorkoutSessionTitle = value.Name;
             IsWorkoutStarted = true;
         }
@@ -318,6 +336,7 @@ namespace VibeCoders.ViewModels
             setViewModel.IsCompleted = true;
 
             FocusNextSet(setViewModel);
+            UpdateCurrentSetDisplay();
         }
 
         [RelayCommand]
@@ -343,6 +362,11 @@ namespace VibeCoders.ViewModels
                     ExerciseRows.Clear();
                     _activeLog = new WorkoutLog { Date = DateTime.Now };
                     WorkoutSessionTitle = string.Empty;
+                    CurrentExerciseName = string.Empty;
+                    CurrentTargetReps = null;
+                    CurrentSetNumber = 0;
+                    CurrentSetRepsInput = double.NaN;
+                    CurrentSetWeightInput = double.NaN;
 
                     _navigation.NavigateToClientDashboard(requestRefresh: true);
                 }
@@ -413,6 +437,42 @@ namespace VibeCoders.ViewModels
                 }
             }
         }
+
+        private void UpdateCurrentSetDisplay()
+        {
+            foreach (var exercise in ExerciseRows)
+            {
+                foreach (var set in exercise.Sets)
+                {
+                    if (!set.IsCompleted)
+                    {
+                        _currentPendingSet = set;
+                        CurrentExerciseName = exercise.ExerciseName;
+                        CurrentTargetReps = set.TargetReps;
+                        CurrentSetNumber = set.SetIndex;
+                        CurrentSetRepsInput = set.ActualRepsValue;
+                        CurrentSetWeightInput = set.ActualWeightValue;
+                        return;
+                    }
+                }
+            }
+
+            _currentPendingSet = null;
+            CurrentExerciseName = "Workout complete";
+            CurrentTargetReps = null;
+            CurrentSetNumber = 0;
+            CurrentSetRepsInput = double.NaN;
+            CurrentSetWeightInput = double.NaN;
+        }
+
+        [RelayCommand]
+        private void CompleteCurrentSet()
+        {
+            if (!IsWorkoutStarted || _currentPendingSet is null) return;
+
+            _currentPendingSet.ActualRepsValue = CurrentSetRepsInput;
+            _currentPendingSet.ActualWeightValue = CurrentSetWeightInput;
+        }
     }
 
     public sealed partial class ActiveExerciseViewModel : ObservableObject
@@ -429,7 +489,7 @@ namespace VibeCoders.ViewModels
         [ObservableProperty]
         private string adjustmentNote = string.Empty;
 
-        public ActiveExerciseViewModel(TemplateExercise template)
+        public ActiveExerciseViewModel(TemplateExercise template, Action<ActiveSetViewModel> autoSaveSet)
         {
             ExerciseName = template.Name;
             MuscleGroup = template.MuscleGroup;
@@ -442,7 +502,8 @@ namespace VibeCoders.ViewModels
                     SetIndex = i + 1,
                     TargetReps = template.TargetReps,
                     TargetWeight = null,
-                    IsFocused = i == 0
+                    IsFocused = i == 0,
+                    AutoSaveHandler = autoSaveSet
                 });
             }
         }
@@ -467,6 +528,8 @@ namespace VibeCoders.ViewModels
         [ObservableProperty]
         private bool isFocused;
 
+        public Action<ActiveSetViewModel>? AutoSaveHandler { get; set; }
+
         public double ActualRepsValue
         {
             get => ActualReps.HasValue ? ActualReps.Value : double.NaN;
@@ -488,11 +551,20 @@ namespace VibeCoders.ViewModels
         partial void OnActualRepsChanged(int? value)
         {
             OnPropertyChanged(nameof(ActualRepsValue));
+            TryAutoSave();
         }
 
         partial void OnActualWeightChanged(double? value)
         {
             OnPropertyChanged(nameof(ActualWeightValue));
+            TryAutoSave();
+        }
+
+        private void TryAutoSave()
+        {
+            if (IsCompleted) return;
+            if (!ActualReps.HasValue || !ActualWeight.HasValue) return;
+            AutoSaveHandler?.Invoke(this);
         }
     }
 }

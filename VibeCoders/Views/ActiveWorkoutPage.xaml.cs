@@ -1,6 +1,8 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
+using System.ComponentModel;
+using System.Threading.Tasks;
 using VibeCoders.Models;
 using VibeCoders.Services;
 using VibeCoders.ViewModels;
@@ -11,12 +13,14 @@ public sealed partial class ActiveWorkoutPage : Page
 {
     public ActiveWorkoutViewModel ViewModel { get; }
     public int ClientId { get; private set; }
+    private bool _isFocusDialogOpen;
 
     public ActiveWorkoutPage()
     {
         ViewModel = App.GetService<ActiveWorkoutViewModel>();
         DataContext = ViewModel;
         InitializeComponent();
+        ViewModel.PropertyChanged += ViewModel_PropertyChanged;
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -36,7 +40,12 @@ public sealed partial class ActiveWorkoutPage : Page
 
     private async void OpenFocusMode_Click(object sender, RoutedEventArgs e)
     {
-        if (!ViewModel.IsWorkoutStarted) return;
+        await OpenFocusModeAsync();
+    }
+
+    private async Task OpenFocusModeAsync()
+    {
+        if (!ViewModel.IsWorkoutStarted || _isFocusDialogOpen) return;
 
         var dialog = new ContentDialog
         {
@@ -48,7 +57,15 @@ public sealed partial class ActiveWorkoutPage : Page
 
         var focusPage = new FocusModeView(ViewModel, ClientId, dialog);
         dialog.Content = focusPage;
-        await dialog.ShowAsync();
+        _isFocusDialogOpen = true;
+        try
+        {
+            await dialog.ShowAsync();
+        }
+        finally
+        {
+            _isFocusDialogOpen = false;
+        }
     }
 
     private void GoalRadioButton_Checked(object sender, RoutedEventArgs e)
@@ -99,9 +116,9 @@ public sealed partial class ActiveWorkoutPage : Page
             ViewModel.ConfirmDeloadCommand.Execute(notification);
     }
 
-    private void SaveSetButton_Click(object sender, RoutedEventArgs e)
+    private async void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (sender is Button btn && btn.Tag is ActiveSetViewModel setVm)
-            ViewModel.SaveSetCommand.Execute(setVm);
+        if (e.PropertyName == nameof(ActiveWorkoutViewModel.IsWorkoutStarted) && ViewModel.IsWorkoutStarted)
+            await OpenFocusModeAsync();
     }
 }

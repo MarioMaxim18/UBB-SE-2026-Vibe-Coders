@@ -23,6 +23,46 @@
                     </StackPanel>
                 </StackPanel>
 
+                <Border BorderBrush="#33FFFFFF" BorderThickness="1" CornerRadius="6" Padding="12,10">
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                        <TextBlock Text="Now" Foreground="Gray" FontSize="12" VerticalAlignment="Top" />
+                        <StackPanel Grid.Column="1" Spacing="2">
+                            <TextBlock Text="{x:Bind ViewModel.CurrentExerciseName, Mode=OneWay}"
+                                       Foreground="White" FontSize="18" FontWeight="SemiBold" />
+                            <TextBlock Foreground="Gray" FontSize="12">
+                                <Run Text="Set " />
+                                <Run Text="{x:Bind ViewModel.CurrentSetNumber, Mode=OneWay}" />
+                                <Run Text=" · Target " />
+                                <Run Text="{x:Bind ViewModel.CurrentTargetReps, Mode=OneWay}" />
+                                <Run Text=" reps" />
+                            </TextBlock>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <StackPanel Spacing="8">
+                    <TextBlock Text="Complete Current Set" Foreground="White" FontSize="14" FontWeight="SemiBold" />
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                        <NumberBox Grid.Column="0"
+                                   Header="Reps"
+                                   Value="{x:Bind ViewModel.CurrentSetRepsInput, Mode=TwoWay}"
+                                   Minimum="0"
+                                   Maximum="999"
+                                   SpinButtonPlacementMode="Compact" />
+                        <NumberBox Grid.Column="1"
+                                   Header="Weight (kg)"
+                                   Value="{x:Bind ViewModel.CurrentSetWeightInput, Mode=TwoWay}"
+                                   Minimum="0"
+                                   Maximum="9999"
+                                   SmallChange="0.5"
+                                   SpinButtonPlacementMode="Compact" />
+                    </Grid>
+                    <Button Content="Complete Set"
+                            HorizontalAlignment="Stretch"
+                            Style="{StaticResource AccentButtonStyle}"
+                            Command="{x:Bind ViewModel.CompleteCurrentSetCommand}" />
+                </StackPanel>
+
                 <ItemsRepeater ItemsSource="{x:Bind ViewModel.ExerciseRows, Mode=OneWay}">
                     <ItemsRepeater.ItemTemplate>
                         <DataTemplate x:DataType="vm:ActiveExerciseViewModel">
