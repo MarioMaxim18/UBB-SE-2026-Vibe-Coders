@@ -193,9 +193,9 @@ namespace VibeCoders.Services
                 "Log a workout on 3 consecutive calendar days.");
 
             Upsert(
-                "Week Champion",
+                "Iron Week",
                 "Push your weekly limits to the top.",
-                "Complete 6 workouts within any rolling 7-day window.");
+                "Complete 5 workouts within any rolling 7-day window.");
         }
 
         public void SeedTestData()
