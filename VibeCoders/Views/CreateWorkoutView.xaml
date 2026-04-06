@@ -33,8 +33,8 @@
                 <Grid ColumnSpacing="8" RowSpacing="12">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="2*"/>
-                        <ColumnDefinition Width="1*"/>
-                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="88"/>
+                        <ColumnDefinition Width="88"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
@@ -66,7 +66,7 @@
                         Command="{Binding AddExerciseCommand}" />
                 </Grid>
 
-                <Grid ColumnDefinitions="2*,*,*,Auto,Auto" ColumnSpacing="12">
+                <Grid ColumnDefinitions="2*,88,88,160,Auto" ColumnSpacing="12">
                     <TextBlock Text="Exercise" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                     <TextBlock Grid.Column="1" Text="Sets" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" />
                     <TextBlock Grid.Column="2" Text="Reps" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" />
@@ -74,10 +74,10 @@
                     <TextBlock Grid.Column="4" Text="" />
                 </Grid>
 
-                <ListView ItemsSource="{Binding Exercises}" SelectionMode="None" BorderThickness="0">
+                <ListView ItemsSource="{Binding Exercises}" SelectionMode="None" BorderThickness="0" HorizontalContentAlignment="Stretch">
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="models:TemplateExercise">
-                            <Grid ColumnDefinitions="2*,*,*,Auto,Auto" ColumnSpacing="12" Margin="0,0,0,10">
+                            <Grid ColumnDefinitions="2*,88,88,160,Auto" ColumnSpacing="12" Margin="0,0,0,10">
                                 <TextBox Text="{Binding Name, Mode=TwoWay}" PlaceholderText="Exercise name" />
                                 <NumberBox Grid.Column="1" Value="{Binding TargetSets, Mode=TwoWay}" Minimum="1" Maximum="12" SpinButtonPlacementMode="Compact" />
                                 <NumberBox Grid.Column="2" Value="{Binding TargetReps, Mode=TwoWay}" Minimum="0" Maximum="100" SpinButtonPlacementMode="Compact" />

@@ -223,6 +223,13 @@
                                                           Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
                                                 <TextBlock Text="{x:Bind Name}"
                                                            Style="{StaticResource BodyTextBlockStyle}" />
+                                                <Border Background="{ThemeResource SubtleFillColorSecondaryBrush}"
+                                                        CornerRadius="999"
+                                                        Padding="8,2">
+                                                    <TextBlock Text="{x:Bind Type}"
+                                                               Style="{StaticResource CaptionTextBlockStyle}"
+                                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                </Border>
                                             </StackPanel>
                                             <Button
                                                 Grid.Column="1"
