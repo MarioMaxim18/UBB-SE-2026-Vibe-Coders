@@ -100,7 +100,7 @@ CREATE TABLE IF NOT EXISTS NOTIFICATION (
 
 CREATE TABLE IF NOT EXISTS ACHIEVEMENT (
     achievement_id     INTEGER PRIMARY KEY,
-    title              TEXT NOT NULL,
+    title              TEXT NOT NULL UNIQUE,
     description        TEXT NOT NULL,
     criteria           TEXT NOT NULL DEFAULT '',
     threshold_workouts INTEGER

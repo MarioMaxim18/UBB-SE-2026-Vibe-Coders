@@ -103,7 +103,7 @@ namespace VibeCoders.Services
             void Insert(string title, string description, string criteria)
             {
                 using var cmd = new SqliteCommand(
-                    "INSERT INTO ACHIEVEMENT (title, description, criteria) VALUES (@Title, @Description, @Criteria);",
+                    "INSERT OR IGNORE INTO ACHIEVEMENT (title, description, criteria) VALUES (@Title, @Description, @Criteria);",
                     conn);
                 cmd.Parameters.AddWithValue("@Title",       title);
                 cmd.Parameters.AddWithValue("@Description", description);
