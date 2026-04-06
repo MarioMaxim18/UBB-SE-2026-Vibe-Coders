@@ -189,7 +189,9 @@ namespace VibeCoders.ViewModels
         {
             var allWorkouts = _storage.GetAvailableWorkouts(clientId);
             CustomWorkouts.Clear();
-            foreach (var w in allWorkouts.Where(w => w.Type == WorkoutType.CUSTOM && w.ClientId == clientId))
+            foreach (var w in allWorkouts.Where(w =>
+                         (w.Type == WorkoutType.CUSTOM || w.Type == WorkoutType.TRAINER_ASSIGNED) &&
+                         w.ClientId == clientId))
                 CustomWorkouts.Add(w);
             HasCustomWorkouts = CustomWorkouts.Count > 0;
         }

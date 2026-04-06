@@ -13,6 +13,13 @@ namespace VibeCoders.Services
                 return WorkoutType.PREBUILT;
             }
 
+            if (string.Equals(value, "TRAINERASSIGNED", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(value, "TRAINER-ASSIGNED", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(value, "TRAINER ASSIGNED", StringComparison.OrdinalIgnoreCase))
+            {
+                return WorkoutType.TRAINER_ASSIGNED;
+            }
+
             return Enum.TryParse<WorkoutType>(value, true, out var parsed)
                 ? parsed
                 : WorkoutType.CUSTOM;
@@ -32,9 +39,9 @@ namespace VibeCoders.Services
                     wt.name,
                     wt.type
                 FROM WORKOUT_TEMPLATE wt
-                WHERE wt.type = 'PRE_BUILT'
-                   OR (wt.type = 'TRAINER_ASSIGNED' AND wt.client_id = @ClientId)
-                   OR (wt.type = 'CUSTOM'           AND wt.client_id = @ClientId)
+                WHERE UPPER(REPLACE(REPLACE(wt.type, '_', ''), '-', '')) = 'PREBUILT'
+                   OR (UPPER(REPLACE(REPLACE(wt.type, '_', ''), '-', '')) = 'TRAINERASSIGNED' AND wt.client_id = @ClientId)
+                   OR (UPPER(REPLACE(REPLACE(wt.type, '_', ''), '-', '')) = 'CUSTOM' AND wt.client_id = @ClientId)
                 ORDER BY wt.type, wt.name;";
 
             var templates = new List<WorkoutTemplate>();

@@ -34,6 +34,42 @@
 
         <Border Grid.Row="2" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="12" Padding="20">
             <StackPanel Spacing="16">
+                <Grid ColumnSpacing="8" RowSpacing="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <ComboBox
+                        Grid.Column="0"
+                        Header="Select exercise"
+                        PlaceholderText="Choose..."
+                        ItemsSource="{Binding AvailableExercises}"
+                        SelectedItem="{Binding SelectedNewExercise, Mode=TwoWay}" />
+
+                    <NumberBox
+                        Grid.Column="1"
+                        Header="Sets"
+                        Minimum="1"
+                        Maximum="10"
+                        Value="{Binding NewExerciseSets, Mode=TwoWay}" />
+
+                    <NumberBox
+                        Grid.Column="2"
+                        Header="Reps"
+                        Minimum="1"
+                        Maximum="100"
+                        Value="{Binding NewExerciseReps, Mode=TwoWay}" />
+
+                    <Button
+                        Grid.Column="3"
+                        VerticalAlignment="Bottom"
+                        Content="+ Add"
+                        Command="{Binding AddExerciseCommand}" />
+                </Grid>
+
                 <Grid ColumnDefinitions="2*,*,*,Auto,Auto" ColumnSpacing="12">
                     <TextBlock Text="Exercise" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                     <TextBlock Grid.Column="1" Text="Sets" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" />
@@ -67,7 +103,6 @@
         </Border>
 
         <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12">
-            <Button Content="Add Exercise" Command="{Binding AddExerciseCommand}" />
             <Button Content="Save Workout" Command="{Binding SaveWorkoutCommand}" />
         </StackPanel>
     </Grid>

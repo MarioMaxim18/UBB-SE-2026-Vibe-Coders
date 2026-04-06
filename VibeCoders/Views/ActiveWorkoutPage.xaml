@@ -192,7 +192,7 @@
                     <StackPanel Spacing="12">
                         <Grid>
                             <TextBlock
-                                Text="My Custom Workouts"
+                                Text="My Saved Workouts"
                                 Style="{StaticResource SubtitleTextBlockStyle}"
                                 VerticalAlignment="Center" />
                             <Button
@@ -206,7 +206,7 @@
                         </Grid>
 
                         <TextBlock
-                            Text="No custom workouts yet. Create one to get started."
+                            Text="No saved workouts yet. Create one or ask your trainer to assign a routine."
                             Style="{StaticResource BodyTextBlockStyle}"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                             Visibility="{x:Bind ViewModel.HasCustomWorkouts, Mode=OneWay, Converter={StaticResource BoolToVisibility}, ConverterParameter=Invert}" />
