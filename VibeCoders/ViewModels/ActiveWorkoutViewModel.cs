@@ -171,6 +171,12 @@ namespace VibeCoders.ViewModels
         private ObservableCollection<WorkoutTemplate> availableWorkouts = new();
 
         [ObservableProperty]
+        private ObservableCollection<WorkoutTemplate> customWorkouts = new();
+
+        [ObservableProperty]
+        private bool hasCustomWorkouts;
+
+        [ObservableProperty]
         private WorkoutTemplate? selectedTemplate;
 
         [ObservableProperty]
@@ -178,6 +184,22 @@ namespace VibeCoders.ViewModels
 
         [ObservableProperty]
         private string selectedGoal = string.Empty;
+
+        public void LoadCustomWorkouts(int clientId)
+        {
+            var allWorkouts = _storage.GetAvailableWorkouts(clientId);
+            CustomWorkouts.Clear();
+            foreach (var w in allWorkouts.Where(w => w.Type == WorkoutType.CUSTOM && w.ClientId == clientId))
+                CustomWorkouts.Add(w);
+            HasCustomWorkouts = CustomWorkouts.Count > 0;
+        }
+
+        [RelayCommand]
+        private void SelectCustomWorkout(WorkoutTemplate template)
+        {
+            SelectedTemplate = null;
+            SelectedTemplate = template;
+        }
 
         [RelayCommand]
         private void ApplyTargetGoals(int clientId)

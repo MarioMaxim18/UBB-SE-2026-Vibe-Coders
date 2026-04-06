@@ -31,6 +31,7 @@ public sealed partial class ActiveWorkoutPage : Page
     private void Page_Loaded(object sender, RoutedEventArgs e)
     {
         ViewModel.LoadNotificationsCommand.Execute(ClientId);
+        ViewModel.LoadCustomWorkouts(ClientId);
     }
 
     private async void OpenFocusMode_Click(object sender, RoutedEventArgs e)
@@ -54,6 +55,36 @@ public sealed partial class ActiveWorkoutPage : Page
     {
         if (sender is RadioButton rb && rb.Tag is string goal)
             ViewModel.SelectedGoal = goal;
+    }
+
+    private async void CreateCustomWorkout_Click(object sender, RoutedEventArgs e)
+    {
+        var createView = new CreateWorkoutView();
+        createView.ViewModel.ClientId = ClientId;
+        createView.ViewModel.IsTrainerCreating = false;
+
+        var dialog = new ContentDialog
+        {
+            XamlRoot = Content.XamlRoot,
+            Title = "Create Custom Workout",
+            Content = createView,
+            CloseButtonText = "Cancel",
+            MinWidth = 700
+        };
+
+        createView.ViewModel.WorkoutSaved += () =>
+        {
+            dialog.Hide();
+            ViewModel.LoadCustomWorkouts(ClientId);
+        };
+
+        await dialog.ShowAsync();
+    }
+
+    private void StartCustomWorkout_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button btn && btn.Tag is WorkoutTemplate template)
+            ViewModel.SelectCustomWorkoutCommand.Execute(template);
     }
 
     private void ApplyGoalsButton_Click(object sender, RoutedEventArgs e)
