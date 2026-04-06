@@ -62,7 +62,6 @@ namespace VibeCoders.ViewModels
                 Name = "New Exercise",
                 TargetSets = 3,
                 TargetReps = 10,
-                TargetWeight = 0,
                 MuscleGroup = MuscleGroup.OTHER
             });
         }

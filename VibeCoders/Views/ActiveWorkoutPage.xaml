@@ -281,9 +281,7 @@
                                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}">
                                                                     <Run Text="Target: " />
                                                                     <Run Text="{x:Bind TargetReps}" />
-                                                                    <Run Text=" reps @ " />
-                                                                    <Run Text="{x:Bind TargetWeight}" />
-                                                                    <Run Text=" kg" />
+                                                                    <Run Text=" reps" />
                                                                 </TextBlock>
                                                             </StackPanel>
                                                             <NumberBox

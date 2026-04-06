@@ -47,7 +47,6 @@
                                                     <TextBlock Text="{x:Bind SetNumber}" Width="30"/>
                                                     <TextBlock Text="{x:Bind TargetReps}" Width="50"/>
                                                     <TextBlock Text="{x:Bind ActualReps}" Width="50"/>
-                                                    <TextBlock Text="{x:Bind TargetWeight}" Width="60"/>
                                                     <TextBlock Text="{x:Bind ActualWeight}" Width="60"/>
                                                 </StackPanel>
                                             </DataTemplate>

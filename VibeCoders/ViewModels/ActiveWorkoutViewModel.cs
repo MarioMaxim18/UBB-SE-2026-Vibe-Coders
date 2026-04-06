@@ -295,7 +295,7 @@ namespace VibeCoders.ViewModels
                 ActualReps = setViewModel.ActualReps,
                 ActualWeight = setViewModel.ActualWeight,
                 TargetReps = setViewModel.TargetReps,
-                TargetWeight = setViewModel.TargetWeight
+                TargetWeight = null
             };
 
             bool isSaved = _clientService.SaveSet(_activeLog, setViewModel.ExerciseName, set);
@@ -432,7 +432,7 @@ namespace VibeCoders.ViewModels
                     ExerciseName = template.Name,
                     SetIndex = i,
                     TargetReps = template.TargetReps,
-                    TargetWeight = template.TargetWeight,
+                    TargetWeight = null,
                     IsFocused = i == 0
                 });
             }

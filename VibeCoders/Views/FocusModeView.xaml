@@ -44,7 +44,7 @@
                                                     <Run Text="Set " /><Run Text="{x:Bind SetIndex}" /><Run Text=" · " />
                                                 </TextBlock>
                                                 <TextBlock Foreground="White" VerticalAlignment="Center">
-                                                    <Run Text="{x:Bind TargetReps}" /><Run Text=" reps @ " /><Run Text="{x:Bind TargetWeight}" /><Run Text=" kg" />
+                                                    <Run Text="{x:Bind TargetReps}" /><Run Text=" reps" />
                                                 </TextBlock>
                                             </StackPanel>
                                         </DataTemplate>

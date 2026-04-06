@@ -12,37 +12,37 @@ namespace VibeCoders.Services
 
             SeedTemplate(conn, "HIIT Fat Burner", new[]
             {
-                ("Jumping Jacks",     "LEGS", 3, 20, 0.0),
-                ("Burpees",           "CORE", 3, 15, 0.0),
-                ("Mountain Climbers", "CORE", 3, 20, 0.0)
+                ("Jumping Jacks",     "LEGS", 3, 20),
+                ("Burpees",           "CORE", 3, 15),
+                ("Mountain Climbers", "CORE", 3, 20)
             });
 
             SeedTemplate(conn, "Full Body Mass", new[]
             {
-                ("Back Squat",   "LEGS",  4, 8, 60.0),
-                ("Bench Press",  "CHEST", 4, 8, 60.0),
-                ("Barbell Rows", "BACK",  4, 8, 50.0)
+                ("Back Squat",   "LEGS",  4, 8),
+                ("Bench Press",  "CHEST", 4, 8),
+                ("Barbell Rows", "BACK",  4, 8)
             });
 
             SeedTemplate(conn, "Full Body Power", new[]
             {
-                ("Deadlift",          "BACK",      4, 5, 100.0),
-                ("Overhead Press",    "SHOULDERS", 4, 5,  40.0),
-                ("Weighted Pull-Ups", "BACK",      4, 5,  10.0)
+                ("Deadlift",          "BACK",      4, 5),
+                ("Overhead Press",    "SHOULDERS", 4, 5),
+                ("Weighted Pull-Ups", "BACK",      4, 5)
             });
 
             SeedTemplate(conn, "Endurance Circuit", new[]
             {
-                ("Push-Ups",          "CHEST", 3, 20, 0.0),
-                ("Bodyweight Squats", "LEGS",  3, 25, 0.0),
-                ("Plank",             "CORE",  3, 60, 0.0)
+                ("Push-Ups",          "CHEST", 3, 20),
+                ("Bodyweight Squats", "LEGS",  3, 25),
+                ("Plank",             "CORE",  3, 60)
             });
         }
 
         private void SeedTemplate(
             SqliteConnection conn,
             string name,
-            IEnumerable<(string ExerciseName, string MuscleGroup, int Sets, int Reps, double Weight)> exercises)
+            IEnumerable<(string ExerciseName, string MuscleGroup, int Sets, int Reps)> exercises)
         {
             const string checkSql = @"
                 SELECT COUNT(1)
@@ -52,7 +52,20 @@ namespace VibeCoders.Services
             using (var checkCmd = new SqliteCommand(checkSql, conn))
             {
                 checkCmd.Parameters.AddWithValue("@Name", name);
-                if (Convert.ToInt32(checkCmd.ExecuteScalar()) > 0) return;
+                if (Convert.ToInt32(checkCmd.ExecuteScalar()) > 0)
+                {
+                    using var normalizeCmd = new SqliteCommand(@"
+                        UPDATE TEMPLATE_EXERCISE
+                        SET target_weight = 0
+                        WHERE workout_template_id IN (
+                            SELECT workout_template_id
+                            FROM WORKOUT_TEMPLATE
+                            WHERE name = @Name AND type = 'PRE_BUILT'
+                        );", conn);
+                    normalizeCmd.Parameters.AddWithValue("@Name", name);
+                    normalizeCmd.ExecuteNonQuery();
+                    return;
+                }
             }
 
             const string insertTemplate = @"
@@ -73,11 +86,11 @@ namespace VibeCoders.Services
 
             const string insertExercise = @"
                 INSERT INTO TEMPLATE_EXERCISE
-                    (workout_template_id, name, muscle_group, target_sets, target_reps, target_weight)
+                    (workout_template_id, name, muscle_group, target_sets, target_reps)
                 VALUES
-                    (@TemplateId, @Name, @MuscleGroup, @Sets, @Reps, @Weight);";
+                    (@TemplateId, @Name, @MuscleGroup, @Sets, @Reps);";
 
-            foreach (var (exerciseName, muscleGroup, sets, reps, weight) in exercises)
+            foreach (var (exerciseName, muscleGroup, sets, reps) in exercises)
             {
                 using var exerciseCmd = new SqliteCommand(insertExercise, conn);
                 exerciseCmd.Parameters.AddWithValue("@TemplateId",   templateId);
@@ -85,7 +98,6 @@ namespace VibeCoders.Services
                 exerciseCmd.Parameters.AddWithValue("@MuscleGroup",  muscleGroup);
                 exerciseCmd.Parameters.AddWithValue("@Sets",         sets);
                 exerciseCmd.Parameters.AddWithValue("@Reps",         reps);
-                exerciseCmd.Parameters.AddWithValue("@Weight",       weight);
                 exerciseCmd.ExecuteNonQuery();
             }
         }

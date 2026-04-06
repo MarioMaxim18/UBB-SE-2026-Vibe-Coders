@@ -34,30 +34,28 @@
 
         <Border Grid.Row="2" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="12" Padding="20">
             <StackPanel Spacing="16">
-                <Grid ColumnDefinitions="2*,*,*,*,Auto,Auto" ColumnSpacing="12">
+                <Grid ColumnDefinitions="2*,*,*,Auto,Auto" ColumnSpacing="12">
                     <TextBlock Text="Exercise" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                     <TextBlock Grid.Column="1" Text="Sets" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" />
                     <TextBlock Grid.Column="2" Text="Reps" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" />
-                    <TextBlock Grid.Column="3" Text="Weight" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" />
-                    <TextBlock Grid.Column="4" Text="Muscle group" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" />
-                    <TextBlock Grid.Column="5" Text="" />
+                    <TextBlock Grid.Column="3" Text="Muscle group" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" />
+                    <TextBlock Grid.Column="4" Text="" />
                 </Grid>
 
                 <ListView ItemsSource="{Binding Exercises}" SelectionMode="None" BorderThickness="0">
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="models:TemplateExercise">
-                            <Grid ColumnDefinitions="2*,*,*,*,Auto,Auto" ColumnSpacing="12" Margin="0,0,0,10">
+                            <Grid ColumnDefinitions="2*,*,*,Auto,Auto" ColumnSpacing="12" Margin="0,0,0,10">
                                 <TextBox Text="{Binding Name, Mode=TwoWay}" PlaceholderText="Exercise name" />
                                 <NumberBox Grid.Column="1" Value="{Binding TargetSets, Mode=TwoWay}" Minimum="1" Maximum="12" SpinButtonPlacementMode="Compact" />
                                 <NumberBox Grid.Column="2" Value="{Binding TargetReps, Mode=TwoWay}" Minimum="0" Maximum="100" SpinButtonPlacementMode="Compact" />
-                                <NumberBox Grid.Column="3" Value="{Binding TargetWeight, Mode=TwoWay}" Minimum="0" Maximum="999" SmallChange="0.5" SpinButtonPlacementMode="Compact" />
                                 <ComboBox
-                                    Grid.Column="4"
+                                    Grid.Column="3"
                                     ItemsSource="{Binding DataContext.MuscleGroups, ElementName=Root}"
                                     SelectedItem="{Binding MuscleGroup, Mode=TwoWay}"
                                     MinWidth="140" />
                                 <Button
-                                    Grid.Column="5"
+                                    Grid.Column="4"
                                     Command="{Binding DataContext.RemoveExerciseCommand, ElementName=Root}"
                                     CommandParameter="{Binding}"
                                     Content="Remove" />
