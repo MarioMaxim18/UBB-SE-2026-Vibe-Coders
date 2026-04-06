@@ -50,6 +50,12 @@ public sealed partial class ActiveWorkoutPage : Page
         await dialog.ShowAsync();
     }
 
+    private void GoalRadioButton_Checked(object sender, RoutedEventArgs e)
+    {
+        if (sender is RadioButton rb && rb.Tag is string goal)
+            ViewModel.SelectedGoal = goal;
+    }
+
     private void ApplyGoalsButton_Click(object sender, RoutedEventArgs e)
     {
         TargetGoalsButton.Flyout.Hide();

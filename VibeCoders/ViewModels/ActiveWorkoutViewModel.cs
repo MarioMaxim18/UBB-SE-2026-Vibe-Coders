@@ -177,28 +177,14 @@ namespace VibeCoders.ViewModels
         private bool isLoadingWorkouts;
 
         [ObservableProperty]
-        private bool goalWeightLoss;
-
-        [ObservableProperty]
-        private bool goalMuscleGain;
-
-        [ObservableProperty]
-        private bool goalRawStrength;
-
-        [ObservableProperty]
-        private bool goalMuscularEndurance;
+        private string selectedGoal = string.Empty;
 
         [RelayCommand]
         private void ApplyTargetGoals(int clientId)
         {
-            var selectedGoalNames = new List<string>();
+            if (string.IsNullOrEmpty(SelectedGoal)) return;
 
-            if (GoalWeightLoss) selectedGoalNames.Add("HIIT Fat Burner");
-            if (GoalMuscleGain) selectedGoalNames.Add("Full Body Mass");
-            if (GoalRawStrength) selectedGoalNames.Add("Full Body Power");
-            if (GoalMuscularEndurance) selectedGoalNames.Add("Endurance Circuit");
-
-            if (selectedGoalNames.Count == 0) return;
+            var selectedGoalNames = new List<string> { SelectedGoal };
 
             try
             {

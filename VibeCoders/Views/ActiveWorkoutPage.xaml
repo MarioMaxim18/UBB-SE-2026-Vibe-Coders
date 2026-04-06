@@ -122,24 +122,32 @@
                                 <Flyout Placement="Bottom">
                                     <StackPanel Spacing="12" MinWidth="260" Padding="8">
                                         <TextBlock
-                                            Text="Select your target goals"
+                                            Text="Select your target goal"
                                             Style="{StaticResource BodyStrongTextBlockStyle}" />
 
-                                        <CheckBox
+                                        <RadioButton
                                             Content="Weight Loss — HIIT Fat Burner"
-                                            IsChecked="{x:Bind ViewModel.GoalWeightLoss, Mode=TwoWay}" />
+                                            GroupName="TargetGoal"
+                                            Tag="HIIT Fat Burner"
+                                            Checked="GoalRadioButton_Checked" />
 
-                                        <CheckBox
+                                        <RadioButton
                                             Content="Muscle Gain — Full Body Mass"
-                                            IsChecked="{x:Bind ViewModel.GoalMuscleGain, Mode=TwoWay}" />
+                                            GroupName="TargetGoal"
+                                            Tag="Full Body Mass"
+                                            Checked="GoalRadioButton_Checked" />
 
-                                        <CheckBox
+                                        <RadioButton
                                             Content="Raw Strength — Full Body Power"
-                                            IsChecked="{x:Bind ViewModel.GoalRawStrength, Mode=TwoWay}" />
+                                            GroupName="TargetGoal"
+                                            Tag="Full Body Power"
+                                            Checked="GoalRadioButton_Checked" />
 
-                                        <CheckBox
+                                        <RadioButton
                                             Content="Muscular Endurance — Endurance Circuit"
-                                            IsChecked="{x:Bind ViewModel.GoalMuscularEndurance, Mode=TwoWay}" />
+                                            GroupName="TargetGoal"
+                                            Tag="Endurance Circuit"
+                                            Checked="GoalRadioButton_Checked" />
 
                                         <Button
                                             Style="{StaticResource AccentButtonStyle}"
