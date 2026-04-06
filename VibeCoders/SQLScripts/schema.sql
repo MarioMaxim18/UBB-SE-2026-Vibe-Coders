@@ -63,6 +63,7 @@ CREATE TABLE IF NOT EXISTS WORKOUT_LOG (
     workout_id      INTEGER,
     date            TEXT NOT NULL,
     total_duration  TEXT,
+    type            TEXT NOT NULL,
     calories_burned INTEGER,
     rating          INTEGER,
     trainer_notes   TEXT,

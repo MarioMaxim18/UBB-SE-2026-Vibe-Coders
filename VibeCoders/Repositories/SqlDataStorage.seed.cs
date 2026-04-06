@@ -47,7 +47,7 @@ namespace VibeCoders.Services
             const string checkSql = @"
                 SELECT COUNT(1)
                 FROM WORKOUT_TEMPLATE
-                WHERE name = @Name AND type = 'PREBUILT';";
+                WHERE name = @Name AND type = 'PRE_BUILT';";
 
             using (var checkCmd = new SqliteCommand(checkSql, conn))
             {
@@ -57,7 +57,7 @@ namespace VibeCoders.Services
 
             const string insertTemplate = @"
                 INSERT INTO WORKOUT_TEMPLATE (client_id, name, type)
-                VALUES (0, @Name, 'PREBUILT');";
+                VALUES (0, @Name, 'PRE_BUILT');";
 
             int templateId;
             using (var insertCmd = new SqliteCommand(insertTemplate, conn))

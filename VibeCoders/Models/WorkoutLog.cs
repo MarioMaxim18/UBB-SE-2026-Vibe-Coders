@@ -8,6 +8,7 @@ public sealed class WorkoutLog
     public DateTime Date { get; set; }
     public TimeSpan Duration { get; set; }
     public int SourceTemplateId { get; set; }
+    public WorkoutType Type { get; set; }
     public List<LoggedExercise> Exercises { get; set; } = new();
     public int TotalCaloriesBurned { get; set; }
     public float AverageMet { get; set; }

@@ -39,8 +39,31 @@ namespace VibeCoders.ViewModels
             };
         }
 
+        [RelayCommand]
+        private void SetRestTime(string? timeStr)
+        {
+            if (string.IsNullOrWhiteSpace(timeStr))
+                return;
+
+            if (int.TryParse(timeStr, out int seconds))
+            {
+                if (seconds < 0) seconds = 0;
+                if (seconds > 3600) seconds = 3600; // Cap at 1 hour
+
+                StartRestTimer(seconds);
+            }
+        }
+
         public void StartRestTimer(int seconds = 90)
         {
+            if (seconds <= 0)
+            {
+                IsResting = false;
+                RestTimeRemaining = 0;
+                _restTimer?.Stop();
+                return;
+            }
+
             var dq = DispatcherQueue.GetForCurrentThread();
             if (dq is null) return;
 
@@ -198,6 +221,7 @@ namespace VibeCoders.ViewModels
                 {
                     WorkoutName = string.Join(" + ", selected.Select(t => t.Name)),
                     SourceTemplateId = selected[0].Id,
+                    Type = selected[0].Type,
                     Date = DateTime.Now
                 };
 
@@ -231,6 +255,7 @@ namespace VibeCoders.ViewModels
             {
                 WorkoutName = value.Name,
                 SourceTemplateId = value.Id,
+                Type = value.Type,
                 Date = DateTime.Now
             };
 

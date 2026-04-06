@@ -8,7 +8,7 @@ public interface INavigationService
 
     void NavigateToRankShowcase();
 
-    void NavigateToActiveWorkout();
+    void NavigateToActiveWorkout(int clientId = 0);
 
     void NavigateToWorkoutLogs();
     void GoBack();

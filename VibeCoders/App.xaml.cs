@@ -123,6 +123,7 @@ public partial class App : Application
         services.AddTransient<RankShowcaseViewModel>();
         services.AddTransient<ActiveWorkoutViewModel>();
         services.AddTransient<WorkoutLogsViewModel>();
+        services.AddTransient<CreateWorkoutViewModel>();
         services.AddTransient<AchievementsViewModel>();
         services.AddTransient<ClientProfileViewModel>();
 

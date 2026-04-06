@@ -83,7 +83,7 @@ namespace VibeCoders.Services
                     using var cmd = new SqliteCommand(insertTemplateSql, conn, transaction);
                     cmd.Parameters.AddWithValue("@ClientId", template.ClientId);
                     cmd.Parameters.AddWithValue("@Name", template.Name);
-                    cmd.Parameters.AddWithValue("@Type", template.Type.ToString());
+                    cmd.Parameters.AddWithValue("@Type", SerializeWorkoutType(template.Type));
                     cmd.ExecuteNonQuery();
 
                     using var idCmd = new SqliteCommand("SELECT last_insert_rowid();", conn, transaction);
@@ -95,7 +95,7 @@ namespace VibeCoders.Services
                     using var cmd = new SqliteCommand(updateTemplateSql, conn, transaction);
                     cmd.Parameters.AddWithValue("@TemplateId", templateId);
                     cmd.Parameters.AddWithValue("@Name", template.Name);
-                    cmd.Parameters.AddWithValue("@Type", template.Type.ToString());
+                    cmd.Parameters.AddWithValue("@Type", SerializeWorkoutType(template.Type));
                     cmd.ExecuteNonQuery();
 
                     using var deleteCmd = new SqliteCommand(deleteOldExercisesSql, conn, transaction);

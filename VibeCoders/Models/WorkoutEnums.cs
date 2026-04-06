@@ -8,6 +8,7 @@
         SHOULDERS,
         ARMS,
         CORE,
+        CARDIO,
         OTHER
     }
 
