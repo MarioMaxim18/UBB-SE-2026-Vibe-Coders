@@ -37,6 +37,40 @@ namespace VibeCoders.ViewModels
         }
 
         public ObservableCollection<TemplateExercise> Exercises { get; } = new ObservableCollection<TemplateExercise>();
+        public ObservableCollection<string> AvailableExercises { get; } = new ObservableCollection<string>();
+
+        private string? _selectedNewExercise;
+        public string? SelectedNewExercise
+        {
+            get => _selectedNewExercise;
+            set
+            {
+                _selectedNewExercise = value;
+                OnPropertyChanged(nameof(SelectedNewExercise));
+            }
+        }
+
+        private double _newExerciseSets = 3;
+        public double NewExerciseSets
+        {
+            get => _newExerciseSets;
+            set
+            {
+                _newExerciseSets = value;
+                OnPropertyChanged(nameof(NewExerciseSets));
+            }
+        }
+
+        private double _newExerciseReps = 10;
+        public double NewExerciseReps
+        {
+            get => _newExerciseReps;
+            set
+            {
+                _newExerciseReps = value;
+                OnPropertyChanged(nameof(NewExerciseReps));
+            }
+        }
 
         // Commands
         public ICommand AddExerciseCommand { get; }
@@ -56,17 +90,24 @@ namespace VibeCoders.ViewModels
             AddExerciseCommand = new RelayCommand(AddExercise);
             RemoveExerciseCommand = new RelayCommand<TemplateExercise>(RemoveExercise);
             SaveWorkoutCommand = new RelayCommand(SaveWorkout);
+
+            LoadAvailableExercises();
         }
 
         private void AddExercise()
         {
+            if (string.IsNullOrWhiteSpace(SelectedNewExercise))
+                return;
+
             Exercises.Add(new TemplateExercise
             {
-                Name = "New Exercise",
-                TargetSets = 3,
-                TargetReps = 10,
+                Name = SelectedNewExercise,
+                TargetSets = (int)NewExerciseSets,
+                TargetReps = (int)NewExerciseReps,
                 MuscleGroup = MuscleGroup.OTHER
             });
+
+            SelectedNewExercise = null;
         }
 
         private void RemoveExercise(TemplateExercise? exercise)
@@ -98,6 +139,16 @@ namespace VibeCoders.ViewModels
         protected virtual void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        private void LoadAvailableExercises()
+        {
+            AvailableExercises.Clear();
+
+            foreach (var name in _dataStorage.GetAllExerciseNames())
+            {
+                AvailableExercises.Add(name);
+            }
         }
     }
 }
