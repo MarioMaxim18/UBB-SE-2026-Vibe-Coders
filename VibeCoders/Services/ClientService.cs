@@ -165,11 +165,17 @@ namespace VibeCoders.Services
 
             foreach (var exercise in log.Exercises)
             {
-                double met = exercise.Met > 0 ? exercise.Met : DefaultMet;
-                exercise.ExerciseCaloriesBurned = ExerciseCalorieCalculator.Calculate(met, weightKg, durationPerExercise);
+                if (exercise.Met <= 0)
+                    exercise.Met = (float)ExerciseCalorieCalculator.GetMet(exercise.ExerciseName);
+
+                exercise.ExerciseCaloriesBurned = ExerciseCalorieCalculator.Calculate(exercise.Met, weightKg, durationPerExercise);
             }
 
             log.TotalCaloriesBurned = log.Exercises.Sum(e => e.ExerciseCaloriesBurned);
+            log.AverageMet = (float)log.Exercises.Average(e => e.Met);
+            log.IntensityTag = log.AverageMet < 3.0f ? "light"
+                             : log.AverageMet < 6.0f ? "moderate"
+                             : "intense";
         }
 
         private void RunAchievementEvaluation(int clientId)

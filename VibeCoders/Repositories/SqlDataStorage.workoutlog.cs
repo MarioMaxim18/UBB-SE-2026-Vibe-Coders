@@ -20,9 +20,9 @@ namespace VibeCoders.Services
         {
             const string insertLog = @"
                 INSERT INTO WORKOUT_LOG
-                    (client_id, workout_id, type, date, total_duration, calories_burned, rating)
+                    (client_id, workout_id, type, date, total_duration, calories_burned, rating, intensity_tag)
                 VALUES
-                    (@ClientId, @WorkoutId, @Type, @Date, @Duration, @CaloriesBurned, @Rating);";
+                    (@ClientId, @WorkoutId, @Type, @Date, @Duration, @CaloriesBurned, @Rating, @IntensityTag);";
 
             const string insertSet = @"
                 INSERT INTO WORKOUT_LOG_SETS
@@ -49,8 +49,9 @@ namespace VibeCoders.Services
                     cmd.Parameters.AddWithValue("@Type",          SerializeWorkoutType(log.Type));
                     cmd.Parameters.AddWithValue("@Date",          log.Date.ToString("o"));
                     cmd.Parameters.AddWithValue("@Duration",      log.Duration.ToString());
-                    cmd.Parameters.AddWithValue("@CaloriesBurned",log.TotalCaloriesBurned);
+                    cmd.Parameters.AddWithValue("@CaloriesBurned", log.TotalCaloriesBurned);
                     cmd.Parameters.AddWithValue("@Rating",        DBNull.Value);
+                    cmd.Parameters.AddWithValue("@IntensityTag",  log.IntensityTag ?? string.Empty);
                     cmd.ExecuteNonQuery();
                 }
 
