@@ -330,7 +330,7 @@ namespace VibeCoders.ViewModels
                 ErrorMessage = string.Empty;
 
                 _activeLog.ClientId = clientId;
-                _activeLog.Duration = DateTime.Now - _activeLog.Date;
+                _activeLog.Duration = _elapsedWorkout;
 
                 bool success = _clientService.FinalizeWorkout(_activeLog);
 

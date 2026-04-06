@@ -1,5 +1,6 @@
 using System.Net.Http;
 using System.Net.Http.Json;
+using VibeCoders.Domain;
 using VibeCoders.Models;
 using VibeCoders.Models.Integration;
 
@@ -30,6 +31,8 @@ namespace VibeCoders.Services
             _nutritionSync      = nutritionSync;
         }
 
+        private const double DefaultMet = 5.0;
+
         public bool FinalizeWorkout(WorkoutLog log)
         {
             if (log == null || log.Exercises == null) return false;
@@ -38,6 +41,8 @@ namespace VibeCoders.Services
             {
                 log.Date = DateTime.Now;
                 _progressionService.EvaluateWorkout(log);
+
+                ComputeCalories(log);
 
                 bool isSaved = _storage.SaveWorkoutLog(log);
                 if (!isSaved) return false;
@@ -149,6 +154,22 @@ namespace VibeCoders.Services
                 System.Diagnostics.Debug.WriteLine($"Error loading active nutrition plan: {ex.Message}");
                 return null;
             }
+        }
+
+        private void ComputeCalories(WorkoutLog log)
+        {
+            if (log.Exercises.Count == 0 || log.Duration == TimeSpan.Zero) return;
+
+            double weightKg = _storage.GetClientWeight(log.ClientId);
+            TimeSpan durationPerExercise = log.Duration / log.Exercises.Count;
+
+            foreach (var exercise in log.Exercises)
+            {
+                double met = exercise.Met > 0 ? exercise.Met : DefaultMet;
+                exercise.ExerciseCaloriesBurned = ExerciseCalorieCalculator.Calculate(met, weightKg, durationPerExercise);
+            }
+
+            log.TotalCaloriesBurned = log.Exercises.Sum(e => e.ExerciseCaloriesBurned);
         }
 
         private void RunAchievementEvaluation(int clientId)
