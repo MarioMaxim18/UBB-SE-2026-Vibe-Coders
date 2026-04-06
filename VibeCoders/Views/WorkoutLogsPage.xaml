@@ -182,6 +182,7 @@
 
                                 <!-- Expanded view: Exercise Name, Sets, Reps, Weight -->
                                 <Expander.Content>
+                                    <Grid>
                                     <StackPanel Padding="0,8,0,12" Spacing="4"
                                                 Visibility="{x:Bind IsEditMode, Converter={StaticResource BoolToVisibility}, ConverterParameter=Invert}">
 
@@ -332,6 +333,7 @@
                                             </ItemsControl.ItemTemplate>
                                         </ItemsControl>
                                     </StackPanel>
+                                    </Grid>
                                 </Expander.Content>
                             </Expander>
 
