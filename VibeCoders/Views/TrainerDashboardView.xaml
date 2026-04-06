@@ -431,7 +431,6 @@
 						<ColumnDefinition Width="2*"/>
 						<ColumnDefinition Width="1*"/>
 						<ColumnDefinition Width="1*"/>
-						<ColumnDefinition Width="1*"/>
 					</Grid.ColumnDefinitions>
 					<Grid.RowDefinitions>
 						<RowDefinition Height="Auto"/>
@@ -444,7 +443,7 @@
 
 					<NumberBox Grid.Row="0" Grid.Column="1" Header="Sets" Minimum="1" Maximum="10" SpinButtonPlacementMode="Hidden" Value="{x:Bind ViewModel.NewExerciseSets, Mode=TwoWay}"/>
 					<NumberBox Grid.Row="0" Grid.Column="2" Header="Reps" Minimum="1" Maximum="100" SpinButtonPlacementMode="Hidden" Value="{x:Bind ViewModel.NewExerciseReps, Mode=TwoWay}"/>
-					<Button Grid.Row="1" Grid.ColumnSpan="4" Content="+ Add to Routine" HorizontalAlignment="Stretch"
+					<Button Grid.Row="1" Grid.ColumnSpan="3" Content="+ Add to Routine" HorizontalAlignment="Stretch"
                             Click="{x:Bind ViewModel.AddExerciseToRoutine}"/>
 				</Grid>
 			</StackPanel>
