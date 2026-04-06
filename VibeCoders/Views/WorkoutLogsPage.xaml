@@ -151,13 +151,13 @@
                                         <Button
                                             Grid.Column="2"
                                             Content="Edit"
-                                            Tag="{x:Bind}"
+                                            Tag="{x:Bind Id}"
                                             Click="ToggleEditMode_Click"
                                             Visibility="{x:Bind IsEditMode, Converter={StaticResource BoolToVisibility}, ConverterParameter=Invert}" />
                                         <Button
                                             Grid.Column="2"
                                             Content="Save"
-                                            Tag="{x:Bind}"
+                                            Tag="{x:Bind Id}"
                                             Style="{StaticResource AccentButtonStyle}"
                                             Click="SaveEditedLog_Click"
                                             Visibility="{x:Bind IsEditMode, Converter={StaticResource BoolToVisibility}}" />
