@@ -78,7 +78,6 @@ public sealed partial class ActiveWorkoutPage : Page
     {
         var createView = new CreateWorkoutView();
         createView.ViewModel.ClientId = ClientId;
-        createView.ViewModel.IsTrainerCreating = false;
 
         var dialog = new ContentDialog
         {

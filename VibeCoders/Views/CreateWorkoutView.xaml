@@ -14,7 +14,7 @@
         <StackPanel Spacing="6">
             <TextBlock Text="Create Workout" Style="{StaticResource TitleTextBlockStyle}" />
             <TextBlock
-                Text="Build a custom routine or a trainer-assigned template from the same editor."
+                Text="Build a custom routine and save it to My Saved Workouts."
                 Style="{StaticResource BodyTextBlockStyle}"
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
         </StackPanel>
@@ -25,10 +25,6 @@
                     <TextBlock Text="Workout name" Style="{StaticResource BodyStrongTextBlockStyle}" />
                     <TextBox Text="{Binding WorkoutName, Mode=TwoWay}" PlaceholderText="Enter workout name" />
                 </StackPanel>
-
-                <CheckBox
-                    Content="Trainer-assigned workout"
-                    IsChecked="{Binding IsTrainerCreating, Mode=TwoWay}" />
             </StackPanel>
         </Border>
 
