@@ -16,6 +16,27 @@ namespace VibeCoders.Services
 
             using var cmd = new SqliteCommand(sql, conn);
             cmd.ExecuteNonQuery();
+
+            MigrateWorkoutLogTypeColumn(conn);
+        }
+
+        private static void MigrateWorkoutLogTypeColumn(SqliteConnection conn)
+        {
+            const string checkSql = @"
+                SELECT 1
+                FROM pragma_table_info('WORKOUT_LOG')
+                WHERE name = 'type'
+                LIMIT 1;";
+
+            using var checkCmd = new SqliteCommand(checkSql, conn);
+            var exists = checkCmd.ExecuteScalar() is not null;
+            if (exists)
+                return;
+
+            using var alterCmd = new SqliteCommand(@"
+                ALTER TABLE WORKOUT_LOG
+                ADD COLUMN type TEXT NOT NULL DEFAULT 'CUSTOM';", conn);
+            alterCmd.ExecuteNonQuery();
         }
 
         private static string LoadSchemaSql()
