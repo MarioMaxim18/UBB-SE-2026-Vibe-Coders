@@ -303,13 +303,13 @@
                                                                                    Value="{x:Bind RepsInput, Mode=TwoWay}"
                                                                                    Minimum="0"
                                                                                    Maximum="999"
-                                                                                   SpinButtonPlacementMode="Compact" />
+                                                                                   SpinButtonPlacementMode="Hidden" />
                                                                         <NumberBox Grid.Column="2"
                                                                                    Value="{x:Bind WeightInput, Mode=TwoWay}"
                                                                                    Minimum="0"
                                                                                    Maximum="9999"
                                                                                    SmallChange="0.5"
-                                                                                   SpinButtonPlacementMode="Compact" />
+                                                                                   SpinButtonPlacementMode="Hidden" />
                                                                     </Grid>
                                                                 </DataTemplate>
                                                             </ItemsControl.ItemTemplate>

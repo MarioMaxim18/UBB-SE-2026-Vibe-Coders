@@ -78,12 +78,14 @@
                                Header="Sets"
                                Minimum="1"
                                Maximum="10"
+                               SpinButtonPlacementMode="Hidden"
                                Value="{Binding NewExerciseSets, Mode=TwoWay}"/>
 
                     <NumberBox Grid.Row="0" Grid.Column="2"
                                Header="Reps"
                                Minimum="1"
                                Maximum="100"
+                               SpinButtonPlacementMode="Hidden"
                                Value="{Binding NewExerciseReps, Mode=TwoWay}"/>
 
                     <TextBlock Grid.Row="0" Grid.Column="3"

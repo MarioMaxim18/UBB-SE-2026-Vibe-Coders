@@ -357,7 +357,7 @@
                                                                 Grid.Column="2"
                                                                 Value="{x:Bind ActualRepsValue, Mode=TwoWay}"
                                                                 Minimum="0" Maximum="999"
-                                                                SpinButtonPlacementMode="Compact"
+                                                                SpinButtonPlacementMode="Hidden"
                                                                 PlaceholderText="Reps"
                                                                 IsEnabled="{x:Bind IsCompleted, Mode=OneWay, Converter={StaticResource BoolNegate}}"
                                                                 HorizontalAlignment="Stretch" />
@@ -365,7 +365,7 @@
                                                                 Grid.Column="3"
                                                                 Value="{x:Bind ActualWeightValue, Mode=TwoWay}"
                                                                 Minimum="0" Maximum="9999" SmallChange="0.5"
-                                                                SpinButtonPlacementMode="Compact"
+                                                                SpinButtonPlacementMode="Hidden"
                                                                 PlaceholderText="kg"
                                                                 IsEnabled="{x:Bind IsCompleted, Mode=OneWay, Converter={StaticResource BoolNegate}}"
                                                                 HorizontalAlignment="Stretch" />
