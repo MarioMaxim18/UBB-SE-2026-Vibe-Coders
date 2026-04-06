@@ -23,7 +23,7 @@ public sealed partial class WorkoutHistoryItemViewModel : ObservableObject
         _store = store;
         _userId = userId;
         WorkoutLogId = row.Id;
-        Title = row.WorkoutName;
+        Title = string.IsNullOrWhiteSpace(row.WorkoutName) ? "Workout" : row.WorkoutName;
         DateLine = row.LogDate.ToString("d", System.Globalization.CultureInfo.CurrentCulture);
         DurationLine = ActiveTimeFormatter.ToHourMinuteSecond(
             TimeSpan.FromSeconds(row.DurationSeconds));

@@ -161,7 +161,7 @@
                                Style="{StaticResource SubtitleTextBlockStyle}" />
 
                     <!-- Header Row for the history list -->
-                    <Grid Padding="16,8" ColumnDefinitions="2*,*,*"
+                    <Grid Padding="16,8" ColumnDefinitions="2*,*,*,48"
                           Visibility="{x:Bind ViewModel.ShowEmptyState, Mode=OneWay, Converter={StaticResource BoolToVisibility}, ConverterParameter=Invert}">
                         <TextBlock Text="WORKOUT" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         <TextBlock Grid.Column="1" Text="DATE" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
