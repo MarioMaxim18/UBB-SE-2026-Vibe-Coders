@@ -58,10 +58,10 @@ namespace VibeCoders.Services
                 {
                     templates.Add(new WorkoutTemplate
                     {
-                        Id       = reader.GetInt32(0),
+                        Id = reader.GetInt32(0),
                         ClientId = reader.GetInt32(1),
-                        Name     = reader.GetString(2),
-                        Type     = ParseWorkoutType(reader.GetString(3))
+                        Name = reader.GetString(2),
+                        Type = ParseWorkoutType(reader.GetString(3))
                     });
                 }
             }
@@ -70,7 +70,9 @@ namespace VibeCoders.Services
             {
                 var exercises = LoadExercisesForTemplate(template.Id, conn);
                 foreach (var exercise in exercises)
+                {
                     template.AddExercise(exercise);
+                }
             }
 
             return templates;
@@ -93,21 +95,24 @@ namespace VibeCoders.Services
             using var conn = new SqliteConnection(_connectionString);
             conn.Open();
 
-            using var cmd    = new SqliteCommand(sql, conn);
+            using var cmd = new SqliteCommand(sql, conn);
             cmd.Parameters.AddWithValue("@Id", templateExerciseId);
 
             using var reader = cmd.ExecuteReader();
-            if (!reader.Read()) return null;
+            if (!reader.Read())
+            {
+                return null;
+            }
 
             return new TemplateExercise
             {
-                Id                = reader.GetInt32(0),
-                Name              = reader.GetString(1),
+                Id = reader.GetInt32(0),
+                Name = reader.GetString(1),
                 WorkoutTemplateId = reader.GetInt32(2),
-                MuscleGroup       = Enum.Parse<MuscleGroup>(reader.GetString(3)),
-                TargetSets        = reader.GetInt32(4),
-                TargetReps        = reader.GetInt32(5),
-                TargetWeight      = reader.GetDouble(6)
+                MuscleGroup = Enum.Parse<MuscleGroup>(reader.GetString(3)),
+                TargetSets = reader.GetInt32(4),
+                TargetReps = reader.GetInt32(5),
+                TargetWeight = reader.GetDouble(6)
             };
         }
 
@@ -136,11 +141,13 @@ namespace VibeCoders.Services
             using var conn = new SqliteConnection(_connectionString);
             conn.Open();
 
-            using var cmd    = new SqliteCommand(sql, conn);
+            using var cmd = new SqliteCommand(sql, conn);
             using var reader = cmd.ExecuteReader();
 
             while (reader.Read())
+            {
                 list.Add(reader.GetString(0));
+            }
 
             return list;
         }
@@ -170,13 +177,13 @@ namespace VibeCoders.Services
             {
                 exercises.Add(new TemplateExercise
                 {
-                    Id                = reader.GetInt32(0),
+                    Id = reader.GetInt32(0),
                     WorkoutTemplateId = reader.GetInt32(1),
-                    Name              = reader.GetString(2),
-                    MuscleGroup       = Enum.Parse<MuscleGroup>(reader.GetString(3)),
-                    TargetSets        = reader.GetInt32(4),
-                    TargetReps        = reader.GetInt32(5),
-                    TargetWeight      = reader.GetDouble(6)
+                    Name = reader.GetString(2),
+                    MuscleGroup = Enum.Parse<MuscleGroup>(reader.GetString(3)),
+                    TargetSets = reader.GetInt32(4),
+                    TargetReps = reader.GetInt32(5),
+                    TargetWeight = reader.GetDouble(6)
                 });
             }
 

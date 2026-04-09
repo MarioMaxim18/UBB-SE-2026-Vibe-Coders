@@ -65,16 +65,18 @@ public sealed partial class RankShowcaseViewModel : ObservableObject
             var tiers   = LevelingTierEvaluator.DefaultTiers;
             var result  = LevelingTierEvaluator.Evaluate(unlockedCount, tiers);
 
-            DisplayLevel        = result.Level;
-            RankTitle           = result.RankTitle;
-            LevelDisplayLine    = $"Level {result.Level}: {result.RankTitle}";
+            DisplayLevel        = result.level;
+            RankTitle           = result.rankTitle;
+            LevelDisplayLine    = $"Level {result.level}: {result.rankTitle}";
             UnlockedAchievementsDisplay = $"{unlockedCount} achievement{(unlockedCount == 1 ? "" : "s")} unlocked";
 
-            ComputeNextRankProgress(unlockedCount, tiers, result.Level);
+            ComputeNextRankProgress(unlockedCount, tiers, result.level);
 
             ShowcaseAchievements.Clear();
             foreach (var row in showcase)
+            {
                 ShowcaseAchievements.Add(row);
+            }
         }
         finally
         {
@@ -90,7 +92,7 @@ public sealed partial class RankShowcaseViewModel : ObservableObject
         int currentIndex = -1;
         for (int i = 0; i < tiers.Count; i++)
         {
-            if (tiers[i].Level == currentLevel)
+            if (tiers[i].level == currentLevel)
             {
                 currentIndex = i;
                 break;
@@ -110,8 +112,8 @@ public sealed partial class RankShowcaseViewModel : ObservableObject
         var current  = tiers[currentIndex];
         var next     = tiers[nextIndex];
 
-        int bandStart = current.MinAchievements;
-        int bandEnd   = next.MinAchievements;
+        int bandStart = current.minAchievements;
+        int bandEnd   = next.minAchievements;
         int earned    = unlockedCount - bandStart;
         int needed    = bandEnd - bandStart;
 
@@ -120,7 +122,7 @@ public sealed partial class RankShowcaseViewModel : ObservableObject
             : 100;
 
         int remaining = Math.Max(0, bandEnd - unlockedCount);
-        NextRankInfo  = $"Next: Level {next.Level}: {next.RankTitle} — {remaining} more achievement{(remaining == 1 ? "" : "s")} to go";
+        NextRankInfo  = $"Next: Level {next.level}: {next.rankTitle} — {remaining} more achievement{(remaining == 1 ? "" : "s")} to go";
     }
 
     [RelayCommand]
