@@ -20,7 +20,7 @@ public sealed class EvaluationEngine
     private static IReadOnlyList<VibeCoders.Domain.IMilestoneCheck> BuildDefaultChecks()
     {
         var checks = TotalWorkoutsMilestoneEvaluator.DefaultMilestones
-            .Select(m => (VibeCoders.Domain.IMilestoneCheck)new VibeCoders.Domain.WorkoutCountCheck(m.Title, m.Threshold))
+            .Select(m => (VibeCoders.Domain.IMilestoneCheck)new VibeCoders.Domain.WorkoutCountCheck(m.title, m.threshold))
             .ToList();
 
         checks.Add(new VibeCoders.Domain.StreakCheck("3-Day Streak", requiredConsecutiveDays: 3));

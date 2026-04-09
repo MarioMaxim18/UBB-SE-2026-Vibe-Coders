@@ -14,15 +14,15 @@ namespace VibeCoders.ViewModels;
 
 public sealed partial class WorkoutHistoryItemViewModel : ObservableObject
 {
-    private readonly IWorkoutAnalyticsStore _store;
-    private readonly long _clientId;
-    private bool _detailLoaded;
+    private readonly IWorkoutAnalyticsStore store;
+    private readonly long clientId;
+    private bool detailLoaded;
 
     public WorkoutHistoryItemViewModel(
         IWorkoutAnalyticsStore store, long clientId, WorkoutHistoryRow row)
     {
-        _store = store;
-        _clientId = clientId;
+        this.store = store;
+        this.clientId = clientId;
         WorkoutLogId = row.Id;
         Title = string.IsNullOrWhiteSpace(row.WorkoutName) ? "Workout" : row.WorkoutName;
         DateLine = row.LogDate.ToString("d", System.Globalization.CultureInfo.CurrentCulture);
@@ -53,8 +53,8 @@ public sealed partial class WorkoutHistoryItemViewModel : ObservableObject
         }
     }
 
-    public ObservableCollection<ExerciseSetGroupViewModel> ExerciseSetGroups { get; } = new();
-    public ObservableCollection<ExerciseCalorieInfo> ExerciseCalories { get; } = new();
+    public ObservableCollection<ExerciseSetGroupViewModel> ExerciseSetGroups { get; } = new ();
+    public ObservableCollection<ExerciseCalorieInfo> ExerciseCalories { get; } = new ();
 
     [ObservableProperty]
     private bool isExpanded;
@@ -64,7 +64,7 @@ public sealed partial class WorkoutHistoryItemViewModel : ObservableObject
 
     partial void OnIsExpandedChanged(bool value)
     {
-        if (value && !_detailLoaded)
+        if (value && !detailLoaded)
         {
             _ = LoadDetailAsync();
         }
@@ -73,12 +73,16 @@ public sealed partial class WorkoutHistoryItemViewModel : ObservableObject
     [RelayCommand]
     private async Task LoadDetailAsync()
     {
-        if (_detailLoaded) return;
+        if (detailLoaded)
+        {
+            return;
+        }
+
         IsLoadingDetail = true;
         try
         {
-            var detail = await _store.GetWorkoutSessionDetailAsync(
-                _clientId, WorkoutLogId).ConfigureAwait(true);
+            var detail = await store.GetWorkoutSessionDetailAsync(
+                clientId, WorkoutLogId).ConfigureAwait(true);
             ExerciseSetGroups.Clear();
             ExerciseCalories.Clear();
             if (detail is not null)
@@ -109,23 +113,23 @@ public sealed partial class WorkoutHistoryItemViewModel : ObservableObject
                 }
                 foreach (var e in detail.ExerciseCalories)
                 {
-                    ExerciseCalories.Add(e);
-                }
-            }
+                                ExerciseCalories.Add(e);
+                            }
+                        }
 
-            _detailLoaded = true;
-        }
-        finally
-        {
-            IsLoadingDetail = false;
-        }
+                        detailLoaded = true;
+                    }
+                    finally
+                    {
+                        IsLoadingDetail = false;
+                    }
     }
 }
 
 public sealed class ExerciseSetGroupViewModel
 {
     public string ExerciseName { get; init; } = string.Empty;
-    public ObservableCollection<SetDetailRowViewModel> Sets { get; } = new();
+    public ObservableCollection<SetDetailRowViewModel> Sets { get; } = new ();
 }
 
 public sealed class SetDetailRowViewModel

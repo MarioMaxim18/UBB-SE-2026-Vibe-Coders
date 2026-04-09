@@ -146,16 +146,16 @@ namespace VibeCoders.Services
 
                 using (var insertCmd = new SqliteCommand(insertSql, conn))
                 {
-                    insertCmd.Parameters.AddWithValue("@Title",       milestone.Title);
-                    insertCmd.Parameters.AddWithValue("@Description", milestone.Description);
-                    insertCmd.Parameters.AddWithValue("@Threshold",   milestone.Threshold);
+                    insertCmd.Parameters.AddWithValue("@Title",       milestone.title);
+                    insertCmd.Parameters.AddWithValue("@Description", milestone.description);
+                    insertCmd.Parameters.AddWithValue("@Threshold",   milestone.threshold);
                     insertCmd.ExecuteNonQuery();
                 }
 
                 using (var updateCmd = new SqliteCommand(updateSql, conn))
                 {
-                    updateCmd.Parameters.AddWithValue("@Title",     milestone.Title);
-                    updateCmd.Parameters.AddWithValue("@Threshold", milestone.Threshold);
+                    updateCmd.Parameters.AddWithValue("@Title",     milestone.title);
+                    updateCmd.Parameters.AddWithValue("@Threshold", milestone.threshold);
                     updateCmd.ExecuteNonQuery();
                 }
             }
