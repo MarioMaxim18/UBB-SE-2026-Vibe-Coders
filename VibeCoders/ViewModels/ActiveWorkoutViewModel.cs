@@ -298,7 +298,10 @@ namespace VibeCoders.ViewModels
 
         partial void OnSelectedTemplateChanged(WorkoutTemplate? value)
         {
-            if (value == null) return;
+            if (value == null)
+            {
+                return;
+            }
 
             activeLog_ = new WorkoutLog
             {
