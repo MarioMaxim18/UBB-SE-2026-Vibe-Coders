@@ -65,16 +65,18 @@ public sealed partial class RankShowcaseViewModel : ObservableObject
             var tiers   = LevelingTierEvaluator.DefaultTiers;
             var result  = LevelingTierEvaluator.Evaluate(unlockedCount, tiers);
 
-            DisplayLevel        = result.Level;
-            RankTitle           = result.RankTitle;
-            LevelDisplayLine    = $"Level {result.Level}: {result.RankTitle}";
+            DisplayLevel        = result.level;
+            RankTitle           = result.rankTitle;
+            LevelDisplayLine    = $"Level {result.level}: {result.rankTitle}";
             UnlockedAchievementsDisplay = $"{unlockedCount} achievement{(unlockedCount == 1 ? "" : "s")} unlocked";
 
-            ComputeNextRankProgress(unlockedCount, tiers, result.Level);
+            ComputeNextRankProgress(unlockedCount, tiers, result.level);
 
             ShowcaseAchievements.Clear();
             foreach (var row in showcase)
+            {
                 ShowcaseAchievements.Add(row);
+            }
         }
         finally
         {
@@ -110,8 +112,8 @@ public sealed partial class RankShowcaseViewModel : ObservableObject
         var current  = tiers[currentIndex];
         var next     = tiers[nextIndex];
 
-        int bandStart = current.MinAchievements;
-        int bandEnd   = next.MinAchievements;
+        int bandStart = current.minAchievements;
+        int bandEnd   = next.minAchievements;
         int earned    = unlockedCount - bandStart;
         int needed    = bandEnd - bandStart;
 

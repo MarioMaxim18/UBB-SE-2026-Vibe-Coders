@@ -18,7 +18,7 @@ public partial class SqlDataStorage
 
         using var cmd = new SqliteCommand(sql, conn);
         cmd.Parameters.AddWithValue("@ClientId", clientId);
-        
+
         var dates = new List<DateTime>();
         using var reader = cmd.ExecuteReader();
         while (reader.Read())
@@ -29,7 +29,10 @@ public partial class SqlDataStorage
             }
         }
 
-        if (dates.Count == 0) return 0;
+        if (dates.Count == 0)
+        {
+            return 0;
+        }
 
         int maxStreak = 1;
         int currentStreak = 1;
@@ -70,19 +73,19 @@ public partial class SqlDataStorage
             FROM ACHIEVEMENT
             ORDER BY achievement_id;";
 
-        using var cmd    = new SqliteCommand(sql, conn);
+        using var cmd = new SqliteCommand(sql, conn);
         using var reader = cmd.ExecuteReader();
 
         while (reader.Read())
         {
             list.Add(new Achievement
             {
-                AchievementId      = reader.GetInt32(0),
-                Name               = reader.GetString(1),
-                Description        = reader.GetString(2),
-                Criteria           = reader.GetString(3),
-                ThresholdWorkouts  = reader.IsDBNull(4) ? null : reader.GetInt32(4),
-                IsUnlocked         = false
+                AchievementId = reader.GetInt32(0),
+                Name = reader.GetString(1),
+                Description = reader.GetString(2),
+                Criteria = reader.GetString(3),
+                ThresholdWorkouts = reader.IsDBNull(4) ? null : reader.GetInt32(4),
+                IsUnlocked = false
             });
         }
 
@@ -135,7 +138,7 @@ public partial class SqlDataStorage
                 ON ca.achievement_id = a.achievement_id AND ca.client_id = @ClientId
             ORDER BY COALESCE(ca.unlocked, 0) DESC, a.achievement_id;";
 
-        using var cmd    = new SqliteCommand(sql, conn);
+        using var cmd = new SqliteCommand(sql, conn);
         cmd.Parameters.AddWithValue("@ClientId", clientId);
 
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -144,15 +147,17 @@ public partial class SqlDataStorage
         {
             var title = reader.GetString(1);
             if (!seen.Add(title))
+            {
                 continue;
+            }
 
             list.Add(new AchievementShowcaseItem
             {
                 AchievementId = reader.GetInt32(0),
-                Title         = title,
-                Description   = reader.GetString(2),
-                Criteria      = reader.GetString(3),
-                IsUnlocked    = reader.GetInt32(4) != 0
+                Title = title,
+                Description = reader.GetString(2),
+                Criteria = reader.GetString(3),
+                IsUnlocked = reader.GetInt32(4) != 0
             });
         }
 
@@ -197,15 +202,18 @@ public partial class SqlDataStorage
         cmd.Parameters.AddWithValue("@ClientId", clientId);
 
         using var reader = cmd.ExecuteReader();
-        if (!reader.Read()) return null;
+        if (!reader.Read())
+        {
+            return null;
+        }
 
         return new AchievementShowcaseItem
         {
             AchievementId = reader.GetInt32(0),
-            Title         = reader.GetString(1),
-            Description   = reader.GetString(2),
-            Criteria      = reader.GetString(3),
-            IsUnlocked    = reader.GetInt32(4) != 0
+            Title = reader.GetString(1),
+            Description = reader.GetString(2),
+            Criteria = reader.GetString(3),
+            IsUnlocked = reader.GetInt32(4) != 0
         };
     }
 
@@ -227,7 +235,9 @@ public partial class SqlDataStorage
             checkCmd.Parameters.AddWithValue("@AchievementId", achievementId);
 
             if (Convert.ToInt32(checkCmd.ExecuteScalar()) > 0)
+            {
                 return false;
+            }
         }
 
         const string insertSql = @"

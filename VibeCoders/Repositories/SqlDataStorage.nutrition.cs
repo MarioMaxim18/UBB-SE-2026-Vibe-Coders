@@ -128,11 +128,11 @@ namespace VibeCoders.Services
 
                 meals.Add(new Meal
                 {
-                    MealId          = reader.GetInt32(0),
+                    MealId = reader.GetInt32(0),
                     NutritionPlanId = reader.GetInt32(1),
-                    Name            = reader.GetString(2),
-                    Ingredients     = ingredients,
-                    Instructions    = reader.GetString(4)
+                    Name = reader.GetString(2),
+                    Ingredients = ingredients,
+                    Instructions = reader.GetString(4)
                 });
             }
 
