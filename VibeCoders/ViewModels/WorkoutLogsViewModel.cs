@@ -23,6 +23,7 @@ namespace VibeCoders.ViewModels
 
         public ObservableCollection<WorkoutLogItemViewModel> Logs { get; } = new ();
 
+#pragma warning disable SA1309 // Field names should not begin with underscore
         [ObservableProperty]
         private bool isLoading;
 
@@ -31,6 +32,7 @@ namespace VibeCoders.ViewModels
 
         [ObservableProperty]
         private string errorMessage = string.Empty;
+#pragma warning restore SA1309 // Field names should not begin with underscore
 
         [RelayCommand]
         private void LoadLogs(int clientId)
@@ -129,11 +131,13 @@ namespace VibeCoders.ViewModels
 
         public ObservableCollection<WorkoutLogExerciseSummary> Exercises { get; } = new ();
 
+#pragma warning disable SA1309 // Field names should not begin with underscore
         [ObservableProperty]
         private bool isExpanded;
 
         [ObservableProperty]
         private bool isEditMode;
+#pragma warning restore SA1309 // Field names should not begin with underscore
 
         public WorkoutLogItemViewModel(WorkoutLog log)
         {
@@ -270,11 +274,13 @@ namespace VibeCoders.ViewModels
     {
         public int SetNumber { get; init; }
 
+#pragma warning disable SA1309 // Field names should not begin with underscore
         [ObservableProperty]
         private int? reps;
 
         [ObservableProperty]
         private double? weight;
+#pragma warning restore SA1309 // Field names should not begin with underscore
 
         public double RepsInput
         {

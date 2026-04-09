@@ -103,6 +103,7 @@ namespace VibeCoders.ViewModels
             restTimer_?.Start();
         }
 
+        #pragma warning disable SA1309 // Field names should not begin with underscore
         [ObservableProperty]
         private int restTimeRemaining;
 
@@ -440,6 +441,7 @@ namespace VibeCoders.ViewModels
 
         [ObservableProperty]
         private ObservableCollection<Models.Notification> notifications = new ();
+#pragma warning restore SA1309 // Field names should not begin with underscore
 
         [RelayCommand]
         private void LoadNotifications(int clientId)
@@ -521,6 +523,7 @@ namespace VibeCoders.ViewModels
     public sealed partial class ActiveExerciseViewModel : ObservableObject
     {
         public string ExerciseName { get; }
+#pragma warning disable SA1309 // Field names should not begin with underscore
         [ObservableProperty]
         private double? previousBestWeight;
         public MuscleGroup MuscleGroup { get; }
@@ -531,6 +534,7 @@ namespace VibeCoders.ViewModels
 
         [ObservableProperty]
         private string adjustmentNote = string.Empty;
+#pragma warning restore SA1309 // Field names should not begin with underscore
 
         public ActiveExerciseViewModel(TemplateExercise template, Action<ActiveSetViewModel> autoSaveSet)
         {
@@ -559,6 +563,7 @@ namespace VibeCoders.ViewModels
         public int? TargetReps { get; set; }
         public double? TargetWeight { get; set; }
 
+#pragma warning disable SA1309 // Field names should not begin with underscore
         [ObservableProperty]
         private int? actualReps;
 
@@ -570,6 +575,7 @@ namespace VibeCoders.ViewModels
 
         [ObservableProperty]
         private bool isFocused;
+#pragma warning restore SA1309 // Field names should not begin with underscore
 
         public Action<ActiveSetViewModel>? AutoSaveHandler { get; set; }
 

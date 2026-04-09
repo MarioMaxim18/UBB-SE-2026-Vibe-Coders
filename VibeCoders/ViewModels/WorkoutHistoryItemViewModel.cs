@@ -56,11 +56,13 @@ public sealed partial class WorkoutHistoryItemViewModel : ObservableObject
     public ObservableCollection<ExerciseSetGroupViewModel> ExerciseSetGroups { get; } = new ();
     public ObservableCollection<ExerciseCalorieInfo> ExerciseCalories { get; } = new ();
 
+#pragma warning disable SA1309 // Field names should not begin with underscore
     [ObservableProperty]
     private bool isExpanded;
 
     [ObservableProperty]
     private bool isLoadingDetail;
+#pragma warning restore SA1309 // Field names should not begin with underscore
 
     partial void OnIsExpandedChanged(bool value)
     {
