@@ -1,50 +1,50 @@
-using System;
-using System.Runtime.InteropServices;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using VibeCoders.ViewModels;
-using Windows.Storage.Pickers;
-
 namespace VibeCoders.Views
 {
+    using System;
+    using System.Runtime.InteropServices;
+    using Microsoft.UI.Xaml;
+    using Microsoft.UI.Xaml.Controls;
+    using VibeCoders.ViewModels;
+    using Windows.Storage.Pickers;
+
     public sealed partial class CalendarIntegrationPage : Page
     {
-        private CalendarIntegrationViewModel? _viewModel;
+        private CalendarIntegrationViewModel? viewModel;
 
         public CalendarIntegrationPage()
         {
             this.InitializeComponent();
 
-            _viewModel = App.GetService<CalendarIntegrationViewModel>();
-            this.DataContext = _viewModel;
+            this.viewModel = App.GetService<CalendarIntegrationViewModel>();
+            this.DataContext = this.viewModel;
 
-            GenerateCalendarButton.Click += GenerateCalendarButton_Click;
-            this.Loaded += CalendarIntegrationPage_Loaded;
+            this.GenerateCalendarButton.Click += this.GenerateCalendarButton_Click;
+            this.Loaded += this.CalendarIntegrationPage_Loaded;
         }
 
         private async void CalendarIntegrationPage_Loaded(object sender, RoutedEventArgs e)
         {
-            if (_viewModel != null)
+            if (this.viewModel != null)
             {
-                await _viewModel.EnsureWorkoutsLoadedAsync();
+                await this.viewModel.EnsureWorkoutsLoadedAsync();
             }
         }
 
         private async void GenerateCalendarButton_Click(object sender, RoutedEventArgs e)
         {
-            if (_viewModel == null)
+            if (this.viewModel == null)
             {
                 return;
             }
 
-            await ExecuteCalendarGenerationAndSaveFlowAsync(_viewModel);
+            await this.ExecuteCalendarGenerationAndSaveFlowAsync(this.viewModel);
         }
 
         private async Task ExecuteCalendarGenerationAndSaveFlowAsync(CalendarIntegrationViewModel calendarIntegrationViewModel)
         {
             try
             {
-                GenerateCalendarButton.IsEnabled = false;
+                this.GenerateCalendarButton.IsEnabled = false;
                 calendarIntegrationViewModel.ClearStatus();
 
                 CalendarIntegrationViewModel.CalendarGenerationResult calendarGenerationResult =
@@ -57,7 +57,7 @@ namespace VibeCoders.Views
                 }
 
                 string generatedCalendarContent = calendarGenerationResult.GeneratedCalendarContent;
-                await SaveGeneratedCalendarContentWithPickerAsync(
+                await this.SaveGeneratedCalendarContentWithPickerAsync(
                     generatedCalendarContent,
                     calendarIntegrationViewModel);
             }
@@ -71,7 +71,7 @@ namespace VibeCoders.Views
             }
             finally
             {
-                GenerateCalendarButton.IsEnabled = true;
+                this.GenerateCalendarButton.IsEnabled = true;
             }
         }
 
@@ -115,7 +115,7 @@ namespace VibeCoders.Views
             CalendarIntegrationViewModel calendarIntegrationViewModel,
             out IntPtr applicationWindowHandle)
         {
-            var applicationWindow = (Application.Current as App)?._window;
+            var applicationWindow = (Application.Current as App)?.Window;
             if (applicationWindow == null)
             {
                 calendarIntegrationViewModel.SetErrorStatus("Unable to access app window for save dialog.");
@@ -156,4 +156,3 @@ namespace VibeCoders.Views
         }
     }
 }
-
