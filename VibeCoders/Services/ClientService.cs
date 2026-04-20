@@ -3,12 +3,10 @@ namespace VibeCoders.Services;
 using VibeCoders.Domain;
 using VibeCoders.Models;
 using VibeCoders.Models.Integration;
-using VibeCoders.Repositories;
 using VibeCoders.Repositories.Interfaces;
 
 public class ClientService
 {
-    private readonly IDataStorage storage;
     private readonly ProgressionService progressionService;
     private readonly IHttpClientFactory httpClientFactory;
     private readonly EvaluationEngine evaluationEngine;
@@ -19,10 +17,10 @@ public class ClientService
     private readonly IRepositoryNotification notificationRepository;
     private readonly IRepositoryAchievements achievementsRepository;
     private readonly IRepositoryNutrition nutritionRepository;
+    private readonly IRepositoryWorkoutTemplate workoutTemplateRepository;
 
     public ClientService(
         IRepositoryWorkoutLog workoutLogRepository,
-        IDataStorage storage,
         ProgressionService progressionService,
         IHttpClientFactory httpClientFactory,
         EvaluationEngine evaluationEngine,
@@ -31,10 +29,10 @@ public class ClientService
         IRepositoryTrainer trainerRepository,
         IRepositoryNotification notificationRepository,
         IRepositoryAchievements achievementsRepository,
-        IRepositoryNutrition nutritionRepository)
+        IRepositoryNutrition nutritionRepository,
+        IRepositoryWorkoutTemplate workoutTemplateRepository)
     {
         this.workoutLogRepository = workoutLogRepository;
-        this.storage = storage;
         this.progressionService = progressionService;
         this.httpClientFactory = httpClientFactory;
         this.notificationRepository = notificationRepository;
@@ -44,6 +42,7 @@ public class ClientService
         this.trainerRepository = trainerRepository;
         this.nutritionRepository = nutritionRepository;
         this.achievementsRepository = achievementsRepository;
+        this.workoutTemplateRepository = workoutTemplateRepository;
     }
 
     public List<WorkoutLog> GetWorkoutHistoryForClient(int clientId)
@@ -328,7 +327,7 @@ public class ClientService
     {
         try
         {
-            return this.storage.GetAvailableWorkouts(clientId);
+            return this.workoutTemplateRepository.GetAvailableWorkouts(clientId);
         }
         catch (Exception exception)
         {

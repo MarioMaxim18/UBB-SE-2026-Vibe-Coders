@@ -3,8 +3,16 @@ namespace VibeCoders.Repositories
     using Microsoft.Data.Sqlite;
     using VibeCoders.Models;
     using VibeCoders.Repositories.Mapping;
-    public partial class SqlDataStorage : IDataStorage
+    using VibeCoders.Repositories.Interfaces;
+
+    public class RepositoryWorkoutTemplate : IRepositoryWorkoutTemplate
     {
+        private readonly string connectionString;
+
+        public RepositoryWorkoutTemplate(string connectionString)
+        {
+            this.connectionString = connectionString;
+        }
         public List<WorkoutTemplate> GetAvailableWorkouts(int clientId)
         {
             const string sql = @"

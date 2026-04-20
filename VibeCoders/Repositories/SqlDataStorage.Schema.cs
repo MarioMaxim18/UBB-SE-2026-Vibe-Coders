@@ -3,9 +3,13 @@ namespace VibeCoders.Repositories
     using System;
     using Microsoft.Data.Sqlite;
 
-    public partial class SqlDataStorage : IDataStorage
+    public class DatabaseSchemaManager
     {
-        private readonly string connectionString = DatabasePaths.GetConnectionString();
+        private readonly string connectionString;
+        public DatabaseSchemaManager(string connectionString)
+        {
+            this.connectionString = connectionString;
+        }
 
         public void EnsureSchemaCreated()
         {

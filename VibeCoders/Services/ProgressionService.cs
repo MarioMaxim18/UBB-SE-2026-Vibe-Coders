@@ -7,14 +7,14 @@ namespace VibeCoders.Services
 
     public sealed class ProgressionService
     {
-        private readonly IDataStorage storage;
+        private readonly IRepositoryWorkoutTemplate workoutTemplateRepository;
         private readonly IRepositoryNotification notificationRepository;
         private const double PLATEAU_THRESHOLD = 0.9;
         private const int CONSECUTIVE_FAILED_SETS_FOR_PLATEAU = 2;
 
-        public ProgressionService(IDataStorage storage, IRepositoryNotification notificationRepository)
+        public ProgressionService(IRepositoryWorkoutTemplate workoutTemplateRepository, IRepositoryNotification notificationRepository)
         {
-            this.storage = storage;
+            this.workoutTemplateRepository = workoutTemplateRepository;
             this.notificationRepository = notificationRepository;
         }
 
@@ -39,7 +39,7 @@ namespace VibeCoders.Services
             }
 
             int templateExerciseId = notification.RelatedId;
-            TemplateExercise? template = storage.GetTemplateExercise(templateExerciseId);
+            TemplateExercise? template = workoutTemplateRepository.GetTemplateExercise(templateExerciseId);
 
             if (template is null)
             {
@@ -48,7 +48,7 @@ namespace VibeCoders.Services
 
             double deloadedWeight = ProgressionUtils.CalculateDeload(template.TargetWeight);
 
-            bool updated = storage.UpdateTemplateWeight(template.Id, deloadedWeight);
+            bool updated = workoutTemplateRepository.UpdateTemplateWeight(template.Id, deloadedWeight);
 
             if (updated)
             {
@@ -64,7 +64,7 @@ namespace VibeCoders.Services
             }
 
             int templateId = exercise.ParentTemplateExerciseId;
-            TemplateExercise? template = storage.GetTemplateExercise(templateId);
+            TemplateExercise? template = workoutTemplateRepository.GetTemplateExercise(templateId);
 
             if (template is null)
             {
@@ -126,7 +126,7 @@ namespace VibeCoders.Services
             double increment = ProgressionUtils.DetermineWeightIncrement(template.MuscleGroup);
             double newWeight = currentWeight + increment;
 
-            bool updated = storage.UpdateTemplateWeight(template.Id, newWeight);
+            bool updated = workoutTemplateRepository.UpdateTemplateWeight(template.Id, newWeight);
 
             if (updated)
             {

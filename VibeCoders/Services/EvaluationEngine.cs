@@ -8,13 +8,11 @@ using VibeCoders.Repositories.Interfaces;
 
 public sealed class EvaluationEngine
 {
-    private readonly IDataStorage storage;
     private readonly IReadOnlyList<VibeCoders.Domain.IMilestoneCheck> checks;
     private readonly IRepositoryAchievements achievementRepository;
 
-    public EvaluationEngine(IDataStorage storage, IRepositoryAchievements achievementRepository)
+    public EvaluationEngine(IRepositoryAchievements achievementRepository)
     {
-        this.storage = storage;
         this.achievementRepository = achievementRepository;
         this.checks = BuildDefaultChecks();
     }
