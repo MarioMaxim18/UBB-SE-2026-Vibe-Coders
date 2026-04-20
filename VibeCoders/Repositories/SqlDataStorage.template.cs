@@ -3,7 +3,7 @@ namespace VibeCoders.Repositories
     using Microsoft.Data.Sqlite;
     using VibeCoders.Models;
     using VibeCoders.Repositories.Mapping;
-    public partial class SqlDataStorage
+    public partial class SqlDataStorage : IDataStorage
     {
         public List<WorkoutTemplate> GetAvailableWorkouts(int clientId)
         {

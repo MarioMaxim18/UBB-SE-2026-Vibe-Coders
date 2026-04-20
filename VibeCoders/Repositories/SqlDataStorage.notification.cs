@@ -3,7 +3,7 @@ namespace VibeCoders.Repositories
     using Microsoft.Data.Sqlite;
     using VibeCoders.Models;
 
-    public partial class SqlDataStorage
+    public partial class SqlDataStorage : IDataStorage
     {
         public bool SaveNotification(Notification notification)
         {

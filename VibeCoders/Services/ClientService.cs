@@ -15,6 +15,7 @@ public class ClientService
     private readonly IAchievementUnlockedBus achievementBus;
     private readonly NutritionSyncOptions nutritionSync;
     private readonly IRepositoryWorkoutLog workoutLogRepository;
+    private readonly IRepositoryTrainer trainerRepository;
 
     public ClientService(
         IRepositoryWorkoutLog workoutLogRepository,
@@ -23,7 +24,8 @@ public class ClientService
         IHttpClientFactory httpClientFactory,
         EvaluationEngine evaluationEngine,
         IAchievementUnlockedBus achievementBus,
-        NutritionSyncOptions nutritionSync)
+        NutritionSyncOptions nutritionSync,
+        IRepositoryTrainer trainerRepository)
     {
         this.workoutLogRepository = workoutLogRepository;
         this.storage = storage;
@@ -32,6 +34,7 @@ public class ClientService
         this.evaluationEngine = evaluationEngine;
         this.achievementBus = achievementBus;
         this.nutritionSync = nutritionSync;
+        this.trainerRepository = trainerRepository;
     }
 
     public List<WorkoutLog> GetWorkoutHistoryForClient(int clientId)
@@ -182,7 +185,7 @@ public class ClientService
         List<Client> roster;
         try
         {
-            roster = this.storage.GetTrainerClients(1);
+            roster = this.trainerRepository.GetTrainerClients(1);
         }
         catch (Exception ex)
         {

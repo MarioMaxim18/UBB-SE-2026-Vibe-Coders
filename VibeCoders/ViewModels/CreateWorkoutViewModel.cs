@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
 using VibeCoders.Models;
-using VibeCoders.Repositories;
+using VibeCoders.Services;
 
 namespace VibeCoders.ViewModels
 {
@@ -66,15 +66,15 @@ namespace VibeCoders.ViewModels
         public ICommand RemoveExerciseCommand { get; }
         public ICommand SaveWorkoutCommand { get; }
 
-        private readonly IDataStorage dataStorage_;
+        private readonly TrainerService trainerService;
 
         public int ClientId { get; set; }
 
         public event Action? WorkoutSaved;
 
-        public CreateWorkoutViewModel(IDataStorage dataStorage)
+        public CreateWorkoutViewModel(TrainerService trainerService)
         {
-            dataStorage_ = dataStorage;
+            this.trainerService = trainerService;
 
             AddExerciseCommand = new RelayCommand(AddExercise);
             RemoveExerciseCommand = new RelayCommand<TemplateExercise>(RemoveExercise);
@@ -129,7 +129,7 @@ namespace VibeCoders.ViewModels
                 newWorkout.AddExercise(exercise);
             }
 
-            dataStorage_.SaveTrainerWorkout(newWorkout);
+            this.trainerService.SaveTrainerWorkout(newWorkout);
             WorkoutSaved?.Invoke();
         }
 
@@ -142,7 +142,7 @@ namespace VibeCoders.ViewModels
         {
             AvailableExercises.Clear();
 
-            foreach (var name in dataStorage_.GetAllExerciseNames())
+            foreach (var name in this.trainerService.GetAllExerciseNames())
             {
                 AvailableExercises.Add(name);
             }
