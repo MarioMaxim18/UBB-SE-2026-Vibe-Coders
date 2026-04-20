@@ -1,6 +1,6 @@
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using System.Collections.ObjectModel;
 using VibeCoders.Models;
 using VibeCoders.Services;
 
@@ -8,29 +8,31 @@ namespace VibeCoders.ViewModels;
 
 public sealed partial class AchievementsViewModel : ObservableObject
 {
-    private readonly IDataStorage _storage;
+    private readonly IDataStorage storage;
+
+    [ObservableProperty]
+    public partial ObservableCollection<Achievement> Achievements { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsLoading { get; set; }
 
     public AchievementsViewModel(IDataStorage storage)
     {
-        _storage = storage;
+        this.storage = storage;
+
+        this.Achievements = new ObservableCollection<Achievement>();
     }
-
-    [ObservableProperty]
-    private ObservableCollection<Achievement> achievements = new();
-
-    [ObservableProperty]
-    private bool isLoading;
 
     [RelayCommand]
     private void LoadAchievements(int clientId)
     {
+        this.IsLoading = true;
         try
         {
-            IsLoading = true;
-            Achievements.Clear();
-            foreach (var a in _storage.GetAchievementShowcaseForClient(clientId))
+            this.Achievements.Clear();
+            foreach (var a in this.storage.GetAchievementShowcaseForClient(clientId))
             {
-                Achievements.Add(new Achievement
+                this.Achievements.Add(new Achievement
                 {
                     AchievementId = a.AchievementId,
                     Name = a.Title,
@@ -43,7 +45,7 @@ public sealed partial class AchievementsViewModel : ObservableObject
         }
         finally
         {
-            IsLoading = false;
+            this.IsLoading = false;
         }
     }
 }
