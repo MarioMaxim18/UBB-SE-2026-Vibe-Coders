@@ -24,27 +24,24 @@ public sealed partial class ClientDashboardViewModel : ObservableObject
 {
     public const int DefaultPageSize = 5;
 
-    private readonly IWorkoutAnalyticsStore _store;
-    private readonly IDataStorage _dataStorage;
-    private readonly IUserSession _session;
-    private readonly IAnalyticsDashboardRefreshBus _refreshBus;
-    private CancellationTokenSource? _loadCts;
+    private readonly IWorkoutAnalyticsStore store;
+    private readonly IUserSession session;
+    private readonly IAnalyticsDashboardRefreshBus refreshBus;
+    private CancellationTokenSource? loadCts;
     private readonly IRepositoryAchievements achievementsRepository;
     private readonly IRepositoryNutrition nutritionRepository;
     public ClientDashboardViewModel(
         IWorkoutAnalyticsStore store,
-        IDataStorage dataStorage,
         IUserSession session,
         IAnalyticsDashboardRefreshBus refreshBus,
         IRepositoryAchievements achievementsRepository,
         IRepositoryNutrition nutritionRepository)
     {
-        _store = store;
-        _dataStorage = dataStorage;
-        _session = session;
-        _refreshBus = refreshBus;
+        this.store = store;
+        this.session = session;
+        this.refreshBus = refreshBus;
         this.achievementsRepository = achievementsRepository;
-        _refreshBus.RefreshRequested += OnRefreshRequested;
+        this.refreshBus.RefreshRequested += OnRefreshRequested;
         this.nutritionRepository = nutritionRepository;
     }
 
@@ -133,8 +130,8 @@ public sealed partial class ClientDashboardViewModel : ObservableObject
     private async Task LoadAllAsync()
     {
         CancelPendingLoad();
-        var token = _loadCts!.Token;
-        var clientId = _session.CurrentClientId;
+        var token = loadCts!.Token;
+        var clientId = session.CurrentClientId;
 
         try
         {
@@ -142,12 +139,12 @@ public sealed partial class ClientDashboardViewModel : ObservableObject
             IsLoadingChart = true;
             IsLoadingHistory = true;
 
-            await _store.EnsureCreatedAsync(token).ConfigureAwait(true);
+            await store.EnsureCreatedAsync(token).ConfigureAwait(true);
 
-            var summaryTask = _store.GetDashboardSummaryAsync(clientId, token);
-            var bucketsTask = _store.GetConsistencyLastFourWeeksAsync(clientId, token);
+            var summaryTask = store.GetDashboardSummaryAsync(clientId, token);
+            var bucketsTask = store.GetConsistencyLastFourWeeksAsync(clientId, token);
             CurrentPage = 0;
-            var historyTask = _store.GetWorkoutHistoryPageAsync(clientId, CurrentPage, PageSize, token);
+            var historyTask = store.GetWorkoutHistoryPageAsync(clientId, CurrentPage, PageSize, token);
 
             await Task.WhenAll(summaryTask, bucketsTask, historyTask).ConfigureAwait(true);
             token.ThrowIfCancellationRequested();
@@ -175,16 +172,16 @@ public sealed partial class ClientDashboardViewModel : ObservableObject
     private async Task LoadHistoryPageAsync()
     {
         CancelPendingLoad();
-        var token = _loadCts!.Token;
+        var token = loadCts!.Token;
         IsLoadingHistory = true;
 
         try
         {
-            await _store.EnsureCreatedAsync(token).ConfigureAwait(true);
-            var result = await _store.GetWorkoutHistoryPageAsync(
-                _session.CurrentClientId, CurrentPage, PageSize, token).ConfigureAwait(true);
+            await store.EnsureCreatedAsync(token).ConfigureAwait(true);
+            var result = await store.GetWorkoutHistoryPageAsync(
+                session.CurrentClientId, CurrentPage, PageSize, token).ConfigureAwait(true);
             token.ThrowIfCancellationRequested();
-            ApplyHistory(result, _session.CurrentClientId);
+            ApplyHistory(result, session.CurrentClientId);
         }
         catch (OperationCanceledException)
         {
@@ -195,7 +192,7 @@ public sealed partial class ClientDashboardViewModel : ObservableObject
         }
     }
     public void ReloadAchievementsPreview() =>
-        LoadRecentAchievements((int)_session.CurrentClientId);
+        LoadRecentAchievements((int)session.CurrentClientId);
 
     private void LoadRecentAchievements(int clientId)
     {
@@ -214,9 +211,9 @@ public sealed partial class ClientDashboardViewModel : ObservableObject
 
     private void CancelPendingLoad()
     {
-        _loadCts?.Cancel();
-        _loadCts?.Dispose();
-        _loadCts = new CancellationTokenSource();
+        loadCts?.Cancel();
+        loadCts?.Dispose();
+        loadCts = new CancellationTokenSource();
     }
 
     private void ApplySummary(DashboardSummary summary)
@@ -276,7 +273,7 @@ public sealed partial class ClientDashboardViewModel : ObservableObject
         HistoryItems.Clear();
         foreach (var row in result.Items)
         {
-            HistoryItems.Add(new WorkoutHistoryItemViewModel(_store, clientId, row));
+            HistoryItems.Add(new WorkoutHistoryItemViewModel(store, clientId, row));
         }
     }
 

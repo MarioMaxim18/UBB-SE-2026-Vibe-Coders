@@ -9,7 +9,6 @@ namespace VibeCoders.ViewModels;
 
 public sealed partial class AchievementsViewModel : ObservableObject
 {
-    private readonly IDataStorage storage;
     private readonly IRepositoryAchievements achievementsRepository;
 
     [ObservableProperty]
@@ -18,9 +17,8 @@ public sealed partial class AchievementsViewModel : ObservableObject
     [ObservableProperty]
     public partial bool IsLoading { get; set; }
 
-    public AchievementsViewModel(IDataStorage storage, IRepositoryAchievements achievementsRepository)
+    public AchievementsViewModel(IRepositoryAchievements achievementsRepository)
     {
-        this.storage = storage;
         this.achievementsRepository = achievementsRepository;
         this.Achievements = new ObservableCollection<Achievement>();
     }

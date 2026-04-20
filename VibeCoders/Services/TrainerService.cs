@@ -11,13 +11,13 @@ namespace VibeCoders.Services
 
     public sealed class TrainerService
     {
-        private readonly IDataStorage storage;
+        private readonly IRepositoryWorkoutTemplate workoutTemplateRepository;
         private readonly IRepositoryWorkoutLog workoutLogRepository;
         private readonly IRepositoryTrainer trainerRepository;
         private readonly IRepositoryNutrition nutritionRepository;
-        public TrainerService(IDataStorage storage, IRepositoryWorkoutLog workoutLogRepository, IRepositoryTrainer trainerRepository, IRepositoryNutrition nutritionRepository)
+        public TrainerService(IRepositoryWorkoutTemplate workoutTemplateRepository, IRepositoryWorkoutLog workoutLogRepository, IRepositoryTrainer trainerRepository, IRepositoryNutrition nutritionRepository)
         {
-            this.storage = storage;
+            this.workoutTemplateRepository = workoutTemplateRepository;
             this.workoutLogRepository = workoutLogRepository;
             this.trainerRepository = trainerRepository;
             this.nutritionRepository = nutritionRepository;
@@ -50,7 +50,7 @@ namespace VibeCoders.Services
 
         public List<WorkoutTemplate> GetAvailableWorkouts(int clientId)
         {
-            return storage.GetAvailableWorkouts(clientId);
+            return workoutTemplateRepository.GetAvailableWorkouts(clientId);
         }
 
         public bool DeleteWorkoutTemplate(int templateId)
@@ -104,7 +104,7 @@ namespace VibeCoders.Services
 
         public List<string> GetAllExerciseNames()
         {
-            return storage.GetAllExerciseNames();
+            return workoutTemplateRepository.GetAllExerciseNames();
         }
 
         public bool AssignNutritionPlan(NutritionPlan plan, int clientId)

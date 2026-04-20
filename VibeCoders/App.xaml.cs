@@ -46,16 +46,14 @@ public partial class App : Application
 
         try
         {
-            var storage = servicesProvider.GetRequiredService<IDataStorage>();
-            if (storage is SqlDataStorage sql)
-            {
-                sql.EnsureSchemaCreated();
-                sql.SeedPrebuiltWorkouts();
-                sql.SeedAchievementCatalog();
-                sql.SeedWorkoutMilestoneAchievements();
-                sql.SeedEvaluationEngineAchievements();
-                sql.SeedTestData();
-            }
+            var storage = servicesProvider.GetRequiredService<DatabaseSchemaManager>();
+            storage.EnsureSchemaCreated();
+            var initializer = servicesProvider.GetRequiredService<DatabaseDataInitializer>();
+            initializer.SeedPrebuiltWorkouts();
+            initializer.SeedAchievementCatalog();
+                initializer.SeedWorkoutMilestoneAchievements();
+                initializer.SeedEvaluationEngineAchievements();
+                initializer.SeedTestData();
         }
         catch (Exception exception)
         {
@@ -72,10 +70,12 @@ public partial class App : Application
     private static void ConfigureServices(IServiceCollection services)
     {
         var connectionString = DatabasePaths.GetConnectionString();
+        services.AddSingleton(new DatabaseDataInitializer(connectionString));
+        services.AddSingleton(new DatabaseSchemaManager(connectionString));
+        services.AddSingleton<IRepositoryWorkoutTemplate>(new RepositoryWorkoutTemplate(connectionString));
         services.AddSingleton<IRepositoryNutrition>(new RepositoryNutrition(connectionString));
         services.AddSingleton<IRepositoryAchievements>(new RepositoryAchievements(connectionString));
         services.AddSingleton<IRepositoryNotification>(new RepositoryNotification(connectionString));
-        services.AddSingleton<IDataStorage, SqlDataStorage>();
         services.AddSingleton<IRepositoryWorkoutLog>(new RepositoryWorkoutLog(connectionString));
         services.AddSingleton<IUserSession, UserSession>();
         services.AddSingleton<IWorkoutAnalyticsStore>(
@@ -125,7 +125,6 @@ public partial class App : Application
         try
         {
             var trainerRepository = servicesProvider.GetRequiredService<IRepositoryTrainer>();
-            var storage = servicesProvider.GetRequiredService<IDataStorage>();
             var session = servicesProvider.GetRequiredService<IUserSession>();
             var user = trainerRepository.LoadUser("TestClient");
             if (user is null)

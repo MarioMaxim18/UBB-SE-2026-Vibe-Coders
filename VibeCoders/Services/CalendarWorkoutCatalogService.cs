@@ -1,22 +1,23 @@
 using VibeCoders.Models;
 using VibeCoders.Repositories;
+using VibeCoders.Repositories.Interfaces;
 
 namespace VibeCoders.Services;
 
 public sealed class CalendarWorkoutCatalogService : ICalendarWorkoutCatalogService
 {
-    private readonly IDataStorage dataStorage;
+    private readonly IRepositoryWorkoutTemplate workoutTemplateRepository;
 
-    public CalendarWorkoutCatalogService(IDataStorage dataStorage)
+    public CalendarWorkoutCatalogService(IRepositoryWorkoutTemplate workoutTemplateRepository)
     {
-        this.dataStorage = dataStorage;
+        this.workoutTemplateRepository = workoutTemplateRepository;
     }
 
     public async Task<IReadOnlyList<WorkoutTemplate>> GetAvailableWorkoutsAsync(int clientId, TimeSpan timeout)
     {
         try
         {
-            var dbLoadTask = Task.Run(() => dataStorage.GetAvailableWorkouts(clientId));
+            var dbLoadTask = Task.Run(() => this.workoutTemplateRepository.GetAvailableWorkouts(clientId));
             var completedTask = await Task.WhenAny(dbLoadTask, Task.Delay(timeout));
 
             if (completedTask != dbLoadTask)

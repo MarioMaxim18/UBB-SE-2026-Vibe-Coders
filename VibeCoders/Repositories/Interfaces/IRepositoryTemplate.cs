@@ -1,15 +1,14 @@
+﻿using System.Collections.Generic;
 using VibeCoders.Models;
-using User = VibeCoders.Models.User;
 
-namespace VibeCoders.Repositories
+namespace VibeCoders.Repositories.Interfaces
 {
-    public interface IDataStorage
+    public interface IRepositoryWorkoutTemplate
     {
-        void EnsureSchemaCreated();
-
         List<WorkoutTemplate> GetAvailableWorkouts(int clientId);
 
         TemplateExercise? GetTemplateExercise(int templateExerciseId);
+
         bool UpdateTemplateWeight(int templateExerciseId, double newWeight);
 
         List<string> GetAllExerciseNames();

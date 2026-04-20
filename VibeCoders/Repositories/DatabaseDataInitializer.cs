@@ -3,8 +3,13 @@ namespace VibeCoders.Repositories
     using Microsoft.Data.Sqlite;
     using VibeCoders.Domain;
 
-    public partial class SqlDataStorage
+    public class DatabaseDataInitializer
     {
+        private readonly string connectionString;
+        public DatabaseDataInitializer(string connectionString)
+        {
+            this.connectionString = connectionString;
+        }
         public void SeedPrebuiltWorkouts()
         {
             using var connection = new SqliteConnection(this.connectionString);
