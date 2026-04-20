@@ -2,11 +2,17 @@ namespace VibeCoders.Repositories
 {
     using Microsoft.Data.Sqlite;
     using VibeCoders.Models;
+    using VibeCoders.Repositories.Interfaces;
     using VibeCoders.Repositories.Mapping;
     using User = VibeCoders.Models.User;
 
-    public partial class SqlDataStorage : IDataStorage
+    public class RepositoryTrainer : IRepositoryTrainer
     {
+        private readonly string connectionString;
+        public RepositoryTrainer(string connectionString)
+        {
+            this.connectionString = connectionString;
+        }
         public List<Client> GetTrainerClients(int trainerId)
         {
             var roster = new List<Client>();
@@ -162,7 +168,7 @@ namespace VibeCoders.Repositories
             }
         }
 
-        public bool SaveUser(User u)
+        public bool SaveUser(User user)
         {
             return false;
         }
@@ -172,7 +178,7 @@ namespace VibeCoders.Repositories
             return null;
         }
 
-        public bool SaveClientData(Client c)
+        public bool SaveClientData(Client client)
         {
             return false;
         }

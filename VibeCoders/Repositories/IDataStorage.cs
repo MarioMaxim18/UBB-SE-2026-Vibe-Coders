@@ -7,12 +7,6 @@ namespace VibeCoders.Repositories
     {
         void EnsureSchemaCreated();
 
-        bool SaveUser(User user);
-        User? LoadUser(string username);
-
-        bool SaveClientData(Client client);
-        List<Client> GetTrainerClients(int trainerId);
-
         List<WorkoutTemplate> GetAvailableWorkouts(int clientId);
 
         TemplateExercise? GetTemplateExercise(int templateExerciseId);
@@ -37,8 +31,6 @@ namespace VibeCoders.Repositories
 
         int GetWorkoutsInLastSevenDays(int clientId);
 
-        bool SaveTrainerWorkout(WorkoutTemplate template);
-        bool DeleteWorkoutTemplate(int templateId);
         List<string> GetAllExerciseNames();
 
         int InsertNutritionPlan(NutritionPlan plan);

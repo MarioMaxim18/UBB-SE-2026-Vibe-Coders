@@ -72,14 +72,12 @@ public partial class App : Application
     private static void ConfigureServices(IServiceCollection services)
     {
         var connectionString = DatabasePaths.GetConnectionString();
-
         services.AddSingleton<IDataStorage, SqlDataStorage>();
         services.AddSingleton<IRepositoryWorkoutLog>(new RepositoryWorkoutLog(connectionString));
-
         services.AddSingleton<IUserSession, UserSession>();
         services.AddSingleton<IWorkoutAnalyticsStore>(
             new SqlWorkoutAnalyticsStore(connectionString));
-
+        services.AddSingleton<IRepositoryTrainer>(new RepositoryTrainer(connectionString));
         services.AddSingleton<IAnalyticsDashboardRefreshBus, AnalyticsDashboardRefreshBus>();
         services.AddSingleton<IAchievementUnlockedBus, AchievementUnlockedBus>();
         services.AddSingleton<IWorkoutDataForwarder, WorkoutDataForwarder>();
@@ -125,15 +123,15 @@ public partial class App : Application
 
         try
         {
+            var trainerRepository = servicesProvider.GetRequiredService<IRepositoryTrainer>();
             var storage = servicesProvider.GetRequiredService<IDataStorage>();
             var session = servicesProvider.GetRequiredService<IUserSession>();
-            var user = storage.LoadUser("TestClient");
+            var user = trainerRepository.LoadUser("TestClient");
             if (user is null)
             {
                 return;
             }
-
-            var roster = storage.GetTrainerClients(1);
+            var roster = trainerRepository.GetTrainerClients(1);
             var client = roster.FirstOrDefault(c =>
                 string.Equals(c.Username, "TestClient", StringComparison.OrdinalIgnoreCase));
             if (client is null)

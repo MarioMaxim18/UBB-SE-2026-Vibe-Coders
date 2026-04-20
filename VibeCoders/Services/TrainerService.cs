@@ -13,16 +13,17 @@ namespace VibeCoders.Services
     {
         private readonly IDataStorage storage;
         private readonly IRepositoryWorkoutLog workoutLogRepository;
-
-        public TrainerService(IDataStorage storage, IRepositoryWorkoutLog workoutLogRepository)
+        private readonly IRepositoryTrainer trainerRepository;
+        public TrainerService(IDataStorage storage, IRepositoryWorkoutLog workoutLogRepository, IRepositoryTrainer trainerRepository)
         {
             this.storage = storage;
             this.workoutLogRepository = workoutLogRepository;
+            this.trainerRepository = trainerRepository;
         }
 
         public List<Client> GetAssignedClients(int trainerId)
         {
-            return storage.GetTrainerClients(trainerId);
+            return trainerRepository.GetTrainerClients(trainerId);
         }
 
         public List<WorkoutLog> GetClientWorkoutHistory(int clientId)
@@ -52,7 +53,7 @@ namespace VibeCoders.Services
 
         public bool DeleteWorkoutTemplate(int templateId)
         {
-            return storage.DeleteWorkoutTemplate(templateId);
+            return trainerRepository.DeleteWorkoutTemplate(templateId);
         }
 
         public bool SaveTrainerWorkout(WorkoutTemplate template)
@@ -62,7 +63,7 @@ namespace VibeCoders.Services
                 return false;
             }
 
-            return storage.SaveTrainerWorkout(template);
+            return trainerRepository.SaveTrainerWorkout(template);
         }
 
         public (bool Success, string ErrorMessage) AssignNewRoutine(int? editingTemplateId, int clientId, string routineName, IEnumerable<TemplateExercise> exercises)
@@ -90,7 +91,7 @@ namespace VibeCoders.Services
                 newTemplate.AddExercise(exercise);
             }
 
-            bool isSaved = storage.SaveTrainerWorkout(newTemplate);
+            bool isSaved = trainerRepository.SaveTrainerWorkout(newTemplate);
             if (!isSaved)
             {
                 return (false, "Could not save routine to database.");
