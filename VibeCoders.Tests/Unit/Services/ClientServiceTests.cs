@@ -120,7 +120,7 @@ namespace VibeCoders.Tests.Unit.Services
         public void FinalizeWorkout_NullLog_ReturnsFalse()
         {
             // Act
-            var result = _sut.FinalizeWorkout(null);
+            var result = _sut.FinalizeWorkout(null!);
 
             // Assert
             result.Should().BeFalse();
@@ -157,7 +157,7 @@ namespace VibeCoders.Tests.Unit.Services
         public void SaveSet_NullLog_ReturnsFalse()
         {
             // Act
-            var result = _sut.SaveSet(null, "Squat", new LoggedSet());
+            var result = _sut.SaveSet(null!, "Squat", new LoggedSet());
 
             // Assert
             result.Should().BeFalse();
@@ -184,7 +184,7 @@ namespace VibeCoders.Tests.Unit.Services
         public void ModifyWorkout_NullLog_ReturnsFalse()
         {
             // Act
-            var result = _sut.ModifyWorkout(null);
+            var result = _sut.ModifyWorkout(null!);
 
             // Assert
             result.Should().BeFalse();
